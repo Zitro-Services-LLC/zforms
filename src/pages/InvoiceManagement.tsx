@@ -1,8 +1,7 @@
-
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import AppLayout from '../components/layouts/AppLayout';
-import StatusBadge from '../components/shared/StatusBadge';
+import StatusBadge, { Status } from '../components/shared/StatusBadge';
 import DownloadPdfButton from '../components/shared/DownloadPdfButton';
 
 // Mock data for the invoice
@@ -11,7 +10,7 @@ const invoiceData = {
   jobId: 'JOB-00123',
   estimateId: 'E-101',
   contractId: 'C-101',
-  status: 'submitted' as const,
+  status: 'submitted' as Status,
   date: '2023-04-20',
   dueDate: '2023-05-05',
   contractor: {
@@ -56,7 +55,7 @@ interface InvoiceManagementProps {
 
 const InvoiceManagement: React.FC<InvoiceManagementProps> = ({ userType = 'contractor' }) => {
   const { id } = useParams<{ id: string }>();
-  const [status, setStatus] = useState(invoiceData.status);
+  const [status, setStatus] = useState<Status>(invoiceData.status);
   const [showPaymentOptions, setShowPaymentOptions] = useState(false);
   
   const handleMarkPaid = () => {

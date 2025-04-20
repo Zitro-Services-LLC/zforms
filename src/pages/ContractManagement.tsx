@@ -2,14 +2,14 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import AppLayout from '../components/layouts/AppLayout';
-import StatusBadge from '../components/shared/StatusBadge';
+import StatusBadge, { Status } from '../components/shared/StatusBadge';
 import DownloadPdfButton from '../components/shared/DownloadPdfButton';
 
 // Mock data for the contract
 const contractData = {
   id: 'C-101',
   jobId: 'JOB-00123',
-  status: 'submitted' as const,
+  status: 'submitted' as Status,
   date: '2023-04-15',
   contractor: {
     name: 'Bob\'s Construction',
@@ -76,7 +76,7 @@ interface ContractManagementProps {
 
 const ContractManagement: React.FC<ContractManagementProps> = ({ userType = 'contractor' }) => {
   const { id } = useParams<{ id: string }>();
-  const [status, setStatus] = useState(contractData.status);
+  const [status, setStatus] = useState<Status>(contractData.status);
   const [showCommentBox, setShowCommentBox] = useState(false);
   const [commentText, setCommentText] = useState('');
   
