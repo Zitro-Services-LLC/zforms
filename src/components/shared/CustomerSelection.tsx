@@ -1,35 +1,10 @@
-
 import React, { useState } from 'react';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import NewCustomerForm from './NewCustomerForm';
 import ExistingCustomerSelector from './ExistingCustomerSelector';
+import { sampleCustomers } from '@/data/sampleCustomers';
 import type { Customer, CustomerSelectionProps } from '@/types/customer';
-
-// Sample data - this would come from an API in a real app
-const customers: Customer[] = [
-  {
-    id: '1',
-    name: 'Alice Smith',
-    address: '456 Home Ave, Hometown, HT 67890',
-    phone: '(555) 987-6543',
-    email: 'alice@example.com'
-  },
-  {
-    id: '2',
-    name: 'Bob Johnson',
-    address: '789 Oak St, Treeville, TV 45678',
-    phone: '(555) 456-7890',
-    email: 'bob.j@example.com'
-  },
-  {
-    id: '3',
-    name: 'Carol Williams',
-    address: '321 Pine Dr, Forestcity, FC 98765',
-    phone: '(555) 234-5678',
-    email: 'carol.w@example.com'
-  }
-];
 
 const CustomerSelection: React.FC<CustomerSelectionProps> = ({ onSelectCustomer, onAddNewCustomer }) => {
   const [mode, setMode] = useState<'existing' | 'new'>('existing');
@@ -44,7 +19,7 @@ const CustomerSelection: React.FC<CustomerSelectionProps> = ({ onSelectCustomer,
 
   const handleSelectCustomer = (customerId: string) => {
     setSelectedCustomerId(customerId);
-    const customer = customers.find(c => c.id === customerId);
+    const customer = sampleCustomers.find(c => c.id === customerId);
     if (customer) {
       onSelectCustomer(customer);
     }
@@ -59,7 +34,7 @@ const CustomerSelection: React.FC<CustomerSelectionProps> = ({ onSelectCustomer,
     onSelectCustomer(null);
   };
 
-  const selectedCustomer = customers.find(c => c.id === selectedCustomerId);
+  const selectedCustomer = sampleCustomers.find(c => c.id === selectedCustomerId);
 
   return (
     <div className="space-y-4">
@@ -81,7 +56,7 @@ const CustomerSelection: React.FC<CustomerSelectionProps> = ({ onSelectCustomer,
 
       {mode === 'existing' && (
         <ExistingCustomerSelector
-          customers={customers}
+          customers={sampleCustomers}
           selectedCustomer={selectedCustomer}
           selectedCustomerId={selectedCustomerId}
           open={open}
