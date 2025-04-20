@@ -12,6 +12,8 @@ interface EstimateDetailsSectionProps {
   onReferenceChange: (reference: string) => void;
   onCustomerSelect: (customer: any) => void;
   selectedCustomer: any;
+  taxRate?: number;
+  onTaxRateChange?: (rate: number) => void;
 }
 
 const EstimateDetailsSection: React.FC<EstimateDetailsSectionProps> = ({
@@ -21,6 +23,8 @@ const EstimateDetailsSection: React.FC<EstimateDetailsSectionProps> = ({
   onReferenceChange,
   onCustomerSelect,
   selectedCustomer,
+  taxRate,
+  onTaxRateChange,
 }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-b pb-6">
@@ -37,8 +41,26 @@ const EstimateDetailsSection: React.FC<EstimateDetailsSectionProps> = ({
             value={referenceNumber}
             onChange={(e) => onReferenceChange(e.target.value)}
             placeholder="Enter reference number"
+            autoComplete="off"
           />
+          <div className="text-xs text-gray-500 mt-1">Suggested for you, but can be edited as needed.</div>
         </div>
+        {typeof taxRate === "number" && onTaxRateChange && (
+          <div>
+            <Label htmlFor="taxRate">Tax Rate (%)</Label>
+            <Input
+              id="taxRate"
+              type="number"
+              min={0}
+              max={100}
+              step={0.01}
+              value={taxRate}
+              onChange={e => onTaxRateChange(Number(e.target.value))}
+              className="w-32"
+            />
+            <div className="text-xs text-gray-500 mt-1">Customize your sales tax for this estimate.</div>
+          </div>
+        )}
       </div>
       <div>
         <h2 className="text-lg font-semibold mb-4">Customer Information</h2>
@@ -59,4 +81,3 @@ const EstimateDetailsSection: React.FC<EstimateDetailsSectionProps> = ({
 };
 
 export default EstimateDetailsSection;
-

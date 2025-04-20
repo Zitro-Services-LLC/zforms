@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import AppLayout from '../components/layouts/AppLayout';
 import EstimateFormHeader from '../components/estimate/EstimateFormHeader';
 import EstimateDetailsSection from '../components/estimate/EstimateDetailsSection';
@@ -9,6 +9,19 @@ import EstimateTotals from '../components/estimate/EstimateTotals';
 import EstimatePreviewDialog from '../components/estimate/EstimatePreviewDialog';
 import { useToast } from "@/hooks/use-toast";
 import type { LineItem } from '@/types/estimate';
+import { Button } from '@/components/ui/button';
+
+function generateReferenceNumber() {
+  // Example: "EST-20240420-123456" (timestamp-based for uniqueness)
+  const date = new Date();
+  const pad = (n: number) => n.toString().padStart(2, '0');
+  const dateString =
+    date.getFullYear().toString() +
+    pad(date.getMonth() + 1) +
+    pad(date.getDate());
+  const rand = Math.floor(Math.random() * 9000 + 1000);
+  return `EST-${dateString}-${rand}`;
+}
 
 const NewEstimate = () => {
   const { toast } = useToast();
@@ -21,11 +34,21 @@ const NewEstimate = () => {
   const [referenceNumber, setReferenceNumber] = useState('');
   const [showPreview, setShowPreview] = useState(false);
 
+  // New: Editable tax rate (as %)
+  const [taxRate, setTaxRate] = useState(8);
+
   // Track status for save
   const [isSaving, setIsSaving] = useState(false);
 
+  // Generate a reference number suggestion if empty on load
+  useEffect(() => {
+    if (!referenceNumber) {
+      setReferenceNumber(generateReferenceNumber());
+    }
+  }, []); // Only run on mount
+
   const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.rate), 0);
-  const tax = subtotal * 0.08;
+  const tax = subtotal * (taxRate / 100);
   const total = subtotal + tax;
 
   const isReferenceValid = referenceNumber.trim().length > 0;
@@ -33,7 +56,8 @@ const NewEstimate = () => {
   const isItemsValid = items.length > 0 && items.every(
     (item) => item.description.trim().length > 0 && item.quantity > 0 && item.rate > 0
   );
-  const allRequiredValid = isReferenceValid && isCustomerValid && isItemsValid;
+  const isTaxRateValid = !isNaN(taxRate) && taxRate >= 0 && taxRate <= 100;
+  const allRequiredValid = isReferenceValid && isCustomerValid && isItemsValid && isTaxRateValid;
 
   const handleUpdateLineItem = (id: number, field: keyof LineItem, value: string | number) => {
     setItems(items.map(item => {
@@ -89,7 +113,7 @@ const NewEstimate = () => {
       toast({
         title: "Draft Saved",
         description: "Your estimate draft was saved successfully.",
-        variant: "default" // Changed from "success" to "default"
+        variant: "default"
       });
     }, 1000);
   };
@@ -124,6 +148,8 @@ const NewEstimate = () => {
             onReferenceChange={setReferenceNumber}
             onCustomerSelect={handleCustomerSelect}
             selectedCustomer={selectedCustomer}
+            taxRate={taxRate}
+            onTaxRateChange={setTaxRate}
           />
 
           <EstimateItemsSection
@@ -143,6 +169,18 @@ const NewEstimate = () => {
             tax={tax}
             total={total}
           />
+
+          {/* More prominent Save/Submit Estimate button */}
+          <div className="flex flex-col items-end mt-8">
+            <Button
+              size="lg"
+              className="w-64 text-lg font-semibold"
+              disabled={!allRequiredValid || isSaving}
+              onClick={handleSaveDraft}
+            >
+              Save Estimate
+            </Button>
+          </div>
         </div>
       </div>
 
