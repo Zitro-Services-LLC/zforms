@@ -6,8 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Building, Upload } from "lucide-react";
+import { Building, Upload, X, Plus } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { Separator } from "@/components/ui/separator";
+import ContractorLicenseSection from '@/components/profile/ContractorLicenseSection';
+import ContractorPasswordSection from '@/components/profile/ContractorPasswordSection';
+import ContractorPaymentMethodsSection from '@/components/profile/ContractorPaymentMethodsSection';
 
 type ContractorProfileFormValues = {
   companyName: string;
@@ -164,6 +168,18 @@ const ContractorProfile = () => {
                   </div>
                 </div>
               </div>
+
+              <Separator className="my-6" />
+              
+              <ContractorLicenseSection />
+
+              <Separator className="my-6" />
+              
+              <ContractorPasswordSection />
+
+              <Separator className="my-6" />
+              
+              <ContractorPaymentMethodsSection />
               
               <div className="pt-6 flex justify-end">
                 <Button type="submit" className="bg-amber-500 hover:bg-amber-600">
