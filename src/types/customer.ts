@@ -2,7 +2,9 @@
 export interface Customer {
   id: string;
   name: string;
-  address: string;
+  billingAddress: string;
+  propertyAddress: string;
+  sameAsBilling: boolean;
   phone: string;
   email: string;
 }

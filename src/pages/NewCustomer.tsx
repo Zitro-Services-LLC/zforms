@@ -11,7 +11,9 @@ const NewCustomer = () => {
     name: '',
     email: '',
     phone: '',
-    address: '',
+    billingAddress: '',
+    propertyAddress: '',
+    sameAsBilling: true,
   });
 
   const handleCustomerChange = (customer: Omit<Customer, 'id'>) => {
