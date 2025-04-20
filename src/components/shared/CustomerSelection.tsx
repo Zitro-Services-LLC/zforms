@@ -1,26 +1,10 @@
 
 import React, { useState } from 'react';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Check, ChevronsUpDown, UserRound, LogIn } from "lucide-react";
-import { cn } from "@/lib/utils";
-
-interface Customer {
-  id: string;
-  name: string;
-  address: string;
-  phone: string;
-  email: string;
-}
-
-interface CustomerSelectionProps {
-  onSelectCustomer: (customer: Customer | null) => void;
-  onAddNewCustomer: (customerData: Omit<Customer, 'id'>) => void;
-}
+import { Label } from "@/components/ui/label";
+import NewCustomerForm from './NewCustomerForm';
+import ExistingCustomerSelector from './ExistingCustomerSelector';
+import type { Customer, CustomerSelectionProps } from '@/types/customer';
 
 // Sample data - this would come from an API in a real app
 const customers: Customer[] = [
@@ -68,12 +52,11 @@ const CustomerSelection: React.FC<CustomerSelectionProps> = ({ onSelectCustomer,
   };
 
   const handleAddCustomer = () => {
-    // Basic validation
     if (!newCustomer.name || !newCustomer.email) {
       return;
     }
     onAddNewCustomer(newCustomer);
-    onSelectCustomer(null); // Clear any selected customer
+    onSelectCustomer(null);
   };
 
   const selectedCustomer = customers.find(c => c.id === selectedCustomerId);
@@ -97,121 +80,22 @@ const CustomerSelection: React.FC<CustomerSelectionProps> = ({ onSelectCustomer,
       </RadioGroup>
 
       {mode === 'existing' && (
-        <div className="space-y-4">
-          <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                role="combobox"
-                aria-expanded={open}
-                className="w-full justify-between"
-              >
-                {selectedCustomer ? selectedCustomer.name : "Search Customer"}
-                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-full p-0">
-              <Command>
-                <CommandInput placeholder="Search customer..." />
-                <CommandEmpty>No customer found.</CommandEmpty>
-                <CommandGroup>
-                  {/* Ensure we're handling the case where customers might be undefined or empty */}
-                  {Array.isArray(customers) && customers.length > 0 ? (
-                    customers.map((customer) => (
-                      <CommandItem
-                        key={customer.id}
-                        value={customer.id}
-                        onSelect={() => handleSelectCustomer(customer.id)}
-                      >
-                        <Check
-                          className={cn(
-                            "mr-2 h-4 w-4",
-                            selectedCustomerId === customer.id 
-                              ? "opacity-100" 
-                              : "opacity-0"
-                          )}
-                        />
-                        <div className="flex flex-col">
-                          <span>{customer.name}</span>
-                          <span className="text-xs text-muted-foreground">
-                            {customer.email}
-                          </span>
-                        </div>
-                      </CommandItem>
-                    ))
-                  ) : (
-                    <CommandItem disabled>No customers available</CommandItem>
-                  )}
-                </CommandGroup>
-              </Command>
-            </PopoverContent>
-          </Popover>
-          
-          {selectedCustomer && (
-            <div className="rounded-md border p-4 text-sm">
-              <div className="font-medium">{selectedCustomer.name}</div>
-              <div className="text-muted-foreground mt-1">{selectedCustomer.address}</div>
-              <div className="text-muted-foreground">{selectedCustomer.phone}</div>
-              <div className="text-muted-foreground">{selectedCustomer.email}</div>
-            </div>
-          )}
-        </div>
+        <ExistingCustomerSelector
+          customers={customers}
+          selectedCustomer={selectedCustomer}
+          selectedCustomerId={selectedCustomerId}
+          open={open}
+          onOpenChange={setOpen}
+          onSelectCustomer={handleSelectCustomer}
+        />
       )}
 
       {mode === 'new' && (
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 gap-4">
-            <div>
-              <Label htmlFor="name">Full Name</Label>
-              <Input 
-                id="name" 
-                value={newCustomer.name} 
-                onChange={(e) => setNewCustomer({...newCustomer, name: e.target.value})}
-                placeholder="Enter customer name"
-              />
-            </div>
-            <div>
-              <Label htmlFor="address">Address</Label>
-              <Input 
-                id="address" 
-                value={newCustomer.address} 
-                onChange={(e) => setNewCustomer({...newCustomer, address: e.target.value})}
-                placeholder="Enter customer address"
-              />
-            </div>
-            <div>
-              <Label htmlFor="phone">Phone</Label>
-              <Input 
-                id="phone" 
-                value={newCustomer.phone} 
-                onChange={(e) => setNewCustomer({...newCustomer, phone: e.target.value})}
-                placeholder="Enter customer phone number"
-              />
-            </div>
-            <div>
-              <Label htmlFor="email">Email</Label>
-              <Input 
-                id="email" 
-                value={newCustomer.email} 
-                onChange={(e) => setNewCustomer({...newCustomer, email: e.target.value})}
-                placeholder="Enter customer email address"
-              />
-            </div>
-          </div>
-          
-          <Button 
-            onClick={handleAddCustomer}
-            type="button"
-            className="mt-2 bg-amber-500 hover:bg-amber-600"
-          >
-            Add Customer
-          </Button>
-          
-          <div className="mt-2 flex items-center text-xs text-amber-600">
-            <LogIn className="mr-1 h-3 w-3" />
-            <span>New customer will receive an email with login instructions.</span>
-          </div>
-        </div>
+        <NewCustomerForm
+          newCustomer={newCustomer}
+          onCustomerChange={setNewCustomer}
+          onAddCustomer={handleAddCustomer}
+        />
       )}
     </div>
   );
