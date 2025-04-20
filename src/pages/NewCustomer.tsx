@@ -5,11 +5,14 @@ import NewCustomerForm from '@/components/shared/NewCustomerForm';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import type { Customer } from '@/types/customer';
 
 const NewCustomer = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useSupabaseAuth();
+  const [loading, setLoading] = React.useState(false);
   const [newCustomer, setNewCustomer] = React.useState<Omit<Customer, 'id'>>({
     first_name: '',
     last_name: '',
@@ -35,11 +38,9 @@ const NewCustomer = () => {
     }
 
     try {
-      // Get the current user's ID to associate with the customer
-      const { data: { session } } = await supabase.auth.getSession();
-      const user_id = session?.user?.id;
-
-      if (!user_id) {
+      setLoading(true);
+      
+      if (!user?.id) {
         toast({
           title: "Authentication Error",
           description: "You must be logged in to add a customer",
@@ -48,45 +49,21 @@ const NewCustomer = () => {
         return;
       }
 
-      // Check if a customer already exists with this user_id
-      const { data: existingCustomers } = await supabase
-        .from('customers')
-        .select('id')
-        .eq('user_id', user_id);
+      // Insert the new customer into the database
+      const { error } = await supabase.from('customers').insert({
+        user_id: user.id,
+        first_name: newCustomer.first_name,
+        last_name: newCustomer.last_name,
+        email: newCustomer.email,
+        phone: newCustomer.phone || null,
+        billing_address: newCustomer.billing_address || null,
+        property_address: newCustomer.property_address || null,
+        same_as_billing: newCustomer.same_as_billing
+      });
 
-      if (existingCustomers && existingCustomers.length > 0) {
-        // Since we can't modify the user_id column type and it might be used in policies,
-        // we'll generate a unique identifier that matches the expected format
-        // Create a unique string that starts with the user_id
-        const uniqueId = `${user_id}-${Date.now()}`;
-        
-        // Insert the new customer into the database with the unique user_id
-        const { error } = await supabase.from('customers').insert({
-          user_id: uniqueId,
-          first_name: newCustomer.first_name,
-          last_name: newCustomer.last_name,
-          email: newCustomer.email,
-          phone: newCustomer.phone || null,
-          billing_address: newCustomer.billing_address || null,
-          property_address: newCustomer.property_address || null,
-          same_as_billing: newCustomer.same_as_billing
-        });
-
-        if (error) throw error;
-      } else {
-        // If no customer exists with this user_id, we can use it directly
-        const { error } = await supabase.from('customers').insert({
-          user_id,
-          first_name: newCustomer.first_name,
-          last_name: newCustomer.last_name,
-          email: newCustomer.email,
-          phone: newCustomer.phone || null,
-          billing_address: newCustomer.billing_address || null,
-          property_address: newCustomer.property_address || null,
-          same_as_billing: newCustomer.same_as_billing
-        });
-
-        if (error) throw error;
+      if (error) {
+        console.error('Error adding customer:', error);
+        throw error;
       }
 
       toast({
@@ -102,6 +79,8 @@ const NewCustomer = () => {
         description: "Failed to add customer. Please try again.",
         variant: "destructive"
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -116,6 +95,7 @@ const NewCustomer = () => {
             newCustomer={newCustomer}
             onCustomerChange={handleCustomerChange}
             onAddCustomer={handleAddCustomer}
+            loading={loading}
           />
         </div>
       </div>

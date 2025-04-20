@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -20,6 +21,7 @@ import NewContract from "./pages/NewContract";
 import NewInvoice from "./pages/NewInvoice";
 import CustomersList from "./pages/CustomersList";
 import NewCustomer from "./pages/NewCustomer";
+import EditCustomer from "./pages/EditCustomer";
 import AuthPage from "@/pages/AuthPage";
 
 const queryClient = new QueryClient();
@@ -40,6 +42,7 @@ const App = () => (
           <Route path="/profile" element={<ContractorProfile />} />
           <Route path="/customers" element={<CustomersList />} />
           <Route path="/customers/new" element={<NewCustomer />} />
+          <Route path="/customers/edit/:id" element={<EditCustomer />} />
           <Route path="/estimates" element={<EstimatesList />} />
           <Route path="/estimates/new" element={<NewEstimate />} />
           <Route path="/estimates/:id" element={<EstimateManagement userType="contractor" />} />
