@@ -115,28 +115,31 @@ const CustomerSelection: React.FC<CustomerSelectionProps> = ({ onSelectCustomer,
                 <CommandInput placeholder="Search customer..." />
                 <CommandEmpty>No customer found.</CommandEmpty>
                 <CommandGroup>
-                  {customers && customers.length > 0 ? customers.map((customer) => (
-                    <CommandItem
-                      key={customer.id}
-                      value={customer.id}
-                      onSelect={() => handleSelectCustomer(customer.id)}
-                    >
-                      <Check
-                        className={cn(
-                          "mr-2 h-4 w-4",
-                          selectedCustomerId === customer.id 
-                            ? "opacity-100" 
-                            : "opacity-0"
-                        )}
-                      />
-                      <div className="flex flex-col">
-                        <span>{customer.name}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {customer.email}
-                        </span>
-                      </div>
-                    </CommandItem>
-                  )) : (
+                  {/* Ensure we're handling the case where customers might be undefined or empty */}
+                  {Array.isArray(customers) && customers.length > 0 ? (
+                    customers.map((customer) => (
+                      <CommandItem
+                        key={customer.id}
+                        value={customer.id}
+                        onSelect={() => handleSelectCustomer(customer.id)}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            selectedCustomerId === customer.id 
+                              ? "opacity-100" 
+                              : "opacity-0"
+                          )}
+                        />
+                        <div className="flex flex-col">
+                          <span>{customer.name}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {customer.email}
+                          </span>
+                        </div>
+                      </CommandItem>
+                    ))
+                  ) : (
                     <CommandItem disabled>No customers available</CommandItem>
                   )}
                 </CommandGroup>
