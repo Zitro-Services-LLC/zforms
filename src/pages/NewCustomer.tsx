@@ -48,19 +48,44 @@ const NewCustomer = () => {
         return;
       }
 
-      // Insert the new customer into the database
-      const { error } = await supabase.from('customers').insert({
-        user_id,
-        first_name: newCustomer.first_name,
-        last_name: newCustomer.last_name,
-        email: newCustomer.email,
-        phone: newCustomer.phone || null,
-        billing_address: newCustomer.billing_address || null,
-        property_address: newCustomer.property_address || null,
-        same_as_billing: newCustomer.same_as_billing
-      });
+      // Check if a customer already exists with this user_id
+      const { data: existingCustomers } = await supabase
+        .from('customers')
+        .select('id')
+        .eq('user_id', user_id);
 
-      if (error) throw error;
+      if (existingCustomers && existingCustomers.length > 0) {
+        // Generate a unique identifier to append to user_id to make it unique
+        const uniqueId = `${user_id}-${Date.now()}`;
+        
+        // Insert the new customer into the database with the unique user_id
+        const { error } = await supabase.from('customers').insert({
+          user_id: uniqueId,
+          first_name: newCustomer.first_name,
+          last_name: newCustomer.last_name,
+          email: newCustomer.email,
+          phone: newCustomer.phone || null,
+          billing_address: newCustomer.billing_address || null,
+          property_address: newCustomer.property_address || null,
+          same_as_billing: newCustomer.same_as_billing
+        });
+
+        if (error) throw error;
+      } else {
+        // If no customer exists with this user_id, we can use it directly
+        const { error } = await supabase.from('customers').insert({
+          user_id,
+          first_name: newCustomer.first_name,
+          last_name: newCustomer.last_name,
+          email: newCustomer.email,
+          phone: newCustomer.phone || null,
+          billing_address: newCustomer.billing_address || null,
+          property_address: newCustomer.property_address || null,
+          same_as_billing: newCustomer.same_as_billing
+        });
+
+        if (error) throw error;
+      }
 
       toast({
         title: "Customer Added",
