@@ -1,9 +1,15 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
+import Landing from "./pages/Landing";
+import ContractorDashboard from "./pages/ContractorDashboard";
+import CustomerDashboard from "./pages/CustomerDashboard";
+import EstimateManagement from "./pages/EstimateManagement";
+import ContractManagement from "./pages/ContractManagement";
+import InvoiceManagement from "./pages/InvoiceManagement";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -15,8 +21,22 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          {/* Public Routes */}
+          <Route path="/" element={<Landing />} />
+          
+          {/* Contractor Routes */}
+          <Route path="/dashboard" element={<ContractorDashboard />} />
+          <Route path="/estimates/:id" element={<EstimateManagement userType="contractor" />} />
+          <Route path="/contracts/:id" element={<ContractManagement userType="contractor" />} />
+          <Route path="/invoices/:id" element={<InvoiceManagement userType="contractor" />} />
+          
+          {/* Customer Routes */}
+          <Route path="/customer/dashboard" element={<CustomerDashboard />} />
+          <Route path="/customer/estimates/:id" element={<EstimateManagement userType="customer" />} />
+          <Route path="/customer/contracts/:id" element={<ContractManagement userType="customer" />} />
+          <Route path="/customer/invoices/:id" element={<InvoiceManagement userType="customer" />} />
+          
+          {/* Catch-all route for not found pages */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
