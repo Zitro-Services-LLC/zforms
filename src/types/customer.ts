@@ -9,7 +9,7 @@ export interface Customer {
   billing_address: string | null;
   property_address: string | null;
   same_as_billing: boolean;
-  user_id?: string;
+  user_id: string; // Changed from optional to required
 }
 
 export interface CustomerSelectionProps {

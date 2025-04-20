@@ -40,9 +40,23 @@ export async function getCustomerById(customerId: string) {
  * Create a new customer
  */
 export async function createCustomer(customerData: Omit<Customer, 'id'>) {
+  // Ensure customerData has all required fields before proceeding
+  if (!customerData.first_name || !customerData.last_name || !customerData.email || !customerData.user_id) {
+    throw new Error('Required customer fields missing');
+  }
+  
   const { data, error } = await supabase
     .from('customers')
-    .insert(customerData)
+    .insert({
+      first_name: customerData.first_name,
+      last_name: customerData.last_name,
+      email: customerData.email,
+      phone: customerData.phone,
+      billing_address: customerData.billing_address,
+      property_address: customerData.property_address,
+      same_as_billing: customerData.same_as_billing,
+      user_id: customerData.user_id
+    })
     .select()
     .single();
   

@@ -4,8 +4,8 @@ import AppLayout from '@/components/layouts/AppLayout';
 import NewCustomerForm from '@/components/shared/NewCustomerForm';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/components/ui/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
+import { createCustomer } from '@/services/customerService';
 import type { Customer } from '@/types/customer';
 
 const NewCustomer = () => {
@@ -21,6 +21,7 @@ const NewCustomer = () => {
     billing_address: '',
     property_address: '',
     same_as_billing: true,
+    user_id: '', // This will be set in handleAddCustomer
   });
 
   const handleCustomerChange = (customer: Omit<Customer, 'id'>) => {
@@ -49,22 +50,14 @@ const NewCustomer = () => {
         return;
       }
 
-      // Insert the new customer into the database
-      const { error } = await supabase.from('customers').insert({
-        user_id: user.id,
-        first_name: newCustomer.first_name,
-        last_name: newCustomer.last_name,
-        email: newCustomer.email,
-        phone: newCustomer.phone || null,
-        billing_address: newCustomer.billing_address || null,
-        property_address: newCustomer.property_address || null,
-        same_as_billing: newCustomer.same_as_billing
-      });
+      // Create a complete customer object with the user_id
+      const customerToCreate = {
+        ...newCustomer,
+        user_id: user.id
+      };
 
-      if (error) {
-        console.error('Error adding customer:', error);
-        throw error;
-      }
+      // Use the customerService to create the customer
+      await createCustomer(customerToCreate);
 
       toast({
         title: "Customer Added",

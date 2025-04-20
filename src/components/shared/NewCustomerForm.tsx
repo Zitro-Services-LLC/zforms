@@ -16,13 +16,16 @@ const customerSchema = z.object({
   first_name: z.string().min(1, "First name is required"),
   last_name: z.string().min(1, "Last name is required"),
   email: z.string().email("Invalid email address"),
-  phone: z.string().optional(),
-  billing_address: z.string().optional(),
-  property_address: z.string().optional(),
+  phone: z.string().optional().nullable(),
+  billing_address: z.string().optional().nullable(),
+  property_address: z.string().optional().nullable(),
   same_as_billing: z.boolean().default(true),
   profile_image_url: z.string().nullable().optional(),
-  user_id: z.string().optional()
+  user_id: z.string().optional() // Will be filled by the parent component
 });
+
+// Create a type for the form data based on the schema
+type CustomerFormData = z.infer<typeof customerSchema>;
 
 interface NewCustomerFormProps {
   newCustomer: Omit<Customer, 'id'>;
@@ -37,7 +40,7 @@ const NewCustomerForm: React.FC<NewCustomerFormProps> = ({
   onAddCustomer,
   loading = false,
 }) => {
-  const form = useForm<z.infer<typeof customerSchema>>({
+  const form = useForm<CustomerFormData>({
     resolver: zodResolver(customerSchema),
     defaultValues: {
       first_name: newCustomer.first_name || '',
@@ -47,8 +50,8 @@ const NewCustomerForm: React.FC<NewCustomerFormProps> = ({
       billing_address: newCustomer.billing_address || '',
       property_address: newCustomer.property_address || '',
       same_as_billing: newCustomer.same_as_billing,
-      profile_image_url: null,
-      user_id: undefined
+      profile_image_url: newCustomer.profile_image_url || null,
+      user_id: newCustomer.user_id
     }
   });
 
@@ -61,8 +64,22 @@ const NewCustomerForm: React.FC<NewCustomerFormProps> = ({
     }
   }, [sameAsBilling, form]);
 
-  const onSubmit = (data: z.infer<typeof customerSchema>) => {
-    onCustomerChange(data);
+  const onSubmit = (data: CustomerFormData) => {
+    // Convert the form data to the expected Customer type
+    // Ensure required fields are present and optional fields are handled correctly
+    const customerData: Omit<Customer, 'id'> = {
+      first_name: data.first_name,
+      last_name: data.last_name,
+      email: data.email,
+      phone: data.phone || null,
+      billing_address: data.billing_address || null,
+      property_address: data.property_address || null,
+      same_as_billing: data.same_as_billing,
+      profile_image_url: data.profile_image_url || null,
+      user_id: newCustomer.user_id // Preserve the user_id from parent component
+    };
+    
+    onCustomerChange(customerData);
     onAddCustomer();
   };
 
