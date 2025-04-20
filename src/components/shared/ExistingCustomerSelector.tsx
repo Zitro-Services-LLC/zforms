@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
@@ -80,7 +79,7 @@ const ExistingCustomerSelector: React.FC<ExistingCustomerSelectorProps> = ({
       {selectedCustomer && (
         <div className="rounded-md border p-4 text-sm">
           <div className="font-medium">{selectedCustomer.name}</div>
-          <div className="text-muted-foreground mt-1">{selectedCustomer.address}</div>
+          <div className="text-muted-foreground mt-1">{selectedCustomer.billingAddress}</div>
           <div className="text-muted-foreground">{selectedCustomer.phone}</div>
           <div className="text-muted-foreground">{selectedCustomer.email}</div>
         </div>

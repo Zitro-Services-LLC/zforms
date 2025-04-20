@@ -10,9 +10,11 @@ const CustomerSelection: React.FC<CustomerSelectionProps> = ({ onSelectCustomer,
   const [mode, setMode] = useState<'existing' | 'new'>('existing');
   const [open, setOpen] = useState(false);
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>('');
-  const [newCustomer, setNewCustomer] = useState({
+  const [newCustomer, setNewCustomer] = useState<Omit<Customer, 'id'>>({
     name: '',
-    address: '',
+    billingAddress: '',
+    propertyAddress: '',
+    sameAsBilling: true,
     phone: '',
     email: ''
   });
