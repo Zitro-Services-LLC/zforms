@@ -3,6 +3,7 @@ import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import CustomerSelection from '../shared/CustomerSelection';
+import DatePickerField from './DatePickerField';
 
 interface EstimateDetailsSectionProps {
   estimateDate: string;
@@ -10,6 +11,7 @@ interface EstimateDetailsSectionProps {
   onDateChange: (date: string) => void;
   onReferenceChange: (reference: string) => void;
   onCustomerSelect: (customer: any) => void;
+  selectedCustomer: any;
 }
 
 const EstimateDetailsSection: React.FC<EstimateDetailsSectionProps> = ({
@@ -18,19 +20,16 @@ const EstimateDetailsSection: React.FC<EstimateDetailsSectionProps> = ({
   onDateChange,
   onReferenceChange,
   onCustomerSelect,
+  selectedCustomer,
 }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-b pb-6">
       <div className="space-y-4">
-        <div>
-          <Label htmlFor="estimate-date">Estimate Date</Label>
-          <Input
-            id="estimate-date"
-            type="date"
-            value={estimateDate}
-            onChange={(e) => onDateChange(e.target.value)}
-          />
-        </div>
+        <DatePickerField
+          label="Estimate Date"
+          value={estimateDate}
+          onChange={onDateChange}
+        />
         <div>
           <Label htmlFor="reference">Reference Number</Label>
           <Input
@@ -46,12 +45,18 @@ const EstimateDetailsSection: React.FC<EstimateDetailsSectionProps> = ({
         <CustomerSelection 
           onSelectCustomer={onCustomerSelect}
           onAddNewCustomer={(customerData) => {
-            console.log('New customer data:', customerData);
+            // No-op, managed in parent
           }}
         />
+        {selectedCustomer && (
+          <div className="mt-2 text-xs text-green-700 bg-green-50 px-2 py-1 rounded">
+            Selected: <span className="font-semibold">{selectedCustomer.name}</span>
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
 export default EstimateDetailsSection;
+

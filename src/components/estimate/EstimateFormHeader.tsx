@@ -2,13 +2,15 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Eye } from 'lucide-react';
+import { Eye, Save } from 'lucide-react';
 
 interface EstimateFormHeaderProps {
   onPreview: () => void;
+  onSave: () => void;
+  disableActions?: boolean;
 }
 
-const EstimateFormHeader: React.FC<EstimateFormHeaderProps> = ({ onPreview }) => {
+const EstimateFormHeader: React.FC<EstimateFormHeaderProps> = ({ onPreview, onSave, disableActions }) => {
   const navigate = useNavigate();
 
   return (
@@ -18,14 +20,18 @@ const EstimateFormHeader: React.FC<EstimateFormHeaderProps> = ({ onPreview }) =>
         <Button variant="outline" onClick={() => navigate('/estimates')}>
           Cancel
         </Button>
-        <Button variant="outline" onClick={onPreview}>
+        <Button variant="outline" onClick={onPreview} disabled={disableActions}>
           <Eye className="mr-2 h-4 w-4" />
           Preview
         </Button>
-        <Button>Save as Draft</Button>
+        <Button onClick={onSave} disabled={disableActions}>
+          <Save className="mr-2 h-4 w-4" />
+          Save as Draft
+        </Button>
       </div>
     </div>
   );
 };
 
 export default EstimateFormHeader;
+
