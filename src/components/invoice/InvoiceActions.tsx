@@ -8,6 +8,7 @@ interface InvoiceActionsProps {
   onMarkPaid: () => void;
   onMakePayment: () => void;
   showPaymentOptions: boolean;
+  onRequestChanges?: () => void;
 }
 
 const InvoiceActions: React.FC<InvoiceActionsProps> = ({
@@ -15,7 +16,8 @@ const InvoiceActions: React.FC<InvoiceActionsProps> = ({
   status,
   onMarkPaid,
   onMakePayment,
-  showPaymentOptions
+  showPaymentOptions,
+  onRequestChanges
 }) => {
   return (
     <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
@@ -43,12 +45,22 @@ const InvoiceActions: React.FC<InvoiceActionsProps> = ({
       ) : (
         <div className="flex justify-end space-x-4">
           {status === 'submitted' && !showPaymentOptions && (
-            <button 
-              onClick={onMakePayment}
-              className="btn-amber"
-            >
-              Make Payment
-            </button>
+            <>
+              {onRequestChanges && (
+                <button 
+                  onClick={onRequestChanges}
+                  className="px-4 py-2 bg-white border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                >
+                  Request Changes
+                </button>
+              )}
+              <button 
+                onClick={onMakePayment}
+                className="btn-amber"
+              >
+                Make Payment
+              </button>
+            </>
           )}
         </div>
       )}

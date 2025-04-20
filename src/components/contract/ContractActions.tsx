@@ -1,14 +1,21 @@
 
 import React, { useState } from 'react';
 import { Status } from '../shared/StatusBadge';
+import ChangeRequestModal from '../shared/ChangeRequestModal';
 
 interface ContractActionsProps {
   userType: 'contractor' | 'customer';
   status: Status;
   onStatusChange: (newStatus: Status) => void;
+  onRequestChanges?: () => void;
 }
 
-const ContractActions: React.FC<ContractActionsProps> = ({ userType, status, onStatusChange }) => {
+const ContractActions: React.FC<ContractActionsProps> = ({ 
+  userType, 
+  status, 
+  onStatusChange,
+  onRequestChanges 
+}) => {
   const [showCommentBox, setShowCommentBox] = useState(false);
   const [commentText, setCommentText] = useState('');
 
@@ -26,6 +33,14 @@ const ContractActions: React.FC<ContractActionsProps> = ({ userType, status, onS
 
   const handleReviseContract = () => {
     onStatusChange('drafting');
+  };
+
+  const handleRequestChangesClick = () => {
+    if (onRequestChanges) {
+      onRequestChanges();
+    } else {
+      setShowCommentBox(true);
+    }
   };
 
   return (
@@ -59,7 +74,7 @@ const ContractActions: React.FC<ContractActionsProps> = ({ userType, status, onS
           {status === 'submitted' && !showCommentBox && (
             <>
               <button 
-                onClick={() => setShowCommentBox(true)}
+                onClick={handleRequestChangesClick}
                 className="px-4 py-2 bg-white border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
               >
                 Request Changes
