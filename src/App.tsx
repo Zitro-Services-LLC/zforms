@@ -18,6 +18,7 @@ import InvoicesList from "./pages/InvoicesList";
 import NewEstimate from "./pages/NewEstimate";
 import NewContract from "./pages/NewContract";
 import NewInvoice from "./pages/NewInvoice";
+import CustomersList from "./pages/CustomersList";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +35,7 @@ const App = () => (
           {/* Contractor Routes */}
           <Route path="/dashboard" element={<ContractorDashboard />} />
           <Route path="/profile" element={<ContractorProfile />} />
+          <Route path="/customers" element={<CustomersList />} />
           <Route path="/estimates" element={<EstimatesList />} />
           <Route path="/estimates/new" element={<NewEstimate />} />
           <Route path="/estimates/:id" element={<EstimateManagement userType="contractor" />} />

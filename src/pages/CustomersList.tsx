@@ -1,0 +1,76 @@
+
+import React from 'react';
+import AppLayout from '@/components/layouts/AppLayout';
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableCell,
+} from "@/components/ui/table";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { UserRound, Edit, Trash } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
+const CustomersList = () => {
+  const mockCustomers = [
+    { id: '1', name: 'Alice Smith', email: 'alice@example.com', phone: '(555) 123-4567', address: '123 Main St' },
+    { id: '2', name: 'Bob Johnson', email: 'bob@example.com', phone: '(555) 234-5678', address: '456 Oak Ave' },
+  ];
+
+  return (
+    <AppLayout userType="contractor">
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold tracking-tight">Customers</h1>
+          <Button>
+            <UserRound className="h-4 w-4 mr-2" />
+            Add Customer
+          </Button>
+        </div>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle>All Customers</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Phone</TableHead>
+                  <TableHead>Address</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {mockCustomers.map((customer) => (
+                  <TableRow key={customer.id}>
+                    <TableCell>{customer.name}</TableCell>
+                    <TableCell>{customer.email}</TableCell>
+                    <TableCell>{customer.phone}</TableCell>
+                    <TableCell>{customer.address}</TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        <Button size="icon" variant="ghost">
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button size="icon" variant="ghost">
+                          <Trash className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      </div>
+    </AppLayout>
+  );
+};
+
+export default CustomersList;
