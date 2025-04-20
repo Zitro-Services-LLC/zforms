@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AppLayout from '@/components/layouts/AppLayout';
 import {
@@ -13,10 +13,20 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Edit, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import type { Customer } from '@/types/customer';
 
-const CustomersList = () => {
-  const navigate = useNavigate();
-  const mockCustomers = [
+function getStoredCustomers(): Customer[] {
+  const local = window.localStorage.getItem('customers');
+  try {
+    return local ? JSON.parse(local) : [];
+  } catch {
+    return [];
+  }
+}
+
+// Provide some default sample data on very first load (optional)
+function getInitialCustomers(): Customer[] {
+  const preset: Customer[] = [
     { 
       id: '1', 
       name: 'Alice Smith', 
@@ -36,6 +46,27 @@ const CustomersList = () => {
       sameAsBilling: false
     },
   ];
+  if (!window.localStorage.getItem('customers')) {
+    window.localStorage.setItem('customers', JSON.stringify(preset));
+    return preset;
+  }
+  return getStoredCustomers();
+}
+
+const CustomersList = () => {
+  const navigate = useNavigate();
+  const [customers, setCustomers] = useState<Customer[]>([]);
+
+  useEffect(() => {
+    setCustomers(getInitialCustomers());
+  }, []);
+
+  useEffect(() => {
+    // Listen for cross-tab updates (edge case)
+    const listener = () => setCustomers(getStoredCustomers());
+    window.addEventListener('storage', listener);
+    return () => window.removeEventListener('storage', listener);
+  }, []);
 
   return (
     <AppLayout userType="contractor">
@@ -65,7 +96,7 @@ const CustomersList = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {mockCustomers.map((customer) => (
+                {customers.map((customer) => (
                   <TableRow key={customer.id}>
                     <TableCell>{customer.name}</TableCell>
                     <TableCell>{customer.email}</TableCell>

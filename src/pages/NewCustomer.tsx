@@ -5,6 +5,19 @@ import NewCustomerForm from '@/components/shared/NewCustomerForm';
 import { useNavigate } from 'react-router-dom';
 import type { Customer } from '@/types/customer';
 
+function getStoredCustomers(): Customer[] {
+  const local = window.localStorage.getItem('customers');
+  try {
+    return local ? JSON.parse(local) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveCustomers(customers: Customer[]) {
+  window.localStorage.setItem('customers', JSON.stringify(customers));
+}
+
 const NewCustomer = () => {
   const navigate = useNavigate();
   const [newCustomer, setNewCustomer] = React.useState<Omit<Customer, 'id'>>({
@@ -21,7 +34,12 @@ const NewCustomer = () => {
   };
 
   const handleAddCustomer = () => {
-    // TODO: Implement API call to add customer
+    if (!newCustomer.name || !newCustomer.email) return;
+    // Save to localStorage
+    const allCustomers = getStoredCustomers();
+    const id = 'new-' + Date.now();
+    const customer: Customer = { id, ...newCustomer };
+    saveCustomers([...allCustomers, customer]);
     navigate('/customers');
   };
 
