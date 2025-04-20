@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import AppLayout from '../components/layouts/AppLayout';
@@ -10,6 +11,9 @@ import InvoicePaymentHistory from '../components/invoice/InvoicePaymentHistory';
 import InvoiceTotals from '../components/invoice/InvoiceTotals';
 import InvoicePaymentOptions from '../components/invoice/InvoicePaymentOptions';
 import InvoiceActions from '../components/invoice/InvoiceActions';
+import CustomerSelection from '../components/shared/CustomerSelection';
+import ChangeRequestModal from '../components/shared/ChangeRequestModal';
+import { useToast } from "@/components/ui/use-toast";
 
 // Mock data for the invoice
 const invoiceData = {
@@ -62,12 +66,18 @@ interface InvoiceManagementProps {
 
 const InvoiceManagement: React.FC<InvoiceManagementProps> = ({ userType = 'contractor' }) => {
   const { id } = useParams<{ id: string }>();
+  const { toast } = useToast();
   const [status, setStatus] = useState<Status>(invoiceData.status);
   const [showPaymentOptions, setShowPaymentOptions] = useState(false);
+  const [showChangeRequestModal, setShowChangeRequestModal] = useState(false);
+  const [customer, setCustomer] = useState(invoiceData.customer);
   
   const handleMarkPaid = () => {
     setStatus('paid');
-    console.log(`Invoice ${id} marked as paid`);
+    toast({
+      title: "Invoice Marked as Paid",
+      description: `Invoice #${id} has been marked as paid.`
+    });
   };
 
   const handleMakePayment = () => {
@@ -76,11 +86,47 @@ const InvoiceManagement: React.FC<InvoiceManagementProps> = ({ userType = 'contr
 
   const handlePaymentSubmit = (method: string) => {
     setStatus('paid');
-    console.log(`Payment made for invoice ${id} via ${method}`);
+    toast({
+      title: "Payment Successful",
+      description: `Your payment for invoice #${id} via ${method} has been processed.`
+    });
     setShowPaymentOptions(false);
+  };
+  
+  const handleRequestChanges = (comments: string) => {
+    setStatus('needs-update');
+    setShowChangeRequestModal(false);
+    toast({
+      title: "Changes Requested",
+      description: "Your change request has been submitted to the contractor."
+    });
+  };
+  
+  const handleSelectCustomer = (selectedCustomer: any) => {
+    if (selectedCustomer) {
+      setCustomer(selectedCustomer);
+      toast({
+        title: "Customer Selected",
+        description: `Selected ${selectedCustomer.name} for this invoice.`,
+      });
+    }
+  };
+  
+  const handleAddNewCustomer = (customerData: any) => {
+    setCustomer({
+      ...customerData,
+      id: `CUST-${Math.floor(Math.random() * 1000)}`
+    });
+    toast({
+      title: "New Customer Added",
+      description: `Added ${customerData.name} as a new customer.`,
+    });
   };
 
   const totalAmountPaid = invoiceData.paymentHistory.reduce((sum, item) => sum + item.amount, 0);
+  
+  // Company logo placeholder - in a real app, this would come from the user's profile
+  const companyLogo = null; // Replace with actual logo URL when available
 
   return (
     <AppLayout userType={userType}>
@@ -92,11 +138,22 @@ const InvoiceManagement: React.FC<InvoiceManagementProps> = ({ userType = 'contr
             date={invoiceData.date}
             dueDate={invoiceData.dueDate}
             status={status}
+            companyLogo={companyLogo}
           />
+          
+          {userType === 'contractor' && (
+            <div className="px-6 py-4 bg-gray-50 border-b">
+              <h3 className="text-sm font-semibold text-gray-700 mb-3">CUSTOMER INFORMATION</h3>
+              <CustomerSelection 
+                onSelectCustomer={handleSelectCustomer}
+                onAddNewCustomer={handleAddNewCustomer}
+              />
+            </div>
+          )}
           
           <InvoicePartyInfo
             contractor={invoiceData.contractor}
-            customer={invoiceData.customer}
+            customer={customer}
           />
           
           <InvoiceReference
@@ -134,7 +191,15 @@ const InvoiceManagement: React.FC<InvoiceManagementProps> = ({ userType = 'contr
             status={status}
             onMarkPaid={handleMarkPaid}
             onMakePayment={handleMakePayment}
+            onRequestChanges={() => setShowChangeRequestModal(true)}
             showPaymentOptions={showPaymentOptions}
+          />
+          
+          <ChangeRequestModal
+            isOpen={showChangeRequestModal}
+            onClose={() => setShowChangeRequestModal(false)}
+            onSubmit={handleRequestChanges}
+            documentType="invoice"
           />
         </div>
       </div>

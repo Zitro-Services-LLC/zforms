@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import AppLayout from '../components/layouts/AppLayout';
@@ -8,6 +9,9 @@ import ContractSections from '../components/contract/ContractSections';
 import ContractTotal from '../components/contract/ContractTotal';
 import ContractSignatures from '../components/contract/ContractSignatures';
 import ContractActions from '../components/contract/ContractActions';
+import CustomerSelection from '../components/shared/CustomerSelection';
+import ChangeRequestModal from '../components/shared/ChangeRequestModal';
+import { useToast } from "@/components/ui/use-toast";
 
 // Mock data for the contract
 const contractData = {
@@ -80,7 +84,51 @@ interface ContractManagementProps {
 
 const ContractManagement: React.FC<ContractManagementProps> = ({ userType = 'contractor' }) => {
   const { id } = useParams<{ id: string }>();
+  const { toast } = useToast();
   const [status, setStatus] = useState<Status>(contractData.status);
+  const [showChangeRequestModal, setShowChangeRequestModal] = useState(false);
+  const [customer, setCustomer] = useState(contractData.customer);
+  
+  const handleStatusChange = (newStatus: Status) => {
+    setStatus(newStatus);
+    toast({
+      title: "Status Updated",
+      description: `Contract #${id} status changed to ${newStatus}.`,
+    });
+  };
+  
+  const handleRequestChanges = (comments: string) => {
+    setStatus('needs-update');
+    setShowChangeRequestModal(false);
+    toast({
+      title: "Changes Requested",
+      description: "Your change request has been submitted to the contractor.",
+    });
+  };
+  
+  const handleSelectCustomer = (selectedCustomer: any) => {
+    if (selectedCustomer) {
+      setCustomer(selectedCustomer);
+      toast({
+        title: "Customer Selected",
+        description: `Selected ${selectedCustomer.name} for this contract.`,
+      });
+    }
+  };
+  
+  const handleAddNewCustomer = (customerData: any) => {
+    setCustomer({
+      ...customerData,
+      id: `CUST-${Math.floor(Math.random() * 1000)}`
+    });
+    toast({
+      title: "New Customer Added",
+      description: `Added ${customerData.name} as a new customer.`,
+    });
+  };
+  
+  // Company logo placeholder - in a real app, this would come from the user's profile
+  const companyLogo = null; // Replace with actual logo URL when available
   
   return (
     <AppLayout userType={userType}>
@@ -91,11 +139,22 @@ const ContractManagement: React.FC<ContractManagementProps> = ({ userType = 'con
             jobId={contractData.jobId}
             status={status}
             date={contractData.date}
+            companyLogo={companyLogo}
           />
+          
+          {userType === 'contractor' && (
+            <div className="px-6 py-4 bg-gray-50 border-b">
+              <h3 className="text-sm font-semibold text-gray-700 mb-3">CUSTOMER INFORMATION</h3>
+              <CustomerSelection 
+                onSelectCustomer={handleSelectCustomer}
+                onAddNewCustomer={handleAddNewCustomer}
+              />
+            </div>
+          )}
           
           <ContractPartyInfo
             contractor={contractData.contractor}
-            customer={contractData.customer}
+            customer={customer}
           />
           
           <ContractSections sections={contractData.sections} />
@@ -105,14 +164,22 @@ const ContractManagement: React.FC<ContractManagementProps> = ({ userType = 'con
           <ContractSignatures
             status={status}
             contractorName={contractData.contractor.name}
-            customerName={contractData.customer.name}
+            customerName={customer.name}
             date={contractData.date}
           />
 
           <ContractActions
             userType={userType}
             status={status}
-            onStatusChange={setStatus}
+            onStatusChange={handleStatusChange}
+            onRequestChanges={() => setShowChangeRequestModal(true)}
+          />
+          
+          <ChangeRequestModal
+            isOpen={showChangeRequestModal}
+            onClose={() => setShowChangeRequestModal(false)}
+            onSubmit={handleRequestChanges}
+            documentType="contract"
           />
         </div>
       </div>

@@ -9,11 +9,11 @@ const HeroSection = () => {
         <div className="lg:grid lg:grid-cols-12 lg:gap-8">
           <div className="lg:col-span-6">
             <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl md:text-6xl">
-              <span className="block">Simplify Your</span>
-              <span className="block text-amber-500">Contractor Paperwork</span>
+              <span className="block">Streamline Your</span>
+              <span className="block text-amber-500">Home Renovation Business</span>
             </h1>
             <p className="mt-6 text-lg text-gray-600">
-              Create, send, and manage estimates, contracts, and invoices all in one place. 
+              Estimates, Contracts & Invoices Made Easy for Home Improvement Contractors. 
               Save time, get paid faster, and provide a better experience for your customers.
             </p>
             <div className="mt-10">
@@ -44,7 +44,7 @@ const HeroSection = () => {
                 </svg>
                 <img 
                   src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80"
-                  alt="Contractor using laptop" 
+                  alt="Home Improvement Contractor using laptop" 
                   className="w-full h-full object-cover opacity-75"
                 />
               </div>

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import AppLayout from '../components/layouts/AppLayout';
@@ -7,6 +8,9 @@ import EstimatePartyInfo from '../components/estimate/EstimatePartyInfo';
 import EstimateLineItems from '../components/estimate/EstimateLineItems';
 import EstimateTotals from '../components/estimate/EstimateTotals';
 import EstimateActions from '../components/estimate/EstimateActions';
+import CustomerSelection from '../components/shared/CustomerSelection';
+import ChangeRequestModal from '../components/shared/ChangeRequestModal';
+import { useToast } from "@/components/ui/use-toast";
 
 // Mock data for the estimate
 const estimateData = {
@@ -44,37 +48,70 @@ interface EstimateManagementProps {
 
 const EstimateManagement: React.FC<EstimateManagementProps> = ({ userType = 'contractor' }) => {
   const { id } = useParams<{ id: string }>();
+  const { toast } = useToast();
   const [status, setStatus] = useState<Status>(estimateData.status);
   const [showCommentBox, setShowCommentBox] = useState(false);
   const [commentText, setCommentText] = useState('');
+  const [showChangeRequestModal, setShowChangeRequestModal] = useState(false);
+  const [customer, setCustomer] = useState(estimateData.customer);
   
   const handleApproveEstimate = () => {
     setStatus('approved');
-    console.log(`Estimate ${id} approved`);
-    // In a real app, this would send an API request
+    toast({
+      title: "Estimate Approved",
+      description: `Estimate #${id} has been approved.`,
+    });
   };
 
-  const handleRequestChanges = () => {
-    if (commentText.trim()) {
-      setStatus('needs-update');
-      console.log(`Changes requested for estimate ${id}: ${commentText}`);
-      setShowCommentBox(false);
-      setCommentText('');
-      // In a real app, this would send an API request
-    }
+  const handleRequestChanges = (comments: string) => {
+    setStatus('needs-update');
+    setCommentText(comments);
+    setShowChangeRequestModal(false);
+    toast({
+      title: "Changes Requested",
+      description: "Your change request has been submitted to the contractor.",
+    });
   };
 
   const handleMarkApproved = () => {
     setStatus('approved');
-    console.log(`Marked estimate ${id} as approved`);
-    // In a real app, this would send an API request
+    toast({
+      title: "Status Updated",
+      description: `Estimate #${id} status updated to Approved.`,
+    });
   };
 
   const handleReviseEstimate = () => {
     setStatus('drafting');
-    console.log(`Estimate ${id} revision started`);
-    // In a real app, this would navigate to an edit interface
+    toast({
+      title: "Revision Started",
+      description: `Estimate #${id} revision has been started.`,
+    });
   };
+  
+  const handleSelectCustomer = (selectedCustomer: any) => {
+    if (selectedCustomer) {
+      setCustomer(selectedCustomer);
+      toast({
+        title: "Customer Selected",
+        description: `Selected ${selectedCustomer.name} for this estimate.`,
+      });
+    }
+  };
+  
+  const handleAddNewCustomer = (customerData: any) => {
+    setCustomer({
+      ...customerData,
+      id: `CUST-${Math.floor(Math.random() * 1000)}`
+    });
+    toast({
+      title: "New Customer Added",
+      description: `Added ${customerData.name} as a new customer.`,
+    });
+  };
+
+  // Company logo placeholder - in a real app, this would come from the user's profile
+  const companyLogo = null; // Replace with actual logo URL when available
 
   return (
     <AppLayout userType={userType}>
@@ -85,11 +122,22 @@ const EstimateManagement: React.FC<EstimateManagementProps> = ({ userType = 'con
             jobId={estimateData.jobId}
             status={status}
             date={estimateData.date}
+            companyLogo={companyLogo}
           />
+          
+          {userType === 'contractor' && (
+            <div className="px-6 py-4 bg-gray-50 border-b">
+              <h3 className="text-sm font-semibold text-gray-700 mb-3">CUSTOMER INFORMATION</h3>
+              <CustomerSelection 
+                onSelectCustomer={handleSelectCustomer}
+                onAddNewCustomer={handleAddNewCustomer}
+              />
+            </div>
+          )}
           
           <EstimatePartyInfo
             contractor={estimateData.contractor}
-            customer={estimateData.customer}
+            customer={customer}
           />
 
           <div className="px-6 document-section">
@@ -118,7 +166,7 @@ const EstimateManagement: React.FC<EstimateManagementProps> = ({ userType = 'con
                 <h3 className="text-sm font-semibold text-gray-500 mb-3">CUSTOMER SIGNATURE</h3>
                 <div className="h-20 bg-gray-50 border border-gray-200 rounded flex items-center justify-center">
                   {status === 'approved' ? (
-                    <span className="text-gray-400 italic">Electronically signed by Alice Smith</span>
+                    <span className="text-gray-400 italic">Electronically signed by {customer.name}</span>
                   ) : (
                     <span className="text-gray-400 italic">Awaiting signature</span>
                   )}
@@ -131,14 +179,21 @@ const EstimateManagement: React.FC<EstimateManagementProps> = ({ userType = 'con
             status={status}
             userType={userType}
             onApprove={handleApproveEstimate}
-            onRequestChanges={() => setShowCommentBox(true)}
+            onRequestChanges={() => setShowChangeRequestModal(true)}
             onMarkApproved={handleMarkApproved}
             onRevise={handleReviseEstimate}
             showCommentBox={showCommentBox}
             commentText={commentText}
             onCommentChange={(text) => setCommentText(text)}
             onCancelComment={() => setShowCommentBox(false)}
-            onSubmitRequest={handleRequestChanges}
+            onSubmitRequest={() => handleRequestChanges(commentText)}
+          />
+          
+          <ChangeRequestModal
+            isOpen={showChangeRequestModal}
+            onClose={() => setShowChangeRequestModal(false)}
+            onSubmit={handleRequestChanges}
+            documentType="estimate"
           />
         </div>
       </div>
