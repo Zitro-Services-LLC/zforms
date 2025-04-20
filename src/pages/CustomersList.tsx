@@ -1,5 +1,5 @@
-
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import AppLayout from '@/components/layouts/AppLayout';
 import {
   Table,
@@ -10,10 +10,11 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { UserRound, Edit, Trash } from "lucide-react";
+import { Plus, Edit, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const CustomersList = () => {
+  const navigate = useNavigate();
   const mockCustomers = [
     { id: '1', name: 'Alice Smith', email: 'alice@example.com', phone: '(555) 123-4567', address: '123 Main St' },
     { id: '2', name: 'Bob Johnson', email: 'bob@example.com', phone: '(555) 234-5678', address: '456 Oak Ave' },
@@ -24,8 +25,8 @@ const CustomersList = () => {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold tracking-tight">Customers</h1>
-          <Button>
-            <UserRound className="h-4 w-4 mr-2" />
+          <Button onClick={() => navigate('/customers/new')}>
+            <Plus className="h-4 w-4 mr-2" />
             Add Customer
           </Button>
         </div>
