@@ -22,21 +22,22 @@ const NewCustomerForm: React.FC<NewCustomerFormProps> = ({
 }) => {
   const form = useForm<Omit<Customer, 'id'>>({
     defaultValues: {
-      name: '',
+      first_name: '',
+      last_name: '',
       email: '',
       phone: '',
-      billingAddress: '',
-      propertyAddress: '',
-      sameAsBilling: true,
+      billing_address: '',
+      property_address: '',
+      same_as_billing: true,
     }
   });
 
-  const sameAsBilling = form.watch('sameAsBilling');
+  const sameAsBilling = form.watch('same_as_billing');
 
   React.useEffect(() => {
     if (sameAsBilling) {
-      const billingAddress = form.getValues('billingAddress');
-      form.setValue('propertyAddress', billingAddress);
+      const billingAddress = form.getValues('billing_address');
+      form.setValue('property_address', billingAddress || '');
     }
   }, [sameAsBilling, form]);
 
@@ -48,15 +49,15 @@ const NewCustomerForm: React.FC<NewCustomerFormProps> = ({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <div className="grid grid-cols-1 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
-            name="name"
+            name="first_name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Full Name</FormLabel>
+                <FormLabel>First Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter customer name" {...field} />
+                  <Input placeholder="Enter first name" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -65,13 +66,65 @@ const NewCustomerForm: React.FC<NewCustomerFormProps> = ({
 
           <FormField
             control={form.control}
-            name="billingAddress"
+            name="last_name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Billing Address</FormLabel>
+                <FormLabel>Last Name</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter last name" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <FormField
+          control={form.control}
+          name="billing_address"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Billing Address</FormLabel>
+              <FormControl>
+                <Textarea 
+                  placeholder="Enter billing address"
+                  className="min-h-[80px]"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="same_as_billing"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <FormLabel className="font-normal">
+                Property Address is same as Billing Address
+              </FormLabel>
+            </FormItem>
+          )}
+        />
+
+        {!sameAsBilling && (
+          <FormField
+            control={form.control}
+            name="property_address"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Property Address</FormLabel>
                 <FormControl>
                   <Textarea 
-                    placeholder="Enter billing address"
+                    placeholder="Enter property address"
                     className="min-h-[80px]"
                     {...field}
                   />
@@ -80,73 +133,35 @@ const NewCustomerForm: React.FC<NewCustomerFormProps> = ({
               </FormItem>
             )}
           />
+        )}
 
-          <FormField
-            control={form.control}
-            name="sameAsBilling"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                <FormControl>
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                </FormControl>
-                <FormLabel className="font-normal">
-                  Property Address is same as Billing Address
-                </FormLabel>
-              </FormItem>
-            )}
-          />
-
-          {!sameAsBilling && (
-            <FormField
-              control={form.control}
-              name="propertyAddress"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Property Address</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="Enter property address"
-                      className="min-h-[80px]"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        <FormField
+          control={form.control}
+          name="phone"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Phone</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter customer phone number" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
           )}
+        />
 
-          <FormField
-            control={form.control}
-            name="phone"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Phone</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter customer phone number" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter customer email address" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter customer email address" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         
         <Button 
           type="submit"

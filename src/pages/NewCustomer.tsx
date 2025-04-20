@@ -3,44 +3,79 @@ import React from 'react';
 import AppLayout from '@/components/layouts/AppLayout';
 import NewCustomerForm from '@/components/shared/NewCustomerForm';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import type { Customer } from '@/types/customer';
-
-function getStoredCustomers(): Customer[] {
-  const local = window.localStorage.getItem('customers');
-  try {
-    return local ? JSON.parse(local) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveCustomers(customers: Customer[]) {
-  window.localStorage.setItem('customers', JSON.stringify(customers));
-}
 
 const NewCustomer = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [newCustomer, setNewCustomer] = React.useState<Omit<Customer, 'id'>>({
-    name: '',
+    first_name: '',
+    last_name: '',
     email: '',
     phone: '',
-    billingAddress: '',
-    propertyAddress: '',
-    sameAsBilling: true,
+    billing_address: '',
+    property_address: '',
+    same_as_billing: true,
   });
 
   const handleCustomerChange = (customer: Omit<Customer, 'id'>) => {
     setNewCustomer(customer);
   };
 
-  const handleAddCustomer = () => {
-    if (!newCustomer.name || !newCustomer.email) return;
-    // Save to localStorage
-    const allCustomers = getStoredCustomers();
-    const id = 'new-' + Date.now();
-    const customer: Customer = { id, ...newCustomer };
-    saveCustomers([...allCustomers, customer]);
-    navigate('/customers');
+  const handleAddCustomer = async () => {
+    if (!newCustomer.first_name || !newCustomer.last_name || !newCustomer.email) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill all required fields",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      // Get the current user's ID to associate with the customer
+      const { data: { session } } = await supabase.auth.getSession();
+      const user_id = session?.user?.id;
+
+      if (!user_id) {
+        toast({
+          title: "Authentication Error",
+          description: "You must be logged in to add a customer",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Insert the new customer into the database
+      const { error } = await supabase.from('customers').insert({
+        user_id,
+        first_name: newCustomer.first_name,
+        last_name: newCustomer.last_name,
+        email: newCustomer.email,
+        phone: newCustomer.phone || null,
+        billing_address: newCustomer.billing_address || null,
+        property_address: newCustomer.property_address || null,
+        same_as_billing: newCustomer.same_as_billing
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Customer Added",
+        description: "The customer has been successfully added"
+      });
+      
+      navigate('/customers');
+    } catch (error) {
+      console.error('Error adding customer:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add customer. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   return (

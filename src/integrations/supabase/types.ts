@@ -9,6 +9,114 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      contractors: {
+        Row: {
+          company_address: string | null
+          company_email: string | null
+          company_name: string
+          company_phone: string | null
+          contact_email: string | null
+          contact_first_name: string | null
+          contact_last_name: string | null
+          contact_phone: string | null
+          created_at: string | null
+          id: string
+          insurance_info: Json | null
+          license_expiry: string | null
+          license_number: string | null
+          logo_url: string | null
+          owner_first_name: string | null
+          owner_last_name: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          company_address?: string | null
+          company_email?: string | null
+          company_name: string
+          company_phone?: string | null
+          contact_email?: string | null
+          contact_first_name?: string | null
+          contact_last_name?: string | null
+          contact_phone?: string | null
+          created_at?: string | null
+          id?: string
+          insurance_info?: Json | null
+          license_expiry?: string | null
+          license_number?: string | null
+          logo_url?: string | null
+          owner_first_name?: string | null
+          owner_last_name?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          company_address?: string | null
+          company_email?: string | null
+          company_name?: string
+          company_phone?: string | null
+          contact_email?: string | null
+          contact_first_name?: string | null
+          contact_last_name?: string | null
+          contact_phone?: string | null
+          created_at?: string | null
+          id?: string
+          insurance_info?: Json | null
+          license_expiry?: string | null
+          license_number?: string | null
+          logo_url?: string | null
+          owner_first_name?: string | null
+          owner_last_name?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      customers: {
+        Row: {
+          billing_address: string | null
+          created_at: string | null
+          email: string
+          first_name: string
+          id: string
+          last_name: string
+          phone: string | null
+          profile_image_url: string | null
+          property_address: string | null
+          same_as_billing: boolean | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          billing_address?: string | null
+          created_at?: string | null
+          email: string
+          first_name: string
+          id?: string
+          last_name: string
+          phone?: string | null
+          profile_image_url?: string | null
+          property_address?: string | null
+          same_as_billing?: boolean | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          billing_address?: string | null
+          created_at?: string | null
+          email?: string
+          first_name?: string
+          id?: string
+          last_name?: string
+          phone?: string | null
+          profile_image_url?: string | null
+          property_address?: string | null
+          same_as_billing?: boolean | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           company_name: string | null

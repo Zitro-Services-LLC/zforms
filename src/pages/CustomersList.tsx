@@ -13,60 +13,83 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Edit, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import type { Customer } from '@/types/customer';
-
-function getStoredCustomers(): Customer[] {
-  const local = window.localStorage.getItem('customers');
-  try {
-    return local ? JSON.parse(local) : [];
-  } catch {
-    return [];
-  }
-}
-
-// Provide some default sample data on very first load (optional)
-function getInitialCustomers(): Customer[] {
-  const preset: Customer[] = [
-    { 
-      id: '1', 
-      name: 'Alice Smith', 
-      email: 'alice@example.com', 
-      phone: '(555) 123-4567', 
-      billingAddress: '123 Main St',
-      propertyAddress: '123 Main St',
-      sameAsBilling: true
-    },
-    { 
-      id: '2', 
-      name: 'Bob Johnson', 
-      email: 'bob@example.com', 
-      phone: '(555) 234-5678', 
-      billingAddress: '456 Oak Ave',
-      propertyAddress: '789 Pine St',
-      sameAsBilling: false
-    },
-  ];
-  if (!window.localStorage.getItem('customers')) {
-    window.localStorage.setItem('customers', JSON.stringify(preset));
-    return preset;
-  }
-  return getStoredCustomers();
-}
 
 const CustomersList = () => {
   const navigate = useNavigate();
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
-    setCustomers(getInitialCustomers());
+    fetchCustomers();
   }, []);
 
-  useEffect(() => {
-    // Listen for cross-tab updates (edge case)
-    const listener = () => setCustomers(getStoredCustomers());
-    window.addEventListener('storage', listener);
-    return () => window.removeEventListener('storage', listener);
-  }, []);
+  const fetchCustomers = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('customers')
+        .select('*');
+      
+      if (error) {
+        throw error;
+      }
+
+      // Transform data to match our Customer type
+      const formattedCustomers: Customer[] = data.map(customer => ({
+        id: customer.id,
+        first_name: customer.first_name,
+        last_name: customer.last_name,
+        email: customer.email,
+        phone: customer.phone,
+        profile_image_url: customer.profile_image_url,
+        billing_address: customer.billing_address,
+        property_address: customer.property_address,
+        same_as_billing: customer.same_as_billing,
+        user_id: customer.user_id
+      }));
+      
+      setCustomers(formattedCustomers);
+    } catch (error) {
+      console.error('Error fetching customers:', error);
+      toast({
+        title: "Error",
+        description: "Could not fetch customers. Please try again later.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteCustomer = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('customers')
+        .delete()
+        .eq('id', id);
+      
+      if (error) {
+        throw error;
+      }
+      
+      setCustomers(customers.filter(customer => customer.id !== id));
+      toast({
+        title: "Success",
+        description: "Customer deleted successfully",
+      });
+    } catch (error) {
+      console.error('Error deleting customer:', error);
+      toast({
+        title: "Error",
+        description: "Could not delete customer. Please try again later.",
+        variant: "destructive"
+      });
+    }
+  };
 
   return (
     <AppLayout userType="contractor">
@@ -84,41 +107,57 @@ const CustomersList = () => {
             <CardTitle>All Customers</CardTitle>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Phone</TableHead>
-                  <TableHead>Billing Address</TableHead>
-                  <TableHead>Property Address</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {customers.map((customer) => (
-                  <TableRow key={customer.id}>
-                    <TableCell>{customer.name}</TableCell>
-                    <TableCell>{customer.email}</TableCell>
-                    <TableCell>{customer.phone}</TableCell>
-                    <TableCell>{customer.billingAddress}</TableCell>
-                    <TableCell>
-                      {customer.sameAsBilling ? customer.billingAddress : customer.propertyAddress}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button size="icon" variant="ghost">
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button size="icon" variant="ghost">
-                          <Trash className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
+            {loading ? (
+              <div className="text-center py-4">Loading customers...</div>
+            ) : customers.length === 0 ? (
+              <div className="text-center py-4 text-muted-foreground">
+                No customers found. Add your first customer to get started.
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Phone</TableHead>
+                    <TableHead>Billing Address</TableHead>
+                    <TableHead>Property Address</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {customers.map((customer) => (
+                    <TableRow key={customer.id}>
+                      <TableCell>{customer.first_name} {customer.last_name}</TableCell>
+                      <TableCell>{customer.email}</TableCell>
+                      <TableCell>{customer.phone}</TableCell>
+                      <TableCell>{customer.billing_address}</TableCell>
+                      <TableCell>
+                        {customer.same_as_billing ? customer.billing_address : customer.property_address}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button 
+                            size="icon" 
+                            variant="ghost"
+                            onClick={() => navigate(`/customers/edit/${customer.id}`)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            size="icon" 
+                            variant="ghost"
+                            onClick={() => handleDeleteCustomer(customer.id)}
+                          >
+                            <Trash className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </CardContent>
         </Card>
       </div>

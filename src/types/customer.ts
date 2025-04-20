@@ -1,12 +1,15 @@
 
 export interface Customer {
   id: string;
-  name: string;
-  billingAddress: string;
-  propertyAddress: string;
-  sameAsBilling: boolean;
-  phone: string;
+  first_name: string;
+  last_name: string;
   email: string;
+  phone: string | null;
+  profile_image_url?: string | null;
+  billing_address: string | null;
+  property_address: string | null;
+  same_as_billing: boolean;
+  user_id?: string;
 }
 
 export interface CustomerSelectionProps {
