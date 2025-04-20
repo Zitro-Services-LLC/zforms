@@ -12,12 +12,15 @@ const CustomerSelection: React.FC<CustomerSelectionProps> = ({ onSelectCustomer,
   const [open, setOpen] = useState(false);
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>('');
   const [newCustomer, setNewCustomer] = useState<Omit<Customer, 'id'>>({
-    name: '',
-    billingAddress: '',
-    propertyAddress: '',
-    sameAsBilling: true,
+    first_name: '',
+    last_name: '',
+    billing_address: '',
+    property_address: '',
+    same_as_billing: true,
     phone: '',
-    email: ''
+    email: '',
+    profile_image_url: null,
+    user_id: undefined
   });
 
   const handleSelectCustomer = (customerId: string) => {
@@ -30,7 +33,7 @@ const CustomerSelection: React.FC<CustomerSelectionProps> = ({ onSelectCustomer,
   };
 
   const handleAddCustomer = () => {
-    if (!newCustomer.name || !newCustomer.email) {
+    if (!newCustomer.first_name || !newCustomer.email) {
       return;
     }
     // Simulate creating a customer with a temporary ID.
@@ -43,12 +46,15 @@ const CustomerSelection: React.FC<CustomerSelectionProps> = ({ onSelectCustomer,
     setMode('existing');
     // Reset the new customer form for next use.
     setNewCustomer({
-      name: '',
-      billingAddress: '',
-      propertyAddress: '',
-      sameAsBilling: true,
+      first_name: '',
+      last_name: '',
+      billing_address: '',
+      property_address: '',
+      same_as_billing: true,
       phone: '',
-      email: ''
+      email: '',
+      profile_image_url: null,
+      user_id: undefined
     });
   };
 

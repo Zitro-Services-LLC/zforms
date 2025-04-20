@@ -29,6 +29,8 @@ const NewCustomerForm: React.FC<NewCustomerFormProps> = ({
       billing_address: '',
       property_address: '',
       same_as_billing: true,
+      profile_image_url: null,
+      user_id: undefined
     }
   });
 

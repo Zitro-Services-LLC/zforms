@@ -11,12 +11,12 @@ interface CustomerAddressSectionProps {
 }
 
 const CustomerAddressSection: React.FC<CustomerAddressSectionProps> = ({ form }) => {
-  const sameAsBilling = form.watch('sameAsBilling');
+  const sameAsBilling = form.watch('same_as_billing');
 
   React.useEffect(() => {
     if (sameAsBilling) {
-      const billingAddress = form.getValues('billingAddress');
-      form.setValue('propertyAddress', billingAddress);
+      const billingAddress = form.getValues('billing_address');
+      form.setValue('property_address', billingAddress);
     }
   }, [sameAsBilling, form]);
 
@@ -24,7 +24,7 @@ const CustomerAddressSection: React.FC<CustomerAddressSectionProps> = ({ form })
     <div className="space-y-4">
       <FormField
         control={form.control}
-        name="billingAddress"
+        name="billing_address"
         render={({ field }) => (
           <FormItem>
             <FormLabel>Billing Address</FormLabel>
@@ -42,7 +42,7 @@ const CustomerAddressSection: React.FC<CustomerAddressSectionProps> = ({ form })
 
       <FormField
         control={form.control}
-        name="sameAsBilling"
+        name="same_as_billing"
         render={({ field }) => (
           <FormItem className="flex flex-row items-start space-x-3 space-y-0">
             <FormControl>
@@ -61,7 +61,7 @@ const CustomerAddressSection: React.FC<CustomerAddressSectionProps> = ({ form })
       {!sameAsBilling && (
         <FormField
           control={form.control}
-          name="propertyAddress"
+          name="property_address"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Property Address</FormLabel>

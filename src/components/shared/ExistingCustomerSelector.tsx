@@ -37,7 +37,7 @@ const ExistingCustomerSelector: React.FC<ExistingCustomerSelectorProps> = ({
             aria-expanded={open}
             className="w-full justify-between"
           >
-            {selectedCustomer ? selectedCustomer.name : "Search Customer"}
+            {selectedCustomer ? `${selectedCustomer.first_name} ${selectedCustomer.last_name}` : "Search Customer"}
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
@@ -62,7 +62,7 @@ const ExistingCustomerSelector: React.FC<ExistingCustomerSelectorProps> = ({
                       )}
                     />
                     <div className="flex flex-col">
-                      <span>{customer.name}</span>
+                      <span>{`${customer.first_name} ${customer.last_name}`}</span>
                       <span className="text-xs text-muted-foreground">
                         {customer.email}
                       </span>
@@ -79,8 +79,8 @@ const ExistingCustomerSelector: React.FC<ExistingCustomerSelectorProps> = ({
       
       {selectedCustomer && (
         <div className="rounded-md border p-4 text-sm">
-          <div className="font-medium">{selectedCustomer.name}</div>
-          <div className="text-muted-foreground mt-1">{selectedCustomer.billingAddress}</div>
+          <div className="font-medium">{`${selectedCustomer.first_name} ${selectedCustomer.last_name}`}</div>
+          <div className="text-muted-foreground mt-1">{selectedCustomer.billing_address}</div>
           <div className="text-muted-foreground">{selectedCustomer.phone}</div>
           <div className="text-muted-foreground">{selectedCustomer.email}</div>
         </div>
