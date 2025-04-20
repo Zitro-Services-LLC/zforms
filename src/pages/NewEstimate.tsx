@@ -89,7 +89,7 @@ const NewEstimate = () => {
       toast({
         title: "Draft Saved",
         description: "Your estimate draft was saved successfully.",
-        variant: "success"
+        variant: "default" // Changed from "success" to "default"
       });
     }, 1000);
   };
@@ -164,4 +164,3 @@ const NewEstimate = () => {
 };
 
 export default NewEstimate;
-
