@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import AppLayout from '../components/layouts/AppLayout';
 import EstimateFormHeader from '../components/estimate/EstimateFormHeader';
@@ -40,12 +39,10 @@ const NewEstimate = () => {
   // Track status for save
   const [isSaving, setIsSaving] = useState(false);
 
-  // Generate a reference number suggestion if empty on load
+  // Always generate a new reference number on new estimate page load
   useEffect(() => {
-    if (!referenceNumber) {
-      setReferenceNumber(generateReferenceNumber());
-    }
-  }, []); // Only run on mount
+    setReferenceNumber(generateReferenceNumber());
+  }, []);
 
   const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.rate), 0);
   const tax = subtotal * (taxRate / 100);
@@ -168,19 +165,10 @@ const NewEstimate = () => {
             subtotal={subtotal}
             tax={tax}
             total={total}
+            taxRate={taxRate}
           />
 
-          {/* More prominent Save/Submit Estimate button */}
-          <div className="flex flex-col items-end mt-8">
-            <Button
-              size="lg"
-              className="w-64 text-lg font-semibold"
-              disabled={!allRequiredValid || isSaving}
-              onClick={handleSaveDraft}
-            >
-              Save Estimate
-            </Button>
-          </div>
+          {/* Removed duplicate Save Estimate button here */}
         </div>
       </div>
 
@@ -202,4 +190,3 @@ const NewEstimate = () => {
 };
 
 export default NewEstimate;
-
