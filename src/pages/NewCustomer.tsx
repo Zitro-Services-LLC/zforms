@@ -55,7 +55,9 @@ const NewCustomer = () => {
         .eq('user_id', user_id);
 
       if (existingCustomers && existingCustomers.length > 0) {
-        // Generate a unique identifier to append to user_id to make it unique
+        // Since we can't modify the user_id column type and it might be used in policies,
+        // we'll generate a unique identifier that matches the expected format
+        // Create a unique string that starts with the user_id
         const uniqueId = `${user_id}-${Date.now()}`;
         
         // Insert the new customer into the database with the unique user_id
