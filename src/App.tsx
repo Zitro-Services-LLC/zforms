@@ -13,6 +13,9 @@ import InvoiceManagement from "./pages/InvoiceManagement";
 import ContractorProfile from "./pages/ContractorProfile";
 import CustomerProfile from "./pages/CustomerProfile";
 import NotFound from "./pages/NotFound";
+import EstimatesList from "./pages/EstimatesList";
+import ContractsList from "./pages/ContractsList";
+import InvoicesList from "./pages/InvoicesList";
 
 const queryClient = new QueryClient();
 
@@ -29,8 +32,11 @@ const App = () => (
           {/* Contractor Routes */}
           <Route path="/dashboard" element={<ContractorDashboard />} />
           <Route path="/profile" element={<ContractorProfile />} />
+          <Route path="/estimates" element={<EstimatesList />} />
           <Route path="/estimates/:id" element={<EstimateManagement userType="contractor" />} />
+          <Route path="/contracts" element={<ContractsList />} />
           <Route path="/contracts/:id" element={<ContractManagement userType="contractor" />} />
+          <Route path="/invoices" element={<InvoicesList />} />
           <Route path="/invoices/:id" element={<InvoiceManagement userType="contractor" />} />
           
           {/* Customer Routes */}
