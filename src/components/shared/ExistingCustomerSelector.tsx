@@ -24,6 +24,9 @@ const ExistingCustomerSelector: React.FC<ExistingCustomerSelectorProps> = ({
   onOpenChange,
   onSelectCustomer,
 }) => {
+  // Ensure customers is an array, even if it's undefined
+  const safeCustomers = Array.isArray(customers) ? customers : [];
+
   return (
     <div className="space-y-4">
       <Popover open={open} onOpenChange={onOpenChange}>
@@ -43,8 +46,8 @@ const ExistingCustomerSelector: React.FC<ExistingCustomerSelectorProps> = ({
             <CommandInput placeholder="Search customer..." />
             <CommandEmpty>No customer found.</CommandEmpty>
             <CommandGroup>
-              {Array.isArray(customers) && customers.length > 0 ? (
-                customers.map((customer) => (
+              {safeCustomers.length > 0 ? (
+                safeCustomers.map((customer) => (
                   <CommandItem
                     key={customer.id}
                     value={customer.id}

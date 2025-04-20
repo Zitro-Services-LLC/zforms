@@ -85,8 +85,8 @@ const CommandGroup = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.Group>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive.Group>
 >(({ className, children, ...props }, ref) => {
-  // Ensure children is never undefined
-  const safeChildren = React.Children.toArray(children).length > 0 
+  // Safely handle undefined or null children
+  const safeChildren = React.Children.count(children) > 0 
     ? children 
     : <CommandItem disabled>No items available</CommandItem>;
   
