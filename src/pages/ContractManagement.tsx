@@ -5,6 +5,8 @@ import { Status } from '../components/shared/StatusBadge';
 import ContractHeader from '../components/contract/ContractHeader';
 import ContractPartyInfo from '../components/contract/ContractPartyInfo';
 import ContractSections from '../components/contract/ContractSections';
+import ContractTotal from '../components/contract/ContractTotal';
+import ContractSignatures from '../components/contract/ContractSignatures';
 import ContractActions from '../components/contract/ContractActions';
 
 // Mock data for the contract
@@ -98,43 +100,14 @@ const ContractManagement: React.FC<ContractManagementProps> = ({ userType = 'con
           
           <ContractSections sections={contractData.sections} />
 
-          {/* Contract Total */}
-          <div className="px-6 py-4 border-t border-gray-200 mt-6">
-            <div className="flex justify-end">
-              <div className="w-64">
-                <div className="flex justify-between py-2 font-semibold text-lg">
-                  <span>Total Contract Amount:</span>
-                  <span>${contractData.total.toLocaleString()}</span>
-                </div>
-              </div>
-            </div>
-          </div>
+          <ContractTotal total={contractData.total} />
 
-          {/* Signature Area */}
-          <div className="px-6 pt-4 pb-6 border-t">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Signatures</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <h3 className="text-sm font-semibold text-gray-500 mb-3">CONTRACTOR SIGNATURE</h3>
-                <div className="h-20 bg-gray-50 border border-gray-200 rounded flex items-center justify-center">
-                  <span className="text-gray-400 italic">Electronically signed by Bob Builder</span>
-                </div>
-                <p className="text-xs text-gray-500 mt-1">Date: {contractData.date}</p>
-              </div>
-              
-              <div>
-                <h3 className="text-sm font-semibold text-gray-500 mb-3">CUSTOMER SIGNATURE</h3>
-                <div className="h-20 bg-gray-50 border border-gray-200 rounded flex items-center justify-center">
-                  {status === 'approved' ? (
-                    <span className="text-gray-400 italic">Electronically signed by Alice Smith</span>
-                  ) : (
-                    <span className="text-gray-400 italic">Awaiting signature</span>
-                  )}
-                </div>
-                {status === 'approved' && <p className="text-xs text-gray-500 mt-1">Date: {new Date().toLocaleDateString()}</p>}
-              </div>
-            </div>
-          </div>
+          <ContractSignatures
+            status={status}
+            contractorName={contractData.contractor.name}
+            customerName={contractData.customer.name}
+            date={contractData.date}
+          />
 
           <ContractActions
             userType={userType}
