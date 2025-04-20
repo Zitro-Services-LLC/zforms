@@ -81,3 +81,4 @@ const EstimateDetailsSection: React.FC<EstimateDetailsSectionProps> = ({
 };
 
 export default EstimateDetailsSection;
+
