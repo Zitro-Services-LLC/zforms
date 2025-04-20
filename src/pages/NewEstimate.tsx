@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import AppLayout from '../components/layouts/AppLayout';
 import EstimateFormHeader from '../components/estimate/EstimateFormHeader';
@@ -10,8 +11,8 @@ import { useToast } from "@/hooks/use-toast";
 import type { LineItem } from '@/types/estimate';
 import { Button } from '@/components/ui/button';
 
+// Generate a unique reference number for the estimate ("EST-YYYYMMDD-XXXX")
 function generateReferenceNumber() {
-  // Example: "EST-20240420-123456" (timestamp-based for uniqueness)
   const date = new Date();
   const pad = (n: number) => n.toString().padStart(2, '0');
   const dateString =
@@ -23,7 +24,9 @@ function generateReferenceNumber() {
 }
 
 const NewEstimate = () => {
+  // Notification toast
   const { toast } = useToast();
+  // State for selected customer and line items
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   const [items, setItems] = useState<LineItem[]>([
     { id: 1, description: '', quantity: 0, rate: 0, amount: 0 }
@@ -33,21 +36,23 @@ const NewEstimate = () => {
   const [referenceNumber, setReferenceNumber] = useState('');
   const [showPreview, setShowPreview] = useState(false);
 
-  // New: Editable tax rate (as %)
+  // Editable tax rate (%) - default 8
   const [taxRate, setTaxRate] = useState(8);
 
-  // Track status for save
+  // Track saving state
   const [isSaving, setIsSaving] = useState(false);
 
-  // Always generate a new reference number on new estimate page load
+  // Always generate new reference number on mount
   useEffect(() => {
     setReferenceNumber(generateReferenceNumber());
   }, []);
 
+  // Totals calculation
   const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.rate), 0);
   const tax = subtotal * (taxRate / 100);
   const total = subtotal + tax;
 
+  // Form validation
   const isReferenceValid = referenceNumber.trim().length > 0;
   const isCustomerValid = !!selectedCustomer;
   const isItemsValid = items.length > 0 && items.every(
@@ -56,6 +61,7 @@ const NewEstimate = () => {
   const isTaxRateValid = !isNaN(taxRate) && taxRate >= 0 && taxRate <= 100;
   const allRequiredValid = isReferenceValid && isCustomerValid && isItemsValid && isTaxRateValid;
 
+  // Line item handlers
   const handleUpdateLineItem = (id: number, field: keyof LineItem, value: string | number) => {
     setItems(items.map(item => {
       if (item.id === id) {
@@ -84,6 +90,7 @@ const NewEstimate = () => {
     setItems([...items, { id: newId, description: '', quantity: 0, rate: 0, amount: 0 }]);
   };
 
+  // Customer selection handler
   const handleCustomerSelect = (customer: any) => {
     setSelectedCustomer(customer);
     if (customer) {
@@ -115,7 +122,7 @@ const NewEstimate = () => {
     }, 1000);
   };
 
-  // Preview handler
+  // Preview estimate
   const handlePreview = () => {
     if (!allRequiredValid) {
       toast({
@@ -168,7 +175,7 @@ const NewEstimate = () => {
             taxRate={taxRate}
           />
 
-          {/* Removed duplicate Save Estimate button here */}
+          {/* No duplicate Save Estimate button */}
         </div>
       </div>
 
@@ -190,3 +197,4 @@ const NewEstimate = () => {
 };
 
 export default NewEstimate;
+
