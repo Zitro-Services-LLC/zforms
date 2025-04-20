@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { CreditCard, Bank, X } from "lucide-react";
+import { CreditCard, Ban, X } from "lucide-react";
 
 interface PaymentMethod {
   id: string;
@@ -51,7 +50,7 @@ const CustomerPaymentMethodsSection: React.FC = () => {
           className="flex items-center gap-2"
           onClick={handleAddBankAccount}
         >
-          <Bank className="h-4 w-4" />
+          <Ban className="h-4 w-4" />
           <span>Add Bank Account +</span>
         </Button>
       </div>
@@ -67,7 +66,7 @@ const CustomerPaymentMethodsSection: React.FC = () => {
                 {method.type === 'card' ? (
                   <CreditCard className="h-4 w-4 text-gray-600" />
                 ) : (
-                  <Bank className="h-4 w-4 text-gray-600" />
+                  <Ban className="h-4 w-4 text-gray-600" />
                 )}
                 <span>{method.displayName}</span>
               </div>
