@@ -115,7 +115,7 @@ const CustomerSelection: React.FC<CustomerSelectionProps> = ({ onSelectCustomer,
                 <CommandInput placeholder="Search customer..." />
                 <CommandEmpty>No customer found.</CommandEmpty>
                 <CommandGroup>
-                  {customers.map((customer) => (
+                  {customers && customers.length > 0 ? customers.map((customer) => (
                     <CommandItem
                       key={customer.id}
                       value={customer.id}
@@ -136,7 +136,9 @@ const CustomerSelection: React.FC<CustomerSelectionProps> = ({ onSelectCustomer,
                         </span>
                       </div>
                     </CommandItem>
-                  ))}
+                  )) : (
+                    <CommandItem disabled>No customers available</CommandItem>
+                  )}
                 </CommandGroup>
               </Command>
             </PopoverContent>
