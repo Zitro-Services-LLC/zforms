@@ -23,10 +23,11 @@ function generateReferenceNumber() {
   return `EST-${dateString}-${rand}`;
 }
 
+// Simple enum for estimate status
+type EstimateStatus = "draft" | "submitted";
+
 const NewEstimate = () => {
-  // Notification toast
   const { toast } = useToast();
-  // State for selected customer and line items
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   const [items, setItems] = useState<LineItem[]>([
     { id: 1, description: '', quantity: 0, rate: 0, amount: 0 }
@@ -39,10 +40,13 @@ const NewEstimate = () => {
   // Editable tax rate (%) - default 8
   const [taxRate, setTaxRate] = useState(8);
 
-  // Track saving state
+  // Saving state and local estimate status
   const [isSaving, setIsSaving] = useState(false);
+  const [estimateStatus, setEstimateStatus] = useState<EstimateStatus>("draft");
 
-  // Always generate new reference number on mount
+  // Help state for showing why actions are disabled
+  const [actionDisabledReason, setActionDisabledReason] = useState<string | null>(null);
+
   useEffect(() => {
     setReferenceNumber(generateReferenceNumber());
   }, []);
@@ -60,6 +64,19 @@ const NewEstimate = () => {
   );
   const isTaxRateValid = !isNaN(taxRate) && taxRate >= 0 && taxRate <= 100;
   const allRequiredValid = isReferenceValid && isCustomerValid && isItemsValid && isTaxRateValid;
+
+  // Display message if actions are disabled
+  useEffect(() => {
+    if (allRequiredValid) {
+      setActionDisabledReason(null);
+    } else {
+      if (!isReferenceValid) setActionDisabledReason("Please enter a reference number.");
+      else if (!isCustomerValid) setActionDisabledReason("Please select or add a customer.");
+      else if (!isItemsValid) setActionDisabledReason("Please provide valid line items (description, quantity > 0, rate > 0).");
+      else if (!isTaxRateValid) setActionDisabledReason("Please enter a tax rate between 0 and 100.");
+      else setActionDisabledReason("Please complete all required fields.");
+    }
+  }, [isReferenceValid, isCustomerValid, isItemsValid, isTaxRateValid, allRequiredValid]);
 
   // Line item handlers
   const handleUpdateLineItem = (id: number, field: keyof LineItem, value: string | number) => {
@@ -90,8 +107,17 @@ const NewEstimate = () => {
     setItems([...items, { id: newId, description: '', quantity: 0, rate: 0, amount: 0 }]);
   };
 
-  // Customer selection handler
+  // Customer selection handler (with customer added feedback)
   const handleCustomerSelect = (customer: any) => {
+    // Was customer just added via Add Customer flow?
+    if (customer && (!selectedCustomer || (selectedCustomer && selectedCustomer.id !== customer.id))) {
+      // We assume new customer if it wasn't the last selected (best we can do without API call)
+      toast({
+        title: "Customer Added",
+        description: `New customer "${customer.name}" has been added.`,
+        variant: "default",
+      });
+    }
     setSelectedCustomer(customer);
     if (customer) {
       toast({
@@ -114,12 +140,35 @@ const NewEstimate = () => {
     setIsSaving(true);
     setTimeout(() => {
       setIsSaving(false);
+      setEstimateStatus("draft");
       toast({
         title: "Draft Saved",
         description: "Your estimate draft was saved successfully.",
         variant: "default"
       });
     }, 1000);
+  };
+
+  // Submit estimate to customer
+  const handleSubmitToCustomer = () => {
+    if (!allRequiredValid) {
+      toast({
+        title: "Cannot Submit",
+        description: "Please fill all required fields before submitting.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setIsSaving(true);
+    setTimeout(() => {
+      setIsSaving(false);
+      setEstimateStatus("submitted");
+      toast({
+        title: "Estimate Submitted",
+        description: "The estimate has been submitted to the customer.",
+        variant: "default"
+      });
+    }, 1200);
   };
 
   // Preview estimate
@@ -143,6 +192,16 @@ const NewEstimate = () => {
           onSave={handleSaveDraft}
           disableActions={!allRequiredValid || isSaving}
         />
+
+        {(!allRequiredValid || isSaving) && (
+          <div className="mb-4">
+            <div className="bg-yellow-100 border-l-4 border-yellow-300 text-yellow-800 px-4 py-2 rounded text-sm">
+              {isSaving
+                ? "Saving, please wait..."
+                : actionDisabledReason}
+            </div>
+          </div>
+        )}
 
         <div className="space-y-6 bg-white shadow-sm rounded-lg p-6">
           <EstimateDetailsSection
@@ -175,7 +234,19 @@ const NewEstimate = () => {
             taxRate={taxRate}
           />
 
-          {/* No duplicate Save Estimate button */}
+          {/* Show new Submit to Customer button if draft (and valid & not saving) */}
+          {estimateStatus === "draft" && allRequiredValid && !isSaving && (
+            <div className="flex justify-end pt-4">
+              <Button
+                className="bg-amber-600 hover:bg-amber-700 text-white"
+                onClick={handleSubmitToCustomer}
+                disabled={!allRequiredValid || isSaving}
+              >
+                Submit Estimate to Customer
+              </Button>
+            </div>
+          )}
+
         </div>
       </div>
 
@@ -197,4 +268,3 @@ const NewEstimate = () => {
 };
 
 export default NewEstimate;
-
