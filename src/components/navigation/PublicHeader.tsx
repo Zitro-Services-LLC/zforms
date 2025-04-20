@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -30,13 +29,13 @@ const PublicHeader = () => {
           </div>
           <div className="hidden sm:flex items-center">
             <Link
-              to="/login"
+              to="/auth"
               className="text-gray-900 hover:text-amber-600 px-3 py-2 text-sm font-medium mr-4"
             >
               Log in
             </Link>
             <Link
-              to="/signup"
+              to="/auth"
               className="btn-amber"
             >
               Sign up
@@ -87,13 +86,13 @@ const PublicHeader = () => {
             <div className="pt-4 pb-3 border-t border-gray-200">
               <div className="space-y-1">
                 <Link
-                  to="/login"
+                  to="/auth"
                   className="block px-3 py-2 text-base font-medium text-gray-500 hover:bg-gray-50 hover:text-amber-500"
                 >
                   Log in
                 </Link>
                 <Link
-                  to="/signup"
+                  to="/auth"
                   className="block px-3 py-2 text-base font-medium bg-amber-500 text-white hover:bg-amber-600"
                 >
                   Sign up

@@ -20,6 +20,7 @@ import NewContract from "./pages/NewContract";
 import NewInvoice from "./pages/NewInvoice";
 import CustomersList from "./pages/CustomersList";
 import NewCustomer from "./pages/NewCustomer";
+import AuthPage from "@/pages/AuthPage";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +33,7 @@ const App = () => (
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Landing />} />
+          <Route path="/auth" element={<AuthPage />} />
           
           {/* Contractor Routes */}
           <Route path="/dashboard" element={<ContractorDashboard />} />
