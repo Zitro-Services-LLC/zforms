@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
@@ -32,11 +33,32 @@ const CustomerSelection: React.FC<CustomerSelectionProps> = ({ onSelectCustomer,
     if (!newCustomer.name || !newCustomer.email) {
       return;
     }
+    // Simulate creating a customer with a temporary ID.
+    const tempId = "new-" + Date.now();
+    const customer: Customer = { id: tempId, ...newCustomer };
+    // Notify the parent (trigger parent to show toast, select this customer)
     onAddNewCustomer(newCustomer);
-    onSelectCustomer(null);
+    onSelectCustomer(customer);
+    setSelectedCustomerId(tempId);
+    setMode('existing');
+    // Reset the new customer form for next use.
+    setNewCustomer({
+      name: '',
+      billingAddress: '',
+      propertyAddress: '',
+      sameAsBilling: true,
+      phone: '',
+      email: ''
+    });
   };
 
-  const selectedCustomer = sampleCustomers.find(c => c.id === selectedCustomerId);
+  const selectedCustomer = 
+    (mode === 'existing'
+      ? sampleCustomers.find(c => c.id === selectedCustomerId)
+      : null) ??
+    (mode === 'new' && selectedCustomerId.startsWith('new-')
+      ? { id: selectedCustomerId, ...newCustomer }
+      : undefined);
 
   return (
     <div className="space-y-4">
