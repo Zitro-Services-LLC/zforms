@@ -5,10 +5,12 @@ import type { Customer } from "@/types/customer";
 /**
  * Get all customers for the current authenticated user
  */
-export async function getCustomers() {
+export async function getCustomers(userId: string | undefined) {
+  if (!userId) return [];
   const { data, error } = await supabase
     .from('customers')
-    .select('*');
+    .select('*')
+    .eq('user_id', userId);
   
   if (error) {
     console.error('Error fetching customers:', error);

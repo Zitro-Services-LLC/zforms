@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
@@ -30,10 +29,11 @@ const CustomerSelection: React.FC<CustomerSelectionProps> = ({ onSelectCustomer,
     user_id: ''
   });
 
-  // Fetch customers from Supabase
+  // Fetch customers from Supabase, scoped by current user ID
   const { data: customers = [], isLoading, isError } = useQuery({
-    queryKey: ['customers'],
-    queryFn: getCustomers
+    queryKey: ['customers', user?.id],
+    queryFn: () => getCustomers(user?.id),
+    enabled: !!user?.id
   });
 
   // Update user_id in newCustomer when user changes
