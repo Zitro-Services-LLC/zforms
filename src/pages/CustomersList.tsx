@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -25,14 +26,18 @@ const CustomersList = () => {
   const queryClient = useQueryClient();
   const { user } = useSupabaseAuth();
   
-  // Fetch customers using React Query with user ID
-  const { data: customers = [], isLoading, isError } = useQuery({
-    queryKey: ['customers', user?.id],
+  // Unified queryKey for better cache consistency
+  const {
+    data: customers = [],
+    isLoading,
+    isError,
+    error
+  } = useQuery({
+    queryKey: ['customers'],
     queryFn: () => getCustomers(user?.id),
     enabled: !!user?.id
   });
 
-  // Delete customer mutation
   const deleteCustomerMutation = useMutation({
     mutationFn: deleteCustomer,
     onSuccess: () => {
@@ -78,7 +83,8 @@ const CustomersList = () => {
               </div>
             ) : isError ? (
               <div className="text-center py-4 text-red-500">
-                Error loading customers. Please try again.
+                Error loading customers. Please try again.<br />
+                <span className="text-xs">{(error as Error)?.message}</span>
               </div>
             ) : customers.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
@@ -113,7 +119,8 @@ const CustomersList = () => {
                               size="icon" 
                               variant="ghost"
                               onClick={() => navigate(`/customers/edit/${customer.id}`)}
-                              title="Edit Customer"
+                              title={`Edit ${customer.first_name} ${customer.last_name}`}
+                              aria-label={`Edit ${customer.first_name} ${customer.last_name}`}
                             >
                               <Edit className="h-4 w-4" />
                             </Button>
@@ -122,7 +129,8 @@ const CustomersList = () => {
                                 <Button 
                                   size="icon" 
                                   variant="ghost"
-                                  title="Delete Customer"
+                                  title={`Delete ${customer.first_name} ${customer.last_name}`}
+                                  aria-label={`Delete ${customer.first_name} ${customer.last_name}`}
                                 >
                                   <Trash className="h-4 w-4" />
                                 </Button>

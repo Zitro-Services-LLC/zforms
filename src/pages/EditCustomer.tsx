@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -28,11 +27,12 @@ const EditCustomer = () => {
     user_id: undefined
   });
 
-  // Fetch customer data
+  // Fetch customer data, refetch on id change, and always use id
   const { data: customer, isLoading: isLoadingCustomer, isError } = useQuery({
     queryKey: ['customer', id],
     queryFn: () => getCustomerById(id as string),
     enabled: !!id,
+    refetchOnWindowFocus: false,
   });
 
   // Update customer mutation
@@ -58,7 +58,7 @@ const EditCustomer = () => {
   });
 
   // Update local state when customer data is fetched
-  useEffect(() => {
+  React.useEffect(() => {
     if (customer) {
       setCustomerData({
         first_name: customer.first_name,
