@@ -38,16 +38,15 @@ const EditCustomer = () => {
   const updateCustomerMutation = useMutation({
     mutationFn: (data: Partial<Customer>) => updateCustomer(id as string, data),
     onSuccess: (data) => {
-      // Invalidate both the list and specific customer view.
       queryClient.invalidateQueries({ queryKey: ['customers'] });
       queryClient.invalidateQueries({ queryKey: ['customer', id] });
-      // Extra: Refetch right now for always-fresh UI
+      // Real-time UI update
       queryClient.refetchQueries({ queryKey: ['customers'] });
       toast({
         title: "Success",
         description: "Customer updated successfully"
       });
-      // Extra: Pass a flag to CustomersList using navigation state to force a refetch
+      // Ensure navigation triggers a customer list refresh on return
       navigate('/customers', { state: { forceRefetch: true } });
     },
     onError: (error) => {
@@ -91,15 +90,22 @@ const EditCustomer = () => {
       return;
     }
 
-    updateCustomerMutation.mutate({
+    // If same as billing address, property_address should always match billing_address
+    const dataToSend = {
       first_name: customerData.first_name,
       last_name: customerData.last_name,
       email: customerData.email,
       phone: customerData.phone || null,
       billing_address: customerData.billing_address || null,
-      property_address: customerData.property_address || null,
+      property_address: customerData.same_as_billing 
+        ? customerData.billing_address || null 
+        : customerData.property_address || null,
       same_as_billing: customerData.same_as_billing
-    });
+    };
+
+    console.log("[EditCustomer] Saving customer data:", dataToSend);
+
+    updateCustomerMutation.mutate(dataToSend);
   };
 
   if (isLoadingCustomer) {
