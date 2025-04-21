@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
@@ -30,14 +29,14 @@ const CustomerSelection: React.FC<CustomerSelectionProps> = ({ onSelectCustomer,
     user_id: ''
   });
 
-  // Fetch customers from Supabase, scoped by current user ID
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+
   const { data: customers = [], isLoading, isError } = useQuery({
     queryKey: ['customers', user?.id],
     queryFn: () => getCustomers(user?.id),
     enabled: !!user?.id
   });
 
-  // Update user_id in newCustomer when user changes
   useEffect(() => {
     if (user?.id) {
       setNewCustomer(prev => ({
@@ -51,13 +50,13 @@ const CustomerSelection: React.FC<CustomerSelectionProps> = ({ onSelectCustomer,
     setSelectedCustomerId(customerId);
     const customer = customers.find(c => c.id === customerId);
     if (customer) {
+      setSelectedCustomer(customer);
       onSelectCustomer(customer);
     }
     setOpen(false);
   };
 
   const handleAddCustomer = async () => {
-    // Validate all required fields upfront
     if (
       !newCustomer.first_name ||
       !newCustomer.last_name ||
@@ -79,26 +78,21 @@ const CustomerSelection: React.FC<CustomerSelectionProps> = ({ onSelectCustomer,
         throw new Error("Authentication required. Please log in to add customers.");
       }
       
-      // Create a complete customer object with the user_id
       const customerToCreate = {
         ...newCustomer,
         user_id: user.id
       };
 
-      // Create the customer in Supabase
       const createdCustomer = await createCustomer(customerToCreate);
       
-      // Only call onSelectCustomer after successful creation
       onSelectCustomer(createdCustomer);
       setSelectedCustomerId(createdCustomer.id);
       
-      // Show success feedback
       toast({
         title: "Customer Created",
         description: `${createdCustomer.first_name} ${createdCustomer.last_name} has been added successfully.`
       });
       
-      // Reset form and mode
       setMode('existing');
       setNewCustomer({
         first_name: '',
@@ -112,7 +106,6 @@ const CustomerSelection: React.FC<CustomerSelectionProps> = ({ onSelectCustomer,
         user_id: user.id
       });
 
-      // Notify parent about the new customer for any additional logic
       onAddNewCustomer(customerToCreate);
     } catch (error: any) {
       console.error("Failed to create customer:", error);
