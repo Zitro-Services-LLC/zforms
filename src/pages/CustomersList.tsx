@@ -31,12 +31,19 @@ const CustomersList = () => {
     data: customers = [],
     isLoading,
     isError,
-    error
+    error,
+    refetch,
   } = useQuery({
     queryKey: ['customers'],
     queryFn: () => getCustomers(user?.id),
-    enabled: !!user?.id
+    enabled: !!user?.id,
+    refetchOnWindowFocus: true, // Always refetch on focus for freshest view
   });
+
+  React.useEffect(() => {
+    // Add a log to verify we see updated data after edits
+    console.log("Fetched customers:", customers);
+  }, [customers]);
 
   const deleteCustomerMutation = useMutation({
     mutationFn: deleteCustomer,
@@ -172,3 +179,4 @@ const CustomersList = () => {
 };
 
 export default CustomersList;
+
