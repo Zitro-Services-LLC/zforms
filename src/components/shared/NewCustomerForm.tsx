@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -10,6 +9,9 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "
 import { Checkbox } from "@/components/ui/checkbox";
 import { LogIn } from "lucide-react";
 import type { Customer } from "@/types/customer";
+import CustomerNameFields from './CustomerNameFields';
+import CustomerAddressFields from './CustomerAddressFields';
+import CustomerContactFields from './CustomerContactFields';
 
 // Define form validation schema
 const customerSchema = z.object({
@@ -77,14 +79,6 @@ const NewCustomerForm: React.FC<NewCustomerFormProps> = ({
     });
   }, [newCustomer, form]);
 
-  // Effect to update property_address when same_as_billing changes
-  React.useEffect(() => {
-    if (sameAsBilling) {
-      const billingAddress = form.getValues('billing_address');
-      form.setValue('property_address', billingAddress || '');
-    }
-  }, [sameAsBilling, form]);
-
   const onSubmit = (data: CustomerFormData) => {
     const customerData: Omit<Customer, 'id'> = {
       first_name: data.first_name,
@@ -105,120 +99,10 @@ const NewCustomerForm: React.FC<NewCustomerFormProps> = ({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="first_name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>First Name <span className="text-red-500">*</span></FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter first name" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+        <CustomerNameFields form={form} />
+        <CustomerAddressFields form={form} />
+        <CustomerContactFields form={form} />
 
-          <FormField
-            control={form.control}
-            name="last_name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Last Name <span className="text-red-500">*</span></FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter last name" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <FormField
-          control={form.control}
-          name="billing_address"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Billing Address</FormLabel>
-              <FormControl>
-                <Textarea 
-                  placeholder="Enter billing address"
-                  className="min-h-[80px]"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="same_as_billing"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-              <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
-              <FormLabel className="font-normal">
-                Property Address is same as Billing Address
-              </FormLabel>
-            </FormItem>
-          )}
-        />
-
-        {!sameAsBilling && (
-          <FormField
-            control={form.control}
-            name="property_address"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Property Address</FormLabel>
-                <FormControl>
-                  <Textarea 
-                    placeholder="Enter property address"
-                    className="min-h-[80px]"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
-
-        <FormField
-          control={form.control}
-          name="phone"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Phone</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter customer phone number" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email <span className="text-red-500">*</span></FormLabel>
-              <FormControl>
-                <Input placeholder="Enter customer email address" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
         <Button 
           type="submit"
           className="mt-2 bg-amber-500 hover:bg-amber-600"
