@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -18,16 +17,19 @@ import { useToast } from "@/components/ui/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { getCustomers, deleteCustomer } from '@/services/customerService';
 import type { Customer } from '@/types/customer';
+import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 
 const CustomersList = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user } = useSupabaseAuth();
   
-  // Fetch customers using React Query
+  // Fetch customers using React Query with user ID
   const { data: customers = [], isLoading, isError } = useQuery({
-    queryKey: ['customers'],
-    queryFn: getCustomers,
+    queryKey: ['customers', user?.id],
+    queryFn: () => getCustomers(user?.id),
+    enabled: !!user?.id
   });
 
   // Delete customer mutation
