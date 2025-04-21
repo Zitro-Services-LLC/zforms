@@ -4,7 +4,6 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/comp
 import { Input } from "@/components/ui/input";
 import { UseFormReturn } from "react-hook-form";
 import type { Customer } from "@/types/customer";
-import type * as z from "zod";
 
 // Define the same CustomerFormData as in the parent
 type CustomerFormData = {

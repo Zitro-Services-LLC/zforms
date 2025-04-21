@@ -1,12 +1,10 @@
+
 import React from 'react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Form } from "@/components/ui/form";
 import { LogIn } from "lucide-react";
 import type { Customer } from "@/types/customer";
 import CustomerNameFields from './CustomerNameFields';
@@ -58,9 +56,6 @@ const NewCustomerForm: React.FC<NewCustomerFormProps> = ({
       user_id: newCustomer.user_id
     }
   });
-
-  // Get 'same_as_billing' value from the form
-  const sameAsBilling = form.watch('same_as_billing');
 
   // Effect to update the form with the latest customer data
   React.useEffect(() => {
