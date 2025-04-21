@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import AppLayout from '../components/layouts/AppLayout';
 import EstimateFormHeader from '../components/estimate/EstimateFormHeader';
@@ -11,6 +12,8 @@ import type { LineItem } from '@/types/estimate';
 import { Button } from '@/components/ui/button';
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { createEstimate } from '@/services/estimateService';
+import { useNavigate } from 'react-router-dom';
+import type { Customer } from '@/types/customer';
 
 // Generate a unique reference number for the estimate ("EST-YYYYMMDD-XXXX")
 function generateReferenceNumber() {
@@ -30,7 +33,8 @@ type EstimateStatus = "draft" | "submitted";
 const NewEstimate = () => {
   const { toast } = useToast();
   const { user } = useSupabaseAuth();
-  const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
+  const navigate = useNavigate();
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [items, setItems] = useState<LineItem[]>([
     { id: 1, description: '', quantity: 0, rate: 0, amount: 0 }
   ]);
@@ -45,6 +49,7 @@ const NewEstimate = () => {
   // Saving state and local estimate status
   const [isSaving, setIsSaving] = useState(false);
   const [estimateStatus, setEstimateStatus] = useState<EstimateStatus>("draft");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Help state for showing why actions are disabled
   const [actionDisabledReason, setActionDisabledReason] = useState<string | null>(null);
@@ -60,7 +65,7 @@ const NewEstimate = () => {
 
   // Form validation
   const isReferenceValid = referenceNumber.trim().length > 0;
-  const isCustomerValid = !!selectedCustomer;
+  const isCustomerValid = !!selectedCustomer?.id;
   const isItemsValid = items.length > 0 && items.every(
     (item) => item.description.trim().length > 0 && item.quantity > 0 && item.rate > 0
   );
@@ -109,86 +114,45 @@ const NewEstimate = () => {
     setItems([...items, { id: newId, description: '', quantity: 0, rate: 0, amount: 0 }]);
   };
 
-  // Customer selection handler (with customer added feedback)
-  const handleCustomerSelect = (customer: any) => {
-    // Was customer just added via Add Customer flow?
-    if (customer && (!selectedCustomer || (selectedCustomer && selectedCustomer.id !== customer.id))) {
-      // We assume new customer if it wasn't the last selected (best we can do without API call)
-      toast({
-        title: "Customer Added",
-        description: `New customer "${customer.name}" has been added.`,
-        variant: "default",
-      });
-    }
+  // Customer selection handler 
+  const handleCustomerSelect = (customer: Customer | null) => {
     setSelectedCustomer(customer);
     if (customer) {
       toast({
         title: "Customer Selected",
-        description: `Selected ${customer.name} for this estimate.`,
+        description: `Selected ${customer.first_name} ${customer.last_name} for this estimate.`,
       });
     }
+  };
+
+  // Handle new customer added via form
+  const handleAddNewCustomer = (customerData: Omit<Customer, 'id'>) => {
+    // This is now handled directly in CustomerSelection component
+    console.log("New customer will be created:", customerData);
   };
 
   // Save estimate draft
   const handleSaveDraft = async () => {
-    if (!allRequiredValid) {
-      toast({
-        title: "Cannot Save",
-        description: "Please fill all required fields before saving.",
-        variant: "destructive",
-      });
-      return;
-    }
-    if (!user) {
-      toast({
-        title: "Authentication Error",
-        description: "You must be logged in.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsSaving(true);
-    try {
-      await createEstimate({
-        customer_id: selectedCustomer?.id,
-        user_id: user.id,
-        title: referenceNumber,
-        date: estimateDate,
-        subtotal,
-        tax_rate: taxRate,
-        tax_amount: tax,
-        total,
-        notes,
-        status: "draft"
-      }, items);
-
-      setEstimateStatus("draft");
-      toast({
-        title: "Draft Saved",
-        description: "Your estimate draft was saved successfully.",
-        variant: "default"
-      });
-    } catch (error) {
-      toast({
-        title: "Save Error",
-        description: "Could not save estimate. Please try again.",
-        variant: "destructive"
-      });
-    }
-    setIsSaving(false);
+    await saveEstimate("draft");
   };
 
   // Submit estimate to Supabase
   const handleSubmitToCustomer = async () => {
+    await saveEstimate("submitted");
+  };
+
+  const saveEstimate = async (status: EstimateStatus) => {
+    setErrorMessage(null);
+    
     if (!allRequiredValid) {
       toast({
-        title: "Cannot Submit",
-        description: "Please fill all required fields before submitting.",
+        title: `Cannot ${status === "draft" ? "Save" : "Submit"}`,
+        description: "Please fill all required fields before proceeding.",
         variant: "destructive",
       });
       return;
     }
+    
     if (!user) {
       toast({
         title: "Authentication Error",
@@ -198,10 +162,21 @@ const NewEstimate = () => {
       return;
     }
 
+    if (!selectedCustomer?.id) {
+      toast({
+        title: "Invalid Customer",
+        description: "Please select a valid customer with a database ID.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    console.log(`Attempting to save estimate with customer ID: ${selectedCustomer.id}`);
     setIsSaving(true);
+    
     try {
-      await createEstimate({
-        customer_id: selectedCustomer?.id,
+      const result = await createEstimate({
+        customer_id: selectedCustomer.id,
         user_id: user.id,
         title: referenceNumber,
         date: estimateDate,
@@ -210,23 +185,32 @@ const NewEstimate = () => {
         tax_amount: tax,
         total,
         notes,
-        status: "submitted"
+        status
       }, items);
 
-      setEstimateStatus("submitted");
+      setEstimateStatus(status);
       toast({
-        title: "Estimate Submitted",
-        description: "The estimate has been submitted to the customer.",
+        title: status === "draft" ? "Draft Saved" : "Estimate Submitted",
+        description: status === "draft" 
+          ? "Your estimate draft was saved successfully." 
+          : "The estimate has been submitted to the customer.",
         variant: "default"
       });
-    } catch (error) {
+      
+      // Navigate to estimates list after successful save
+      navigate("/estimates");
+    } catch (error: any) {
+      console.error("Save error:", error);
+      const errorMsg = error.message || "Could not save estimate. Please try again.";
+      setErrorMessage(errorMsg);
       toast({
-        title: "Submit Error",
-        description: "Could not submit estimate. Please try again.",
+        title: `${status === "draft" ? "Save" : "Submit"} Error`,
+        description: errorMsg,
         variant: "destructive"
       });
+    } finally {
+      setIsSaving(false);
     }
-    setIsSaving(false);
   };
 
   // Preview estimate
@@ -251,12 +235,17 @@ const NewEstimate = () => {
           disableActions={!allRequiredValid || isSaving}
         />
 
-        {(!allRequiredValid || isSaving) && (
+        {/* Show feedback to user */}
+        {((!allRequiredValid || isSaving) || errorMessage) && (
           <div className="mb-4">
-            <div className="bg-yellow-100 border-l-4 border-yellow-300 text-yellow-800 px-4 py-2 rounded text-sm">
+            <div className={`border-l-4 px-4 py-2 rounded text-sm ${
+              errorMessage 
+                ? "bg-red-100 border-red-300 text-red-800" 
+                : "bg-yellow-100 border-yellow-300 text-yellow-800"
+            }`}>
               {isSaving
                 ? "Saving, please wait..."
-                : actionDisabledReason}
+                : errorMessage || actionDisabledReason}
             </div>
           </div>
         )}
@@ -271,6 +260,7 @@ const NewEstimate = () => {
             selectedCustomer={selectedCustomer}
             taxRate={taxRate}
             onTaxRateChange={setTaxRate}
+            onAddNewCustomer={handleAddNewCustomer}
           />
 
           <EstimateItemsSection

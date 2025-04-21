@@ -1,16 +1,23 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import NewCustomerForm from './NewCustomerForm';
 import ExistingCustomerSelector from './ExistingCustomerSelector';
-import { sampleCustomers } from '@/data/sampleCustomers';
 import type { Customer, CustomerSelectionProps } from '@/types/customer';
+import { useToast } from "@/hooks/use-toast";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
+import { getCustomers, createCustomer } from '@/services/customerService';
+import { useQuery } from '@tanstack/react-query';
 
 const CustomerSelection: React.FC<CustomerSelectionProps> = ({ onSelectCustomer, onAddNewCustomer }) => {
   const [mode, setMode] = useState<'existing' | 'new'>('existing');
   const [open, setOpen] = useState(false);
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>('');
+  const [isSubmittingCustomer, setIsSubmittingCustomer] = useState(false);
+  const { toast } = useToast();
+  const { user } = useSupabaseAuth();
+  
   const [newCustomer, setNewCustomer] = useState<Omit<Customer, 'id'>>({
     first_name: '',
     last_name: '',
@@ -20,51 +27,96 @@ const CustomerSelection: React.FC<CustomerSelectionProps> = ({ onSelectCustomer,
     phone: '',
     email: '',
     profile_image_url: null,
-    user_id: undefined
+    user_id: ''
   });
+
+  // Fetch customers from Supabase
+  const { data: customers = [], isLoading, isError } = useQuery({
+    queryKey: ['customers'],
+    queryFn: getCustomers
+  });
+
+  // Update user_id in newCustomer when user changes
+  useEffect(() => {
+    if (user?.id) {
+      setNewCustomer(prev => ({
+        ...prev,
+        user_id: user.id
+      }));
+    }
+  }, [user]);
 
   const handleSelectCustomer = (customerId: string) => {
     setSelectedCustomerId(customerId);
-    const customer = sampleCustomers.find(c => c.id === customerId);
+    const customer = customers.find(c => c.id === customerId);
     if (customer) {
       onSelectCustomer(customer);
     }
     setOpen(false);
   };
 
-  const handleAddCustomer = () => {
-    if (!newCustomer.first_name || !newCustomer.email) {
+  const handleAddCustomer = async () => {
+    if (!newCustomer.first_name || !newCustomer.email || !user?.id) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill out all required fields or make sure you're logged in.",
+        variant: "destructive"
+      });
       return;
     }
-    // Simulate creating a customer with a temporary ID.
-    const tempId = "new-" + Date.now();
-    const customer: Customer = { id: tempId, ...newCustomer };
-    // Notify the parent (trigger parent to show toast, select this customer)
-    onAddNewCustomer(newCustomer);
-    onSelectCustomer(customer);
-    setSelectedCustomerId(tempId);
-    setMode('existing');
-    // Reset the new customer form for next use.
-    setNewCustomer({
-      first_name: '',
-      last_name: '',
-      billing_address: '',
-      property_address: '',
-      same_as_billing: true,
-      phone: '',
-      email: '',
-      profile_image_url: null,
-      user_id: undefined
-    });
+
+    setIsSubmittingCustomer(true);
+    
+    try {
+      // Make sure the user_id is set correctly
+      const customerToCreate = {
+        ...newCustomer,
+        user_id: user.id
+      };
+      
+      // Create the customer in Supabase and get back the full object with ID
+      const createdCustomer = await createCustomer(customerToCreate);
+      
+      // Notify parent components about the new customer (for any other logic they need to handle)
+      onAddNewCustomer(customerToCreate);
+      
+      // Select this customer for the current form
+      onSelectCustomer(createdCustomer);
+      setSelectedCustomerId(createdCustomer.id);
+      
+      // Show success feedback
+      toast({
+        title: "Customer Created",
+        description: `New customer ${createdCustomer.first_name} ${createdCustomer.last_name} has been added.`,
+        variant: "default"
+      });
+      
+      // Reset mode and form
+      setMode('existing');
+      setNewCustomer({
+        first_name: '',
+        last_name: '',
+        billing_address: '',
+        property_address: '',
+        same_as_billing: true,
+        phone: '',
+        email: '',
+        profile_image_url: null,
+        user_id: user.id
+      });
+    } catch (error) {
+      console.error("Failed to create customer:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create customer. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmittingCustomer(false);
+    }
   };
 
-  const selectedCustomer = 
-    (mode === 'existing'
-      ? sampleCustomers.find(c => c.id === selectedCustomerId)
-      : null) ??
-    (mode === 'new' && selectedCustomerId.startsWith('new-')
-      ? { id: selectedCustomerId, ...newCustomer }
-      : undefined);
+  const selectedCustomer = customers.find(c => c.id === selectedCustomerId);
 
   return (
     <div className="space-y-4">
@@ -86,12 +138,14 @@ const CustomerSelection: React.FC<CustomerSelectionProps> = ({ onSelectCustomer,
 
       {mode === 'existing' && (
         <ExistingCustomerSelector
-          customers={sampleCustomers}
+          customers={customers}
           selectedCustomer={selectedCustomer}
           selectedCustomerId={selectedCustomerId}
           open={open}
           onOpenChange={setOpen}
           onSelectCustomer={handleSelectCustomer}
+          isLoading={isLoading}
+          isError={isError}
         />
       )}
 
@@ -100,6 +154,7 @@ const CustomerSelection: React.FC<CustomerSelectionProps> = ({ onSelectCustomer,
           newCustomer={newCustomer}
           onCustomerChange={setNewCustomer}
           onAddCustomer={handleAddCustomer}
+          loading={isSubmittingCustomer}
         />
       )}
     </div>

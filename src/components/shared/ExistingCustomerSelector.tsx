@@ -1,9 +1,9 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandLoading } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Customer } from "@/types/customer";
 
@@ -14,6 +14,8 @@ interface ExistingCustomerSelectorProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSelectCustomer: (customerId: string) => void;
+  isLoading?: boolean;
+  isError?: boolean;
 }
 
 const ExistingCustomerSelector: React.FC<ExistingCustomerSelectorProps> = ({
@@ -23,6 +25,8 @@ const ExistingCustomerSelector: React.FC<ExistingCustomerSelectorProps> = ({
   open,
   onOpenChange,
   onSelectCustomer,
+  isLoading = false,
+  isError = false,
 }) => {
   // Ensure customers is an array, even if it's undefined
   const safeCustomers = Array.isArray(customers) ? customers : [];
@@ -44,35 +48,52 @@ const ExistingCustomerSelector: React.FC<ExistingCustomerSelectorProps> = ({
         <PopoverContent className="w-full p-0">
           <Command>
             <CommandInput placeholder="Search customer..." />
-            <CommandEmpty>No customer found.</CommandEmpty>
-            <CommandGroup>
-              {safeCustomers.length > 0 ? (
-                safeCustomers.map((customer) => (
-                  <CommandItem
-                    key={customer.id}
-                    value={customer.id}
-                    onSelect={() => onSelectCustomer(customer.id)}
-                  >
-                    <Check
-                      className={cn(
-                        "mr-2 h-4 w-4",
-                        selectedCustomerId === customer.id 
-                          ? "opacity-100" 
-                          : "opacity-0"
-                      )}
-                    />
-                    <div className="flex flex-col">
-                      <span>{`${customer.first_name} ${customer.last_name}`}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {customer.email}
-                      </span>
-                    </div>
-                  </CommandItem>
-                ))
-              ) : (
-                <CommandItem disabled>No customers available</CommandItem>
-              )}
-            </CommandGroup>
+            {isLoading && (
+              <CommandLoading>
+                <div className="flex items-center justify-center p-4 text-sm">
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Loading customers...
+                </div>
+              </CommandLoading>
+            )}
+            {isError && (
+              <CommandEmpty className="py-6 text-center text-sm">
+                Error loading customers. Please try again.
+              </CommandEmpty>
+            )}
+            {!isLoading && !isError && (
+              <>
+                <CommandEmpty>No customer found.</CommandEmpty>
+                <CommandGroup>
+                  {safeCustomers.length > 0 ? (
+                    safeCustomers.map((customer) => (
+                      <CommandItem
+                        key={customer.id}
+                        value={customer.id}
+                        onSelect={() => onSelectCustomer(customer.id)}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            selectedCustomerId === customer.id 
+                              ? "opacity-100" 
+                              : "opacity-0"
+                          )}
+                        />
+                        <div className="flex flex-col">
+                          <span>{`${customer.first_name} ${customer.last_name}`}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {customer.email}
+                          </span>
+                        </div>
+                      </CommandItem>
+                    ))
+                  ) : (
+                    <CommandItem disabled>No customers available</CommandItem>
+                  )}
+                </CommandGroup>
+              </>
+            )}
           </Command>
         </PopoverContent>
       </Popover>
