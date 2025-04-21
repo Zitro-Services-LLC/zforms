@@ -1,5 +1,4 @@
 
-
 import React from 'react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -58,8 +57,10 @@ const NewCustomerForm: React.FC<NewCustomerFormProps> = ({
     }
   });
 
+  // Get 'same_as_billing' value from the form
   const sameAsBilling = form.watch('same_as_billing');
 
+  // Effect to update the form with the latest customer data
   React.useEffect(() => {
     form.reset({
       first_name: newCustomer.first_name || '',
@@ -76,8 +77,7 @@ const NewCustomerForm: React.FC<NewCustomerFormProps> = ({
     });
   }, [newCustomer, form]);
 
-  const sameAsBilling = form.watch('same_as_billing');
-
+  // Effect to update property_address when same_as_billing changes
   React.useEffect(() => {
     if (sameAsBilling) {
       const billingAddress = form.getValues('billing_address');
@@ -239,4 +239,3 @@ const NewCustomerForm: React.FC<NewCustomerFormProps> = ({
 };
 
 export default NewCustomerForm;
-
