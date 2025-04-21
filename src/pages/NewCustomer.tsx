@@ -44,6 +44,7 @@ const NewCustomer = () => {
       setLoading(true);
       
       if (!user?.id) {
+        console.error("No authenticated user found");
         toast({
           title: "Authentication Error",
           description: "You must be logged in to add a customer",
@@ -52,6 +53,12 @@ const NewCustomer = () => {
         return;
       }
 
+      console.log("Current authenticated user:", user.id);
+      console.log("Attempting to create customer with data:", {
+        ...newCustomer,
+        user_id: user.id
+      });
+
       // Create a complete customer object with the user_id
       const customerToCreate = {
         ...newCustomer,
@@ -59,7 +66,8 @@ const NewCustomer = () => {
       };
 
       // Use the customerService to create the customer
-      await createCustomer(customerToCreate);
+      const result = await createCustomer(customerToCreate);
+      console.log("Customer creation result:", result);
 
       toast({
         title: "Customer Added",
@@ -69,6 +77,12 @@ const NewCustomer = () => {
       navigate('/customers');
     } catch (error: any) {
       console.error("Error adding customer:", error);
+      // Log more detailed error information
+      if (error.error) console.error("Error details:", error.error);
+      if (error.code) console.error("Error code:", error.code);
+      if (error.details) console.error("Error details:", error.details);
+      if (error.hint) console.error("Error hint:", error.hint);
+      
       toast({
         title: "Error creating customer",
         description: error.message || JSON.stringify(error),

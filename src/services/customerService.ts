@@ -7,6 +7,8 @@ import type { Customer } from "@/types/customer";
  */
 export async function getCustomers(userId: string | undefined) {
   if (!userId) return [];
+  console.log("Getting customers for user:", userId);
+  
   const { data, error } = await supabase
     .from('customers')
     .select('*')
@@ -17,6 +19,7 @@ export async function getCustomers(userId: string | undefined) {
     throw error;
   }
   
+  console.log("Fetched customers count:", data?.length || 0);
   return data as Customer[];
 }
 
@@ -47,6 +50,9 @@ export async function createCustomer(customerData: Omit<Customer, 'id'>) {
     throw new Error('Required customer fields missing');
   }
   
+  console.log("Creating customer with data:", customerData);
+  console.log("Authentication status check:", await supabase.auth.getSession());
+  
   const { data, error } = await supabase
     .from('customers')
     .insert({
@@ -64,9 +70,16 @@ export async function createCustomer(customerData: Omit<Customer, 'id'>) {
   
   if (error) {
     console.error('Error creating customer:', error);
+    console.error('Error details:', {
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      code: error.code
+    });
     throw error;
   }
   
+  console.log('Customer created successfully:', data);
   return data as Customer;
 }
 
