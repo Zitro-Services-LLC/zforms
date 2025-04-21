@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import AppLayout from '../components/layouts/AppLayout';
 import EstimateFormHeader from '../components/estimate/EstimateFormHeader';
@@ -10,6 +9,8 @@ import EstimatePreviewDialog from '../components/estimate/EstimatePreviewDialog'
 import { useToast } from "@/hooks/use-toast";
 import type { LineItem } from '@/types/estimate';
 import { Button } from '@/components/ui/button';
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
+import { createEstimate } from '@/services/estimateService';
 
 // Generate a unique reference number for the estimate ("EST-YYYYMMDD-XXXX")
 function generateReferenceNumber() {
@@ -28,6 +29,7 @@ type EstimateStatus = "draft" | "submitted";
 
 const NewEstimate = () => {
   const { toast } = useToast();
+  const { user } = useSupabaseAuth();
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   const [items, setItems] = useState<LineItem[]>([
     { id: 1, description: '', quantity: 0, rate: 0, amount: 0 }
@@ -128,7 +130,7 @@ const NewEstimate = () => {
   };
 
   // Save estimate draft
-  const handleSaveDraft = () => {
+  const handleSaveDraft = async () => {
     if (!allRequiredValid) {
       toast({
         title: "Cannot Save",
@@ -137,20 +139,48 @@ const NewEstimate = () => {
       });
       return;
     }
+    if (!user) {
+      toast({
+        title: "Authentication Error",
+        description: "You must be logged in.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSaving(true);
-    setTimeout(() => {
-      setIsSaving(false);
+    try {
+      await createEstimate({
+        customer_id: selectedCustomer?.id,
+        user_id: user.id,
+        title: referenceNumber,
+        date: estimateDate,
+        subtotal,
+        tax_rate: taxRate,
+        tax_amount: tax,
+        total,
+        notes,
+        status: "draft"
+      }, items);
+
       setEstimateStatus("draft");
       toast({
         title: "Draft Saved",
         description: "Your estimate draft was saved successfully.",
         variant: "default"
       });
-    }, 1000);
+    } catch (error) {
+      toast({
+        title: "Save Error",
+        description: "Could not save estimate. Please try again.",
+        variant: "destructive"
+      });
+    }
+    setIsSaving(false);
   };
 
-  // Submit estimate to customer
-  const handleSubmitToCustomer = () => {
+  // Submit estimate to Supabase
+  const handleSubmitToCustomer = async () => {
     if (!allRequiredValid) {
       toast({
         title: "Cannot Submit",
@@ -159,16 +189,44 @@ const NewEstimate = () => {
       });
       return;
     }
+    if (!user) {
+      toast({
+        title: "Authentication Error",
+        description: "You must be logged in.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSaving(true);
-    setTimeout(() => {
-      setIsSaving(false);
+    try {
+      await createEstimate({
+        customer_id: selectedCustomer?.id,
+        user_id: user.id,
+        title: referenceNumber,
+        date: estimateDate,
+        subtotal,
+        tax_rate: taxRate,
+        tax_amount: tax,
+        total,
+        notes,
+        status: "submitted"
+      }, items);
+
       setEstimateStatus("submitted");
       toast({
         title: "Estimate Submitted",
         description: "The estimate has been submitted to the customer.",
         variant: "default"
       });
-    }, 1200);
+    } catch (error) {
+      toast({
+        title: "Submit Error",
+        description: "Could not submit estimate. Please try again.",
+        variant: "destructive"
+      });
+    }
+    setIsSaving(false);
   };
 
   // Preview estimate

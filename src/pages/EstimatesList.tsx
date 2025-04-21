@@ -14,32 +14,15 @@ import {
 } from '../components/ui/table';
 import StatusBadge from '../components/shared/StatusBadge';
 import DownloadPdfButton from '../components/shared/DownloadPdfButton';
-
-const mockEstimates = [
-  {
-    id: 'EST-001',
-    customer: 'John Smith',
-    date: '2025-04-15',
-    total: 2500.00,
-    status: 'submitted' as const,
-  },
-  {
-    id: 'EST-002',
-    customer: 'Sarah Johnson',
-    date: '2025-04-14',
-    total: 1800.00,
-    status: 'approved' as const,
-  },
-  {
-    id: 'EST-003',
-    customer: 'Mike Brown',
-    date: '2025-04-13',
-    total: 3200.00,
-    status: 'drafting' as const,
-  },
-];
+import { useQuery } from '@tanstack/react-query';
+import { getEstimates } from '@/services/estimateService';
 
 const EstimatesList = () => {
+  const { data: estimates = [], isLoading, isError } = useQuery({
+    queryKey: ['estimates'],
+    queryFn: getEstimates,
+  });
+
   return (
     <AppLayout userType="contractor">
       <div className="container mx-auto p-6">
@@ -54,39 +37,49 @@ const EstimatesList = () => {
         </div>
 
         <div className="bg-white shadow-sm rounded-lg">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>ID</TableHead>
-                <TableHead>Customer</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Total</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {mockEstimates.map((estimate) => (
-                <TableRow key={estimate.id}>
-                  <TableCell>{estimate.id}</TableCell>
-                  <TableCell>{estimate.customer}</TableCell>
-                  <TableCell>{estimate.date}</TableCell>
-                  <TableCell>${estimate.total.toFixed(2)}</TableCell>
-                  <TableCell>
-                    <StatusBadge status={estimate.status} />
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Button variant="outline" size="sm" asChild>
-                        <Link to={`/estimates/${estimate.id}`}>View</Link>
-                      </Button>
-                      <DownloadPdfButton documentType="estimate" documentId={estimate.id} />
-                    </div>
-                  </TableCell>
+          {isLoading ? (
+            <div className="py-8 text-center">Loading estimates...</div>
+          ) : isError ? (
+            <div className="py-8 text-center text-red-500">Failed to load estimates.</div>
+          ) : estimates.length === 0 ? (
+            <div className="py-8 text-center text-muted-foreground">
+              No estimates found. Click <b>New Estimate</b> to create your first.
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>ID</TableHead>
+                  <TableHead>Customer ID</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Total</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {estimates.map((estimate) => (
+                  <TableRow key={estimate.id}>
+                    <TableCell>{estimate.id}</TableCell>
+                    <TableCell>{estimate.customer_id}</TableCell>
+                    <TableCell>{estimate.date}</TableCell>
+                    <TableCell>${Number(estimate.total).toFixed(2)}</TableCell>
+                    <TableCell>
+                      <StatusBadge status={estimate.status} />
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" asChild>
+                          <Link to={`/estimates/${estimate.id}`}>View</Link>
+                        </Button>
+                        <DownloadPdfButton documentType="estimate" documentId={estimate.id} />
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </div>
       </div>
     </AppLayout>
