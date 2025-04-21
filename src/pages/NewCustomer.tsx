@@ -67,12 +67,12 @@ const NewCustomer = () => {
       });
       
       navigate('/customers');
-    } catch (error) {
-      console.error('Error adding customer:', error);
+    } catch (error: any) {
+      console.error("Error adding customer:", error);
       toast({
-        title: "Error",
-        description: "Failed to add customer. Please try again.",
-        variant: "destructive"
+        title: "Error creating customer",
+        description: error.message || JSON.stringify(error),
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
