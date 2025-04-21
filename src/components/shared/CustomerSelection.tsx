@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
@@ -116,6 +117,7 @@ const CustomerSelection: React.FC<CustomerSelectionProps> = ({ onSelectCustomer,
     }
   };
 
+  // Find the selected customer
   const selectedCustomer = customers.find(c => c.id === selectedCustomerId);
 
   return (

@@ -62,9 +62,9 @@ const ExistingCustomerSelector: React.FC<ExistingCustomerSelectorProps> = ({
             {!isLoading && !isError && (
               <>
                 <CommandEmpty>No customer found.</CommandEmpty>
-                <CommandGroup>
-                  {safeCustomers.length > 0 ? (
-                    safeCustomers.map((customer) => (
+                {safeCustomers.length > 0 ? (
+                  <CommandGroup>
+                    {safeCustomers.map((customer) => (
                       <CommandItem
                         key={customer.id}
                         value={customer.id}
@@ -85,11 +85,13 @@ const ExistingCustomerSelector: React.FC<ExistingCustomerSelectorProps> = ({
                           </span>
                         </div>
                       </CommandItem>
-                    ))
-                  ) : (
-                    <CommandItem disabled>No customers available</CommandItem>
-                  )}
-                </CommandGroup>
+                    ))}
+                  </CommandGroup>
+                ) : (
+                  <div className="p-4 text-sm text-center text-muted-foreground">
+                    No customers available.
+                  </div>
+                )}
               </>
             )}
           </Command>
