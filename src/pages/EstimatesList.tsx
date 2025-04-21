@@ -12,7 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from '../components/ui/table';
-import StatusBadge from '../components/shared/StatusBadge';
+import StatusBadge, { Status } from '../components/shared/StatusBadge';
 import DownloadPdfButton from '../components/shared/DownloadPdfButton';
 import { useQuery } from '@tanstack/react-query';
 import { getEstimates } from '@/services/estimateService';
@@ -22,6 +22,24 @@ const EstimatesList = () => {
     queryKey: ['estimates'],
     queryFn: getEstimates,
   });
+
+  // Helper function to map database status to StatusBadge status type
+  const mapStatusToType = (status: string): Status => {
+    switch(status) {
+      case 'draft':
+        return 'drafting';
+      case 'submitted':
+        return 'submitted';
+      case 'approved':
+        return 'approved';
+      case 'needs-update':
+        return 'needs-update';
+      case 'paid':
+        return 'paid';
+      default:
+        return 'drafting'; // Default fallback
+    }
+  };
 
   return (
     <AppLayout userType="contractor">
@@ -65,7 +83,7 @@ const EstimatesList = () => {
                     <TableCell>{estimate.date}</TableCell>
                     <TableCell>${Number(estimate.total).toFixed(2)}</TableCell>
                     <TableCell>
-                      <StatusBadge status={estimate.status} />
+                      <StatusBadge status={mapStatusToType(estimate.status)} />
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
