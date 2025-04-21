@@ -85,8 +85,7 @@ const CommandGroup = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.Group>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive.Group>
 >(({ className, children, ...props }, ref) => {
-  // Here's the fix: Make sure children is properly handled
-  // Make sure children exists and is properly handled
+  // Ensure children exists and is properly handled
   const safeChildren = React.Children.count(children) > 0 
     ? children 
     : null;
