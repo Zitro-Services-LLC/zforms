@@ -27,7 +27,6 @@ const EditCustomer = () => {
     user_id: undefined
   });
 
-  // Fetch customer data, refetch on id change, and always use id
   const { data: customer, isLoading: isLoadingCustomer, isError } = useQuery({
     queryKey: ['customer', id],
     queryFn: () => getCustomerById(id as string),
@@ -35,7 +34,6 @@ const EditCustomer = () => {
     refetchOnWindowFocus: false,
   });
 
-  // Update customer mutation
   const updateCustomerMutation = useMutation({
     mutationFn: (data: Partial<Customer>) => updateCustomer(id as string, data),
     onSuccess: () => {
@@ -57,7 +55,6 @@ const EditCustomer = () => {
     }
   });
 
-  // Update local state when customer data is fetched
   React.useEffect(() => {
     if (customer) {
       setCustomerData({
@@ -143,6 +140,7 @@ const EditCustomer = () => {
             onCustomerChange={handleCustomerChange}
             onAddCustomer={handleUpdateCustomer}
             loading={updateCustomerMutation.isPending}
+            mode="edit"
           />
         </div>
       </div>

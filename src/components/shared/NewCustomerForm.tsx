@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -21,7 +22,7 @@ const customerSchema = z.object({
   property_address: z.string().optional().nullable(),
   same_as_billing: z.boolean().default(true),
   profile_image_url: z.string().nullable().optional(),
-  user_id: z.string().optional() // Will be filled by the parent component
+  user_id: z.string().optional()
 });
 
 // Create a type for the form data based on the schema
@@ -32,6 +33,7 @@ interface NewCustomerFormProps {
   onCustomerChange: (customer: Omit<Customer, 'id'>) => void;
   onAddCustomer: () => void;
   loading?: boolean;
+  mode?: "add" | "edit";
 }
 
 const NewCustomerForm: React.FC<NewCustomerFormProps> = ({
@@ -39,6 +41,7 @@ const NewCustomerForm: React.FC<NewCustomerFormProps> = ({
   onCustomerChange,
   onAddCustomer,
   loading = false,
+  mode = "add"
 }) => {
   const form = useForm<CustomerFormData>({
     resolver: zodResolver(customerSchema),
@@ -58,6 +61,24 @@ const NewCustomerForm: React.FC<NewCustomerFormProps> = ({
   const sameAsBilling = form.watch('same_as_billing');
 
   React.useEffect(() => {
+    form.reset({
+      first_name: newCustomer.first_name || '',
+      last_name: newCustomer.last_name || '',
+      email: newCustomer.email || '',
+      phone: newCustomer.phone || '',
+      billing_address: newCustomer.billing_address || '',
+      property_address: newCustomer.same_as_billing
+        ? newCustomer.billing_address || ''
+        : newCustomer.property_address || '',
+      same_as_billing: newCustomer.same_as_billing,
+      profile_image_url: newCustomer.profile_image_url || null,
+      user_id: newCustomer.user_id
+    });
+  }, [newCustomer, form]);
+
+  const sameAsBilling = form.watch('same_as_billing');
+
+  React.useEffect(() => {
     if (sameAsBilling) {
       const billingAddress = form.getValues('billing_address');
       form.setValue('property_address', billingAddress || '');
@@ -65,8 +86,6 @@ const NewCustomerForm: React.FC<NewCustomerFormProps> = ({
   }, [sameAsBilling, form]);
 
   const onSubmit = (data: CustomerFormData) => {
-    // Convert the form data to the expected Customer type
-    // Ensure required fields are present and optional fields are handled correctly
     const customerData: Omit<Customer, 'id'> = {
       first_name: data.first_name,
       last_name: data.last_name,
@@ -76,9 +95,9 @@ const NewCustomerForm: React.FC<NewCustomerFormProps> = ({
       property_address: data.property_address || null,
       same_as_billing: data.same_as_billing,
       profile_image_url: data.profile_image_url || null,
-      user_id: newCustomer.user_id // Preserve the user_id from parent component
+      user_id: newCustomer.user_id
     };
-    
+
     onCustomerChange(customerData);
     onAddCustomer();
   };
@@ -205,7 +224,9 @@ const NewCustomerForm: React.FC<NewCustomerFormProps> = ({
           className="mt-2 bg-amber-500 hover:bg-amber-600"
           disabled={loading}
         >
-          {loading ? "Adding Customer..." : "Add Customer"}
+          {loading
+            ? (mode === 'edit' ? "Updating..." : "Adding Customer...")
+            : (mode === 'edit' ? "Update Customer" : "Add Customer")}
         </Button>
         
         <div className="mt-2 flex items-center text-xs text-amber-600">
@@ -218,3 +239,4 @@ const NewCustomerForm: React.FC<NewCustomerFormProps> = ({
 };
 
 export default NewCustomerForm;
+
