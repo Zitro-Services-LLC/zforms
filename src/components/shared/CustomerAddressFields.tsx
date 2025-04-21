@@ -5,12 +5,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { UseFormReturn } from "react-hook-form";
 
-// Types should match those defined in parent
+// Type definition that exactly matches the schema in NewCustomerForm
 type CustomerFormData = {
-  billing_address: string;
-  property_address: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone?: string | null;
+  billing_address?: string | null;
+  property_address?: string | null;
   same_as_billing: boolean;
-  [key: string]: any;
+  profile_image_url?: string | null;
+  user_id?: string;
 };
 
 interface CustomerAddressFieldsProps {

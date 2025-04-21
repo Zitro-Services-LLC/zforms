@@ -5,11 +5,17 @@ import { Input } from "@/components/ui/input";
 import { UseFormReturn } from "react-hook-form";
 import type { Customer } from "@/types/customer";
 
-// Define the same CustomerFormData as in the parent
+// Type definition that exactly matches the schema in NewCustomerForm
 type CustomerFormData = {
   first_name: string;
   last_name: string;
-  [key: string]: any;
+  email: string;
+  phone?: string | null;
+  billing_address?: string | null;
+  property_address?: string | null;
+  same_as_billing: boolean;
+  profile_image_url?: string | null;
+  user_id?: string;
 };
 
 interface CustomerNameFieldsProps {

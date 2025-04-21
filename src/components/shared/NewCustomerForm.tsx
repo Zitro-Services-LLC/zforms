@@ -25,7 +25,7 @@ const customerSchema = z.object({
 });
 
 // Create a type for the form data based on the schema
-type CustomerFormData = z.infer<typeof customerSchema>;
+export type CustomerFormData = z.infer<typeof customerSchema>;
 
 interface NewCustomerFormProps {
   newCustomer: Omit<Customer, 'id'>;
