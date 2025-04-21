@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import AppLayout from '@/components/layouts/AppLayout';
 import {
@@ -22,10 +22,11 @@ import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 
 const CustomersList = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { user } = useSupabaseAuth();
-  
+
   // Unified queryKey for better cache consistency
   const {
     data: customers = [],
@@ -40,9 +41,19 @@ const CustomersList = () => {
     refetchOnWindowFocus: true, // Always refetch on focus for freshest view
   });
 
+  // Force refetch on navigation if EditCustomer page indicated an update just happened
+  React.useEffect(() => {
+    if (location.state?.forceRefetch) {
+      console.log("Forcing refetch of customer list due to update");
+      refetch();
+      // Remove the state so it doesn't refetch every render
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location, refetch, navigate]);
+
   React.useEffect(() => {
     // Add a log to verify we see updated data after edits
-    console.log("Fetched customers:", customers);
+    console.log("Fetched customers from CustomersList:", customers);
   }, [customers]);
 
   const deleteCustomerMutation = useMutation({

@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -36,14 +37,18 @@ const EditCustomer = () => {
 
   const updateCustomerMutation = useMutation({
     mutationFn: (data: Partial<Customer>) => updateCustomer(id as string, data),
-    onSuccess: () => {
+    onSuccess: (data) => {
+      // Invalidate both the list and specific customer view.
       queryClient.invalidateQueries({ queryKey: ['customers'] });
       queryClient.invalidateQueries({ queryKey: ['customer', id] });
+      // Extra: Refetch right now for always-fresh UI
+      queryClient.refetchQueries({ queryKey: ['customers'] });
       toast({
         title: "Success",
         description: "Customer updated successfully"
       });
-      navigate('/customers');
+      // Extra: Pass a flag to CustomersList using navigation state to force a refetch
+      navigate('/customers', { state: { forceRefetch: true } });
     },
     onError: (error) => {
       console.error('Error updating customer:', error);
@@ -68,6 +73,7 @@ const EditCustomer = () => {
         profile_image_url: customer.profile_image_url,
         user_id: customer.user_id
       });
+      console.log("Loaded customer for edit:", customer);
     }
   }, [customer]);
 
@@ -149,3 +155,4 @@ const EditCustomer = () => {
 };
 
 export default EditCustomer;
+
