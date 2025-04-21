@@ -7,6 +7,8 @@ import { useToast } from "@/components/ui/use-toast";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { createCustomer } from '@/services/customerService';
 import type { Customer } from '@/types/customer';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 
 const NewCustomer = () => {
   const navigate = useNavigate();
@@ -80,7 +82,11 @@ const NewCustomer = () => {
   return (
     <AppLayout userType="contractor">
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <Button variant="ghost" onClick={() => navigate('/customers')}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Customers
+          </Button>
           <h1 className="text-3xl font-bold tracking-tight">Add New Customer</h1>
         </div>
         <div className="max-w-2xl">

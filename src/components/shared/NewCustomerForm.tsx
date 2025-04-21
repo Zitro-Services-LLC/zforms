@@ -108,10 +108,12 @@ const NewCustomerForm: React.FC<NewCustomerFormProps> = ({
             : (mode === 'edit' ? "Update Customer" : "Add Customer")}
         </Button>
         
-        <div className="mt-2 flex items-center text-xs text-amber-600">
-          <LogIn className="mr-1 h-3 w-3" />
-          <span>New customer will receive an email with login instructions.</span>
-        </div>
+        {mode === 'add' && (
+          <div className="mt-2 flex items-center text-xs text-amber-600">
+            <LogIn className="mr-1 h-3 w-3" />
+            <span>New customer will receive an email with login instructions.</span>
+          </div>
+        )}
       </form>
     </Form>
   );
