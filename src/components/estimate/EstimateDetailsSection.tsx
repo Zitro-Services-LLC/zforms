@@ -50,9 +50,9 @@ const EstimateDetailsSection: React.FC<EstimateDetailsSectionProps> = ({
               Estimate Date
             </label>
             <DatePickerField
-              id="date"
-              selectedDate={estimateDate}
-              onDateChange={onDateChange}
+              label="Estimate Date"
+              value={estimateDate}
+              onChange={onDateChange}
             />
           </div>
           <div className="mb-4">

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandLoading } from "@/components/ui/command";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -49,12 +49,10 @@ const ExistingCustomerSelector: React.FC<ExistingCustomerSelectorProps> = ({
           <Command>
             <CommandInput placeholder="Search customer..." />
             {isLoading && (
-              <CommandLoading>
-                <div className="flex items-center justify-center p-4 text-sm">
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Loading customers...
-                </div>
-              </CommandLoading>
+              <div className="flex items-center justify-center p-4 text-sm">
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Loading customers...
+              </div>
             )}
             {isError && (
               <CommandEmpty className="py-6 text-center text-sm">
