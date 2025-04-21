@@ -1,5 +1,7 @@
 
 import React from 'react';
+import { Button } from "@/components/ui/button";
+import { Send, ArrowLeft, Pencil, Check } from "lucide-react";
 import { Status } from '../shared/StatusBadge';
 
 interface EstimateActionsProps {
@@ -34,43 +36,49 @@ const EstimateActions: React.FC<EstimateActionsProps> = ({
       {userType === 'contractor' ? (
         <div className="flex justify-end space-x-4">
           {status === 'drafting' && (
-            <button className="btn-amber">
+            <Button className="bg-amber-500 hover:bg-amber-600 text-white">
+              <Send className="mr-2 h-4 w-4" />
               Submit to Customer
-            </button>
+            </Button>
           )}
           {status === 'submitted' && (
-            <button 
+            <Button 
               onClick={onMarkApproved}
-              className="btn-amber"
+              className="bg-amber-500 hover:bg-amber-600 text-white"
             >
+              <Check className="mr-2 h-4 w-4" />
               Mark as Approved
-            </button>
+            </Button>
           )}
           {status !== 'drafting' && (
-            <button 
+            <Button 
               onClick={onRevise}
-              className="px-4 py-2 bg-white border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+              variant="outline"
+              className="bg-white hover:bg-gray-50"
             >
+              <Pencil className="mr-2 h-4 w-4" />
               Revise Estimate
-            </button>
+            </Button>
           )}
         </div>
       ) : (
         <div className="flex justify-end space-x-4">
           {status === 'submitted' && !showCommentBox && (
             <>
-              <button 
+              <Button 
                 onClick={onRequestChanges}
-                className="px-4 py-2 bg-white border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                variant="outline"
+                className="bg-white hover:bg-gray-50"
               >
                 Request Changes
-              </button>
-              <button 
+              </Button>
+              <Button 
                 onClick={onApprove}
-                className="btn-amber"
+                className="bg-amber-500 hover:bg-amber-600 text-white"
               >
+                <Check className="mr-2 h-4 w-4" />
                 Approve Estimate
-              </button>
+              </Button>
             </>
           )}
         </div>
@@ -90,19 +98,20 @@ const EstimateActions: React.FC<EstimateActionsProps> = ({
             placeholder="Describe the changes you're requesting..."
           ></textarea>
           <div className="mt-2 flex justify-end space-x-2">
-            <button 
+            <Button 
               onClick={onCancelComment}
-              className="px-4 py-2 bg-white border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+              variant="outline"
+              className="bg-white hover:bg-gray-50"
             >
               Cancel
-            </button>
-            <button 
+            </Button>
+            <Button 
               onClick={onSubmitRequest}
-              className="btn-amber"
+              className="bg-amber-500 hover:bg-amber-600 text-white"
               disabled={!commentText.trim()}
             >
               Submit Request
-            </button>
+            </Button>
           </div>
         </div>
       )}

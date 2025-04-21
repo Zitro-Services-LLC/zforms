@@ -14,6 +14,7 @@ import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { createEstimate } from '@/services/estimateService';
 import { useNavigate } from 'react-router-dom';
 import type { Customer } from '@/types/customer';
+import { Send, Save, ArrowRight, ArrowLeft } from "lucide-react";
 
 // Generate a unique reference number for the estimate ("EST-YYYYMMDD-XXXX")
 function generateReferenceNumber() {
@@ -118,6 +119,7 @@ const NewEstimate = () => {
   const handleCustomerSelect = (customer: Customer | null) => {
     setSelectedCustomer(customer);
     if (customer) {
+      console.log("Selected customer with ID:", customer.id);
       toast({
         title: "Customer Selected",
         description: `Selected ${customer.first_name} ${customer.last_name} for this estimate.`,
@@ -282,19 +284,38 @@ const NewEstimate = () => {
             taxRate={taxRate}
           />
 
-          {/* Show new Submit to Customer button if draft (and valid & not saving) */}
-          {estimateStatus === "draft" && allRequiredValid && !isSaving && (
-            <div className="flex justify-end pt-4">
+          {/* Action buttons */}
+          <div className="flex justify-between pt-6 border-t">
+            <Button 
+              variant="outline"
+              onClick={() => navigate('/estimates')}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Estimates
+            </Button>
+            
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                className="bg-white hover:bg-gray-50"
+                onClick={handleSaveDraft}
+                disabled={!allRequiredValid || isSaving}
+              >
+                <Save className="mr-2 h-4 w-4" />
+                Save as Draft
+              </Button>
+              
               <Button
                 className="bg-amber-600 hover:bg-amber-700 text-white"
                 onClick={handleSubmitToCustomer}
                 disabled={!allRequiredValid || isSaving}
               >
-                Submit Estimate to Customer
+                <Send className="mr-2 h-4 w-4" />
+                Submit to Customer
               </Button>
             </div>
-          )}
-
+          </div>
         </div>
       </div>
 
