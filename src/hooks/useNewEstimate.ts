@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
@@ -28,7 +27,6 @@ export function useNewEstimate() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [actionDisabledReason, setActionDisabledReason] = useState<string | null>(null);
 
-  // Generate ref number
   const generateReferenceNumber = useCallback(() => {
     const date = new Date();
     const pad = (n: number) => n.toString().padStart(2, '0');
@@ -44,14 +42,12 @@ export function useNewEstimate() {
     setReferenceNumber(generateReferenceNumber());
   }, [generateReferenceNumber]);
 
-  // Totals
   const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.rate), 0);
   const tax = subtotal * (taxRate / 100);
   const total = subtotal + tax;
 
-  // Validation
   const isReferenceValid = referenceNumber.trim().length > 0;
-  const isCustomerValid = !!selectedCustomer?.id;
+  const isCustomerValid = selectedCustomer?.id && selectedCustomer.id.length > 0;
   const isItemsValid = items.length > 0 && items.every(
     (item) => item.description.trim().length > 0 && item.quantity > 0 && item.rate > 0
   );
@@ -62,15 +58,14 @@ export function useNewEstimate() {
     if (allRequiredValid) {
       setActionDisabledReason(null);
     } else {
-      if (!isReferenceValid) setActionDisabledReason("Please enter a reference number.");
-      else if (!isCustomerValid) setActionDisabledReason("Please select or add a customer.");
-      else if (!isItemsValid) setActionDisabledReason("Please provide valid line items (description, quantity > 0, rate > 0).");
-      else if (!isTaxRateValid) setActionDisabledReason("Please enter a tax rate between 0 and 100.");
-      else setActionDisabledReason("Please complete all required fields.");
+      if (!isReferenceValid) setActionDisabledReason("Please enter a valid reference number");
+      else if (!isCustomerValid) setActionDisabledReason("Please select or add a valid customer");
+      else if (!isItemsValid) setActionDisabledReason("Please provide valid line items (description, quantity > 0, rate > 0)");
+      else if (!isTaxRateValid) setActionDisabledReason("Please enter a tax rate between 0 and 100");
+      else setActionDisabledReason("Please complete all required fields");
     }
   }, [isReferenceValid, isCustomerValid, isItemsValid, isTaxRateValid, allRequiredValid]);
 
-  // Item handlers
   const handleUpdateLineItem = (id: number, field: keyof LineItem, value: string | number) => {
     setItems(items.map(item => {
       if (item.id === id) {
@@ -110,41 +105,44 @@ export function useNewEstimate() {
   };
 
   const handleAddNewCustomer = (customerData: Omit<Customer, 'id'>) => {
-    // Directly set and select the new customer after creation (should be called after createCustomer call in selector)
     setSelectedCustomer({
       ...customerData,
       id: ''
     });
   };
 
-  // Save/submit logic
   const saveEstimate = async (status: EstimateStatus) => {
     setErrorMessage(null);
-    if (!allRequiredValid) {
-      toast({
-        title: `Cannot ${status === "draft" ? "Save" : "Submit"}`,
-        description: "Please fill all required fields before proceeding.",
-        variant: "destructive",
-      });
-      return;
-    }
-    if (!user) {
+    
+    if (!user?.id) {
       toast({
         title: "Authentication Error",
-        description: "You must be logged in.",
+        description: "You must be logged in to save estimates",
         variant: "destructive",
       });
       return;
     }
+
     if (!selectedCustomer?.id) {
       toast({
         title: "Invalid Customer",
-        description: "Please select a valid customer with a database ID.",
+        description: "Please select a valid customer before saving",
         variant: "destructive",
       });
       return;
     }
+
+    if (!allRequiredValid) {
+      toast({
+        title: `Cannot ${status === "draft" ? "Save" : "Submit"}`,
+        description: actionDisabledReason || "Please fill all required fields before proceeding",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSaving(true);
+    
     try {
       const result = await createEstimate({
         customer_id: selectedCustomer.id,
@@ -163,18 +161,18 @@ export function useNewEstimate() {
       toast({
         title: status === "draft" ? "Draft Saved" : "Estimate Submitted",
         description: status === "draft"
-          ? "Your estimate draft was saved successfully."
-          : "The estimate has been submitted to the customer.",
-        variant: "default"
+          ? "Your estimate draft was saved successfully"
+          : "The estimate has been submitted to the customer",
       });
-      // Navigate to estimates list after successful save
+      
       navigate("/estimates");
     } catch (error: any) {
-      const errorMsg = error.message || "Could not save estimate. Please try again.";
-      setErrorMessage(errorMsg);
+      const errorMessage = error.message || "Could not save estimate. Please try again.";
+      console.error("Error saving estimate:", error);
+      setErrorMessage(errorMessage);
       toast({
         title: `${status === "draft" ? "Save" : "Submit"} Error`,
-        description: errorMsg,
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {

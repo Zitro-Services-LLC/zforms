@@ -57,10 +57,16 @@ const CustomerSelection: React.FC<CustomerSelectionProps> = ({ onSelectCustomer,
   };
 
   const handleAddCustomer = async () => {
-    if (!newCustomer.first_name || !newCustomer.email || !user?.id) {
+    // Validate all required fields upfront
+    if (
+      !newCustomer.first_name ||
+      !newCustomer.last_name ||
+      !newCustomer.email ||
+      !newCustomer.user_id
+    ) {
       toast({
-        title: "Missing Information",
-        description: "Please fill out all required fields or make sure you're logged in.",
+        title: "Validation Error",
+        description: "Please fill in all required fields: First Name, Last Name, and Email",
         variant: "destructive"
       });
       return;
@@ -69,30 +75,30 @@ const CustomerSelection: React.FC<CustomerSelectionProps> = ({ onSelectCustomer,
     setIsSubmittingCustomer(true);
     
     try {
-      // Make sure the user_id is set correctly
+      if (!user?.id) {
+        throw new Error("Authentication required. Please log in to add customers.");
+      }
+      
+      // Create a complete customer object with the user_id
       const customerToCreate = {
         ...newCustomer,
         user_id: user.id
       };
-      
-      // Create the customer in Supabase and get back the full object with ID
+
+      // Create the customer in Supabase
       const createdCustomer = await createCustomer(customerToCreate);
       
-      // Notify parent components about the new customer (for any other logic they need to handle)
-      onAddNewCustomer(customerToCreate);
-      
-      // Select this customer for the current form
+      // Only call onSelectCustomer after successful creation
       onSelectCustomer(createdCustomer);
       setSelectedCustomerId(createdCustomer.id);
       
       // Show success feedback
       toast({
         title: "Customer Created",
-        description: `New customer ${createdCustomer.first_name} ${createdCustomer.last_name} has been added.`,
-        variant: "default"
+        description: `${createdCustomer.first_name} ${createdCustomer.last_name} has been added successfully.`
       });
       
-      // Reset mode and form
+      // Reset form and mode
       setMode('existing');
       setNewCustomer({
         first_name: '',
@@ -105,20 +111,20 @@ const CustomerSelection: React.FC<CustomerSelectionProps> = ({ onSelectCustomer,
         profile_image_url: null,
         user_id: user.id
       });
-    } catch (error) {
+
+      // Notify parent about the new customer for any additional logic
+      onAddNewCustomer(customerToCreate);
+    } catch (error: any) {
       console.error("Failed to create customer:", error);
       toast({
-        title: "Error",
-        description: "Failed to create customer. Please try again.",
+        title: "Error Creating Customer",
+        description: error.message || "An unexpected error occurred while creating the customer.",
         variant: "destructive"
       });
     } finally {
       setIsSubmittingCustomer(false);
     }
   };
-
-  // Find the selected customer
-  const selectedCustomer = customers.find(c => c.id === selectedCustomerId);
 
   return (
     <div className="space-y-4">
