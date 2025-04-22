@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import type { Notification, NotificationPreferences } from "@/types/notification";
 
@@ -7,13 +6,54 @@ let mockNotifications: Notification[] = [];
 let mockUnreadCount = 0;
 
 export const getNotifications = async (contractorId: string, limit = 10): Promise<Notification[]> => {
-  // Return mock notifications for now
-  return mockNotifications.filter(n => n.contractor_id === contractorId).slice(0, limit);
+  try {
+    // First try to get real notifications from database
+    const { data, error } = await supabase
+      .from('notifications')
+      .select('*')
+      .eq('contractor_id', contractorId)
+      .order('created_at', { ascending: false })
+      .limit(limit);
+    
+    if (error) {
+      console.error("Error fetching notifications:", error);
+      // Fall back to mock data
+      return mockNotifications.filter(n => n.contractor_id === contractorId).slice(0, limit);
+    }
+    
+    if (data && data.length > 0) {
+      return data as Notification[];
+    }
+    
+    // Fall back to mock data if no real notifications exist
+    return mockNotifications.filter(n => n.contractor_id === contractorId).slice(0, limit);
+  } catch (error) {
+    console.error("Exception in getNotifications:", error);
+    // Fall back to mock data
+    return mockNotifications.filter(n => n.contractor_id === contractorId).slice(0, limit);
+  }
 };
 
 export const getUnreadCount = async (contractorId: string): Promise<number> => {
-  // Return mock unread count
-  return mockUnreadCount;
+  try {
+    // Try to get real unread count from database
+    const { count, error } = await supabase
+      .from('notifications')
+      .select('*', { count: 'exact', head: true })
+      .eq('contractor_id', contractorId)
+      .eq('is_read', false);
+    
+    if (error) {
+      // Fall back to mock data
+      return mockUnreadCount;
+    }
+    
+    return count || 0;
+  } catch (error) {
+    console.error("Error in getUnreadCount:", error);
+    // Fall back to mock data
+    return mockUnreadCount;
+  }
 };
 
 export const markAsRead = async (notificationId: string): Promise<void> => {

@@ -21,27 +21,27 @@ const ContractorLicenseSection: React.FC = () => {
   const [licenseToDelete, setLicenseToDelete] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchLicenses = async () => {
-      if (!user) return;
-      
-      try {
-        setLoading(true);
-        const licenseData = await getContractorLicenses(user.id);
-        setLicenses(licenseData);
-      } catch (error) {
-        console.error('Error fetching licenses:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load license information",
-          variant: "destructive"
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchLicenses();
-  }, [user, toast]);
+  }, [user]);
+
+  const fetchLicenses = async () => {
+    if (!user) return;
+    
+    try {
+      setLoading(true);
+      const licenseData = await getContractorLicenses(user.id);
+      setLicenses(licenseData);
+    } catch (error) {
+      console.error('Error fetching licenses:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load license information",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleAddLicense = () => {
     setEditingLicense(null);
