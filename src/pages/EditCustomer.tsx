@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -108,34 +107,6 @@ const EditCustomer = () => {
     updateCustomerMutation.mutate(dataToSend);
   };
 
-  if (isLoadingCustomer) {
-    return (
-      <AppLayout userType="contractor">
-        <div className="flex justify-center items-center h-[60vh]">
-          <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
-        </div>
-      </AppLayout>
-    );
-  }
-
-  if (isError || !id) {
-    return (
-      <AppLayout userType="contractor">
-        <div className="space-y-6">
-          <div className="flex items-center">
-            <Button variant="ghost" onClick={() => navigate('/customers')}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Customers
-            </Button>
-          </div>
-          <div className="text-center py-8 text-red-500">
-            Customer not found or error loading customer data.
-          </div>
-        </div>
-      </AppLayout>
-    );
-  }
-
   return (
     <AppLayout userType="contractor">
       <div className="space-y-6">
@@ -161,4 +132,3 @@ const EditCustomer = () => {
 };
 
 export default EditCustomer;
-

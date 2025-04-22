@@ -87,6 +87,14 @@ export async function createCustomer(customerData: Omit<Customer, 'id'>) {
  * Update an existing customer
  */
 export async function updateCustomer(customerId: string, customerData: Partial<Customer>) {
+  console.log(`Updating customer with ID ${customerId} with data:`, customerData);
+  
+  // Ensure property_address is set correctly based on same_as_billing
+  if (customerData.same_as_billing && customerData.billing_address) {
+    customerData.property_address = customerData.billing_address;
+    console.log("Setting property_address equal to billing_address:", customerData.billing_address);
+  }
+  
   const { data, error } = await supabase
     .from('customers')
     .update(customerData)
@@ -96,9 +104,16 @@ export async function updateCustomer(customerId: string, customerData: Partial<C
   
   if (error) {
     console.error(`Error updating customer with ID ${customerId}:`, error);
+    console.error('Update error details:', {
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      code: error.code
+    });
     throw error;
   }
   
+  console.log(`Customer with ID ${customerId} updated successfully:`, data);
   return data as Customer;
 }
 
