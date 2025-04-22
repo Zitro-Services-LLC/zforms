@@ -1,14 +1,22 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import type { LineItem } from "@/types/estimate";
 
 // Get all estimates for the user
-export async function getEstimates() {
+export async function getEstimates(userId?: string) {
   try {
     console.log("Fetching estimates...");
-    const { data, error } = await supabase
+    let query = supabase
       .from('estimates')
       .select('*')
       .order('created_at', { ascending: false });
+    
+    // If userId is provided, filter by user_id
+    if (userId) {
+      query = query.eq('user_id', userId);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       console.error("Failed to fetch estimates:", error);

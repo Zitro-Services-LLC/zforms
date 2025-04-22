@@ -27,7 +27,6 @@ const EstimatesList = () => {
     queryKey: ['estimates', user?.id],
     queryFn: () => getEstimates(user?.id),
     enabled: !!user,
-    keepPreviousData: false,
   });
 
   // Helper function to map database status to StatusBadge status type
