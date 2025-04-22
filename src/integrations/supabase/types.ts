@@ -9,6 +9,53 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      contractor_licenses: {
+        Row: {
+          agency: string
+          contractor_id: string
+          created_at: string | null
+          expiry_date: string
+          id: string
+          issue_date: string
+          license_no: string
+          notification_sent_at: string | null
+          notification_status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          agency: string
+          contractor_id: string
+          created_at?: string | null
+          expiry_date: string
+          id?: string
+          issue_date: string
+          license_no: string
+          notification_sent_at?: string | null
+          notification_status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          agency?: string
+          contractor_id?: string
+          created_at?: string | null
+          expiry_date?: string
+          id?: string
+          issue_date?: string
+          license_no?: string
+          notification_sent_at?: string | null
+          notification_status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contractor_licenses_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "contractors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contractors: {
         Row: {
           company_address: string | null
@@ -448,6 +495,98 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notification_preferences: {
+        Row: {
+          contractor_id: string
+          created_at: string | null
+          email_enabled: boolean
+          in_app_enabled: boolean
+          sms_enabled: boolean
+          timezone: string
+          updated_at: string | null
+        }
+        Insert: {
+          contractor_id: string
+          created_at?: string | null
+          email_enabled?: boolean
+          in_app_enabled?: boolean
+          sms_enabled?: boolean
+          timezone?: string
+          updated_at?: string | null
+        }
+        Update: {
+          contractor_id?: string
+          created_at?: string | null
+          email_enabled?: boolean
+          in_app_enabled?: boolean
+          sms_enabled?: boolean
+          timezone?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_preferences_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: true
+            referencedRelation: "contractors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          contractor_id: string
+          created_at: string | null
+          id: string
+          is_read: boolean
+          level: string
+          license_id: string | null
+          payload: Json | null
+          sent_at: string | null
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          contractor_id: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean
+          level: string
+          license_id?: string | null
+          payload?: Json | null
+          sent_at?: string | null
+          type: string
+          updated_at?: string | null
+        }
+        Update: {
+          contractor_id?: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean
+          level?: string
+          license_id?: string | null
+          payload?: Json | null
+          sent_at?: string | null
+          type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "contractors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_license_id_fkey"
+            columns: ["license_id"]
+            isOneToOne: false
+            referencedRelation: "contractor_licenses"
             referencedColumns: ["id"]
           },
         ]

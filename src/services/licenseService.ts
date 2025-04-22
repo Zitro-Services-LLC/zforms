@@ -1,11 +1,13 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import type { ContractorLicense, LicenseFormData } from "@/types/license";
+import type { Database } from "@/types/database";
+
+type DbClient = typeof supabase;
 
 export const getContractorLicenses = async (contractorId: string): Promise<ContractorLicense[]> => {
-  // Using string literals for table names to avoid type issues
   const { data, error } = await supabase
-    .from('contractor_licenses')
+    .from<Database['public']['Tables']['contractor_licenses']>('contractor_licenses')
     .select('*')
     .eq('contractor_id', contractorId);
 
@@ -15,8 +17,7 @@ export const getContractorLicenses = async (contractorId: string): Promise<Contr
     return [];
   }
   
-  // Since we're using a string literal above, we need to manually cast the result
-  return data as unknown as ContractorLicense[];
+  return data;
 };
 
 export const addContractorLicense = async (contractorId: string, licenseData: LicenseFormData): Promise<ContractorLicense> => {
@@ -28,17 +29,15 @@ export const addContractorLicense = async (contractorId: string, licenseData: Li
     expiry_date: licenseData.expiry_date,
   };
 
-  // Using string literals for table names to avoid type issues
   const { data, error } = await supabase
-    .from('contractor_licenses')
+    .from<Database['public']['Tables']['contractor_licenses']>('contractor_licenses')
     .insert(licenseEntry)
     .select()
     .single();
 
   if (error) throw error;
   
-  // Cast the response to our type
-  return data as unknown as ContractorLicense;
+  return data;
 };
 
 export const updateContractorLicense = async (licenseId: string, licenseData: Partial<LicenseFormData>): Promise<ContractorLicense> => {
@@ -49,9 +48,8 @@ export const updateContractorLicense = async (licenseId: string, licenseData: Pa
   if (licenseData.issue_date) updateData.issue_date = licenseData.issue_date;
   if (licenseData.expiry_date) updateData.expiry_date = licenseData.expiry_date;
 
-  // Using string literals for table names to avoid type issues
   const { data, error } = await supabase
-    .from('contractor_licenses')
+    .from<Database['public']['Tables']['contractor_licenses']>('contractor_licenses')
     .update(updateData)
     .eq('id', licenseId)
     .select()
@@ -59,14 +57,12 @@ export const updateContractorLicense = async (licenseId: string, licenseData: Pa
 
   if (error) throw error;
   
-  // Cast the response to our type
-  return data as unknown as ContractorLicense;
+  return data;
 };
 
 export const deleteContractorLicense = async (licenseId: string): Promise<void> => {
-  // Using string literals for table names to avoid type issues
   const { error } = await supabase
-    .from('contractor_licenses')
+    .from<Database['public']['Tables']['contractor_licenses']>('contractor_licenses')
     .delete()
     .eq('id', licenseId);
 
