@@ -4,6 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { useQuery } from '@tanstack/react-query'
 import { getEstimates } from '@/services/estimateService'
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth'
+import AppLayout from '@/components/layouts/AppLayout'
 
 type EstimateWithCustomer = Awaited<ReturnType<typeof getEstimates>>[number]
 
@@ -14,7 +15,7 @@ export function EstimatesList() {
     queryKey: ['estimates', user?.id],
     queryFn: () => getEstimates(user?.id),
     enabled: Boolean(user?.id),
-    staleTime: 0 // Instead of keepPreviousData which is no longer available
+    staleTime: 0
   })
 
   React.useEffect(() => {
@@ -22,39 +23,48 @@ export function EstimatesList() {
     console.log('Estimates query:', { isLoading, isError, count: estimates.length })
   }, [user, isLoading, isError, estimates.length])
 
-  if (isLoading)   return <div>Loading…</div>
-  if (isError)     return <div>Error loading estimates</div>
-  if (!estimates.length) return <div>No estimates found</div>
-
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableCell>ID</TableCell>
-          <TableCell>Title</TableCell>
-          <TableCell>Customer</TableCell>
-          <TableCell>Date</TableCell>
-          <TableCell>Total</TableCell>
-          <TableCell>Status</TableCell>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {estimates.map(est => (
-          <TableRow key={est.id}>
-            <TableCell>{est.id.slice(0, 8)}</TableCell>
-            <TableCell>{est.title}</TableCell>
-            <TableCell>
-              {est.customer
-                ? `${est.customer.first_name} ${est.customer.last_name}`
-                : '—'}
-            </TableCell>
-            <TableCell>{new Date(est.date).toLocaleDateString()}</TableCell>
-            <TableCell>{`$${Number(est.total).toFixed(2)}`}</TableCell>
-            <TableCell>{est.status}</TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+    <AppLayout userType="contractor">
+      <div className="max-w-6xl mx-auto">
+        <h1 className="text-2xl font-bold mb-6 text-gray-900">Estimates</h1>
+        {isLoading ? (
+          <div>Loading…</div>
+        ) : isError ? (
+          <div>Error loading estimates</div>
+        ) : !estimates.length ? (
+          <div>No estimates found</div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableCell>ID</TableCell>
+                <TableCell>Title</TableCell>
+                <TableCell>Customer</TableCell>
+                <TableCell>Date</TableCell>
+                <TableCell>Total</TableCell>
+                <TableCell>Status</TableCell>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {estimates.map(est => (
+                <TableRow key={est.id}>
+                  <TableCell>{est.id.slice(0, 8)}</TableCell>
+                  <TableCell>{est.title}</TableCell>
+                  <TableCell>
+                    {est.customer
+                      ? `${est.customer.first_name} ${est.customer.last_name}`
+                      : '—'}
+                  </TableCell>
+                  <TableCell>{new Date(est.date).toLocaleDateString()}</TableCell>
+                  <TableCell>{`$${Number(est.total).toFixed(2)}`}</TableCell>
+                  <TableCell>{est.status}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </div>
+    </AppLayout>
   )
 }
 
