@@ -17,12 +17,17 @@ import DownloadPdfButton from '../components/shared/DownloadPdfButton';
 import { useQuery } from '@tanstack/react-query';
 import { getEstimates } from '@/services/estimateService';
 import { useToast } from '@/components/ui/use-toast';
+import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 
 const EstimatesList = () => {
   const { toast } = useToast();
+  const { user } = useSupabaseAuth();
+  
   const { data: estimates = [], isLoading, isError } = useQuery({
-    queryKey: ['estimates'],
-    queryFn: getEstimates,
+    queryKey: ['estimates', user?.id],
+    queryFn: () => getEstimates(user?.id),
+    enabled: !!user,
+    keepPreviousData: false,
   });
 
   // Helper function to map database status to StatusBadge status type
