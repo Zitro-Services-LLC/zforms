@@ -1,37 +1,36 @@
 import React, { useState } from 'react';
-import { useForm } from "react-hook-form";
 import AppLayout from '../components/layouts/AppLayout';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Building, Upload, X } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 import { Separator } from "@/components/ui/separator";
+import { useForm } from "react-hook-form";
 import ContractorLicenseSection from '@/components/profile/ContractorLicenseSection';
 import ContractorPasswordSection from '@/components/profile/ContractorPasswordSection';
 import ContractorPaymentMethodsSection from '@/components/profile/ContractorPaymentMethodsSection';
 import ContractorContactSection from '@/components/profile/ContractorContactSection';
-
-type ContractorProfileFormValues = {
-  companyName: string;
-  companyAddress: string;
-  companyPhone: string;
-  companyEmail: string;
-};
+import { useContractorData, ContractorFormData } from '@/hooks/useContractorData';
 
 const ContractorProfile = () => {
-  const { toast } = useToast();
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const { loading, contractorData, updateContractorData } = useContractorData();
   
-  const form = useForm<ContractorProfileFormValues>({
+  const form = useForm<ContractorFormData>({
     defaultValues: {
-      companyName: "Bob's Construction",
-      companyAddress: "123 Builder St, Construction City, CC 12345",
-      companyPhone: "(555) 123-4567",
-      companyEmail: "bob@bobconstruction.com"
+      companyName: '',
+      companyAddress: '',
+      companyPhone: '',
+      companyEmail: ''
     }
   });
+
+  React.useEffect(() => {
+    if (contractorData) {
+      form.reset(contractorData);
+    }
+  }, [contractorData, form]);
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -44,14 +43,8 @@ const ContractorProfile = () => {
     }
   };
 
-  const onSubmit = (data: ContractorProfileFormValues) => {
-    console.log("Profile data:", data);
-    console.log("Logo:", logoPreview);
-    
-    toast({
-      title: "Profile Saved",
-      description: "Your company profile has been updated successfully.",
-    });
+  const onSubmit = async (data: ContractorFormData) => {
+    await updateContractorData(data);
   };
 
   return (
@@ -70,7 +63,7 @@ const ContractorProfile = () => {
                     <FormItem>
                       <FormLabel>Company Name</FormLabel>
                       <FormControl>
-                        <Input placeholder="Bob's Construction" {...field} />
+                        <Input placeholder="Enter company name" {...field} disabled={loading} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -85,9 +78,10 @@ const ContractorProfile = () => {
                       <FormLabel>Company Address</FormLabel>
                       <FormControl>
                         <Textarea 
-                          placeholder="123 Builder St, Construction City, CC 12345" 
+                          placeholder="Enter company address" 
                           className="min-h-[80px]" 
-                          {...field} 
+                          {...field}
+                          disabled={loading}
                         />
                       </FormControl>
                       <FormMessage />
@@ -103,7 +97,7 @@ const ContractorProfile = () => {
                       <FormItem>
                         <FormLabel>Company Phone</FormLabel>
                         <FormControl>
-                          <Input placeholder="(555) 123-4567" {...field} />
+                          <Input placeholder="Enter company phone" {...field} disabled={loading} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -117,7 +111,7 @@ const ContractorProfile = () => {
                       <FormItem>
                         <FormLabel>Company Email</FormLabel>
                         <FormControl>
-                          <Input placeholder="bob@bobconstruction.com" {...field} />
+                          <Input placeholder="Enter company email" {...field} disabled={loading} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -169,29 +163,26 @@ const ContractorProfile = () => {
                 </div>
               </div>
 
-              <Separator className="my-6" />
-              
-              <ContractorContactSection />
-
-              <Separator className="my-6" />
-              
-              <ContractorLicenseSection />
-
-              <Separator className="my-6" />
-              
-              <ContractorPasswordSection />
-
-              <Separator className="my-6" />
-              
-              <ContractorPaymentMethodsSection />
-              
               <div className="pt-6 flex justify-end">
-                <Button type="submit" className="bg-amber-500 hover:bg-amber-600">
-                  Save Profile
+                <Button 
+                  type="submit" 
+                  className="bg-amber-500 hover:bg-amber-600"
+                  disabled={loading}
+                >
+                  {loading ? "Saving..." : "Save Profile"}
                 </Button>
               </div>
             </form>
           </Form>
+
+          <Separator className="my-6" />
+          <ContractorContactSection />
+          <Separator className="my-6" />
+          <ContractorLicenseSection />
+          <Separator className="my-6" />
+          <ContractorPasswordSection />
+          <Separator className="my-6" />
+          <ContractorPaymentMethodsSection />
         </div>
       </div>
     </AppLayout>
