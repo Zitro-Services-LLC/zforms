@@ -1,42 +1,39 @@
-
-import { supabase } from "@/integrations/supabase/client";
-import type { Database } from "@/integrations/supabase/types";
-import type { LineItem } from "@/types/estimate";
+import { supabase } from '@/integrations/supabase/client'
+import type { Database } from '@/integrations/supabase/types'
+import type { LineItem } from '@/types/estimate'
 
 // Strongly-typed joined estimate + customer row
 export type EstimateWithCustomer = Database['public']['Tables']['estimates']['Row'] & {
   customer: Database['public']['Tables']['customers']['Row'] | null
-};
+}
 
 // Get all estimates for the user, with joined customer info
 export async function getEstimates(userId?: string): Promise<EstimateWithCustomer[]> {
-  console.log("Fetching estimates for user:", userId);
-  
-  // Use the correct typing for Supabase queries
-  const query = supabase
-    .from('estimates')
-    .select(`
+  console.log("Fetching estimates for user:", userId)
+  let query = supabase
+    .from<EstimateWithCustomer>('estimates')
+    .select<EstimateWithCustomer, EstimateWithCustomer>(`
       *,
-      customer:customers (
+      customer:customers(
         id,
         first_name,
         last_name,
         email
       )
     `)
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
 
   if (userId) {
-    query.eq('user_id', userId);
+    query = query.eq('user_id', userId)
   }
 
-  const { data, error } = await query;
+  const { data, error } = await query
   if (error) {
-    console.error("getEstimates error:", error);
-    throw error;
+    console.error("getEstimates error:", error)
+    throw error
   }
-  console.log("getEstimates data:", data);
-  return data as EstimateWithCustomer[] || [];
+  console.log("getEstimates data:", data)
+  return data || []
 }
 
 // Create a new estimate and add items
@@ -68,29 +65,29 @@ export async function createEstimate(estimateData: {
       status: estimateData.status
     }])
     .select()
-    .single();
+    .single()
 
   if (error) {
-    throw error;
+    throw error
   }
 
   // Insert items
-  const estimate_id = newEstimate.id;
+  const estimate_id = newEstimate.id
   const itemsToInsert = items.map(item => ({
     estimate_id,
     description: item.description,
     quantity: item.quantity,
     rate: item.rate,
     amount: item.amount
-  }));
+  }))
 
   const { error: itemsError } = await supabase
     .from('estimate_items')
-    .insert(itemsToInsert);
+    .insert(itemsToInsert)
 
   if (itemsError) {
-    throw itemsError;
+    throw itemsError
   }
 
-  return newEstimate;
+  return newEstimate
 }

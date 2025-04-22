@@ -1,136 +1,64 @@
 
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { Plus } from 'lucide-react';
-import AppLayout from '../components/layouts/AppLayout';
-import { Button } from '../components/ui/button';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '../components/ui/table';
-import StatusBadge, { Status } from '../components/shared/StatusBadge';
-import DownloadPdfButton from '../components/shared/DownloadPdfButton';
-import { useQuery } from '@tanstack/react-query';
-import { getEstimates, type EstimateWithCustomer } from '@/services/estimateService';
-import { useToast } from '@/components/ui/use-toast';
-import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
+import React from 'react'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table'
+import { useQuery } from '@tanstack/react-query'
+import { getEstimates } from '@/services/estimateService'
+import { useSupabaseAuth } from '@/hooks/useSupabaseAuth'
 
-const EstimatesList = () => {
-  const { toast } = useToast();
-  const { user } = useSupabaseAuth();
-  
-  // Use proper React Query configuration
-  const { data: estimates = [], isLoading, isError } = useQuery({
-    queryKey: ['estimates', user?.id],
-    queryFn: () => getEstimates(user?.id),
-    enabled: !!user,
-  });
+type EstimateWithCustomer = Awaited<ReturnType<typeof getEstimates>>[number]
 
-  // Helper function to map database status to StatusBadge status type
-  const mapStatusToType = (status: string): Status => {
-    switch(status) {
-      case 'draft':
-        return 'drafting';
-      case 'submitted':
-        return 'submitted';
-      case 'approved':
-        return 'approved';
-      case 'needs-update':
-        return 'needs-update';
-      case 'paid':
-        return 'paid';
-      default:
-        return 'drafting'; // Default fallback
+export function EstimatesList() {
+  const { user } = useSupabaseAuth()
+
+  const { data: estimates = [], isLoading, isError } = useQuery(
+    ['estimates', user?.id],
+    () => getEstimates(user?.id),
+    {
+      enabled: Boolean(user?.id),
+      keepPreviousData: false,
+      onError: (err) => console.error('Query error:', err),
     }
-  };
-
-  // Debug logging
-  React.useEffect(() => {
-    console.log('Auth state:', user);
-    console.log('Estimates data:', { isLoading, isError, count: estimates.length, estimates });
-  }, [user, isLoading, isError, estimates]);
+  )
 
   React.useEffect(() => {
-    if (isError) {
-      toast({
-        title: "Error loading estimates",
-        description: "There was a problem loading your estimates. Please try again later.",
-        variant: "destructive"
-      });
-    }
-  }, [isError, toast]);
+    console.log('Auth state:', user)
+    console.log('Estimates query:', { isLoading, isError, count: estimates.length })
+  }, [user, isLoading, isError, estimates.length])
+
+  if (isLoading)   return <div>Loading…</div>
+  if (isError)     return <div>Error loading estimates</div>
+  if (!estimates.length) return <div>No estimates found</div>
 
   return (
-    <AppLayout userType="contractor">
-      <div className="container mx-auto p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Estimates</h1>
-          <Button asChild>
-            <Link to="/estimates/new">
-              <Plus className="mr-2 h-4 w-4" />
-              New Estimate
-            </Link>
-          </Button>
-        </div>
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableCell>ID</TableCell>
+          <TableCell>Title</TableCell>
+          <TableCell>Customer</TableCell>
+          <TableCell>Date</TableCell>
+          <TableCell>Total</TableCell>
+          <TableCell>Status</TableCell>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {estimates.map(est => (
+          <TableRow key={est.id}>
+            <TableCell>{est.id.slice(0, 8)}</TableCell>
+            <TableCell>{est.title}</TableCell>
+            <TableCell>
+              {est.customer
+                ? `${est.customer.first_name} ${est.customer.last_name}`
+                : '—'}
+            </TableCell>
+            <TableCell>{new Date(est.date).toLocaleDateString()}</TableCell>
+            <TableCell>{`$${Number(est.total).toFixed(2)}`}</TableCell>
+            <TableCell>{est.status}</TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  )
+}
 
-        <div className="bg-white shadow-sm rounded-lg">
-          {isLoading ? (
-            <div className="py-8 text-center">Loading estimates...</div>
-          ) : isError ? (
-            <div className="py-8 text-center text-red-500">Failed to load estimates.</div>
-          ) : estimates.length === 0 ? (
-            <div className="py-8 text-center text-muted-foreground">
-              No estimates found. Click <b>New Estimate</b> to create your first.
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>ID</TableHead>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Total</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {estimates.map((estimate) => (
-                  <TableRow key={estimate.id}>
-                    <TableCell>{estimate.id.slice(0, 8)}...</TableCell>
-                    <TableCell>{estimate.title}</TableCell>
-                    <TableCell>
-                      {estimate.customer 
-                        ? `${estimate.customer.first_name} ${estimate.customer.last_name}` 
-                        : 'Unknown Customer'}
-                    </TableCell>
-                    <TableCell>{new Date(estimate.date).toLocaleDateString()}</TableCell>
-                    <TableCell>${Number(estimate.total).toFixed(2)}</TableCell>
-                    <TableCell>
-                      <StatusBadge status={mapStatusToType(estimate.status)} />
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm" asChild>
-                          <Link to={`/estimates/${estimate.id}`}>View</Link>
-                        </Button>
-                        <DownloadPdfButton documentType="estimate" documentId={estimate.id} />
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </div>
-      </div>
-    </AppLayout>
-  );
-};
-
-export default EstimatesList;
+export default EstimatesList
