@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { CreditCard, Ban } from "lucide-react";
+import { CreditCard, WalletCards } from "lucide-react";
 import { createPaymentMethod, getPaymentMethods, deletePaymentMethod } from '@/services/paymentMethodService';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import type { PaymentMethod, PaymentMethodFormData } from '@/types/paymentMethod';
@@ -89,9 +89,12 @@ const ContractorPaymentMethodsSection: React.FC = () => {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-semibold">Payment Methods</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold">Payment Methods</h2>
+        <p className="text-sm text-gray-500">You can add multiple cards and bank accounts</p>
+      </div>
       
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-3">
         <Button 
           variant="outline"
           onClick={() => {
@@ -99,6 +102,7 @@ const ContractorPaymentMethodsSection: React.FC = () => {
             setIsAddingMethod(true);
           }}
           disabled={loading}
+          className="flex-1 min-w-[200px] sm:flex-none"
         >
           <CreditCard className="mr-2 h-4 w-4" />
           Add Credit Card
@@ -111,13 +115,14 @@ const ContractorPaymentMethodsSection: React.FC = () => {
             setIsAddingMethod(true);
           }}
           disabled={loading}
+          className="flex-1 min-w-[200px] sm:flex-none"
         >
-          <Ban className="mr-2 h-4 w-4" />
+          <WalletCards className="mr-2 h-4 w-4 text-[#8E9196]" />
           Add Bank Account
         </Button>
       </div>
 
-      <div className="mt-4">
+      <div className="mt-6">
         <PaymentMethodsList
           paymentMethods={paymentMethods}
           onDelete={handleDeletePaymentMethod}
