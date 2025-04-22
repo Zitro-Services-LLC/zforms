@@ -10,15 +10,12 @@ type EstimateWithCustomer = Awaited<ReturnType<typeof getEstimates>>[number]
 export function EstimatesList() {
   const { user } = useSupabaseAuth()
 
-  const { data: estimates = [], isLoading, isError } = useQuery(
-    ['estimates', user?.id],
-    () => getEstimates(user?.id),
-    {
-      enabled: Boolean(user?.id),
-      keepPreviousData: false,
-      onError: (err) => console.error('Query error:', err),
-    }
-  )
+  const { data: estimates = [], isLoading, isError } = useQuery({
+    queryKey: ['estimates', user?.id],
+    queryFn: () => getEstimates(user?.id),
+    enabled: Boolean(user?.id),
+    keepPreviousData: false,
+  })
 
   React.useEffect(() => {
     console.log('Auth state:', user)

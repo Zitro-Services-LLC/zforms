@@ -11,8 +11,8 @@ export type EstimateWithCustomer = Database['public']['Tables']['estimates']['Ro
 export async function getEstimates(userId?: string): Promise<EstimateWithCustomer[]> {
   console.log("Fetching estimates for user:", userId)
   let query = supabase
-    .from<EstimateWithCustomer>('estimates')
-    .select<EstimateWithCustomer, EstimateWithCustomer>(`
+    .from('estimates')
+    .select(`
       *,
       customer:customers(
         id,
