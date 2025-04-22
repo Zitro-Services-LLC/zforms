@@ -23,15 +23,15 @@ const NewCustomer = () => {
     billing_address: '',
     property_address: '',
     same_as_billing: true,
-    user_id: '', // This will be set in handleAddCustomer
+    user_id: '',
   });
 
   const handleCustomerChange = (customer: Omit<Customer, 'id'>) => {
     setNewCustomer(customer);
   };
 
-  const handleAddCustomer = async () => {
-    if (!newCustomer.first_name || !newCustomer.last_name || !newCustomer.email) {
+  const handleAddCustomer = async (customerData: Omit<Customer, 'id'>) => {
+    if (!customerData.first_name || !customerData.last_name || !customerData.email) {
       toast({
         title: "Validation Error",
         description: "Please fill all required fields",
@@ -44,49 +44,28 @@ const NewCustomer = () => {
       setLoading(true);
       
       if (!user?.id) {
-        console.error("No authenticated user found");
-        toast({
-          title: "Authentication Error",
-          description: "You must be logged in to add a customer",
-          variant: "destructive"
-        });
-        return;
+        throw new Error("Authentication required. Please log in to add customers.");
       }
-
-      console.log("Current authenticated user:", user.id);
-      console.log("Attempting to create customer with data:", {
-        ...newCustomer,
-        user_id: user.id
-      });
-
-      // Create a complete customer object with the user_id
+      
       const customerToCreate = {
-        ...newCustomer,
+        ...customerData,
         user_id: user.id
       };
 
-      // Use the customerService to create the customer
-      const result = await createCustomer(customerToCreate);
-      console.log("Customer creation result:", result);
-
+      const createdCustomer = await createCustomer(customerToCreate);
+      
       toast({
-        title: "Customer Added",
-        description: "The customer has been successfully added"
+        title: "Customer Created",
+        description: `${createdCustomer.first_name} ${createdCustomer.last_name} has been added successfully.`
       });
       
       navigate('/customers');
     } catch (error: any) {
-      console.error("Error adding customer:", error);
-      // Log more detailed error information
-      if (error.error) console.error("Error details:", error.error);
-      if (error.code) console.error("Error code:", error.code);
-      if (error.details) console.error("Error details:", error.details);
-      if (error.hint) console.error("Error hint:", error.hint);
-      
+      console.error("Failed to create customer:", error);
       toast({
-        title: "Error creating customer",
-        description: error.message || JSON.stringify(error),
-        variant: "destructive",
+        title: "Error Creating Customer",
+        description: error.message || "An unexpected error occurred while creating the customer.",
+        variant: "destructive"
       });
     } finally {
       setLoading(false);
