@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { getUnreadCount, markAllAsRead } from "@/services/notificationService";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { NotificationsList } from "./NotificationsList";
+import { supabase } from "@/integrations/supabase/client";
 
 export const NotificationBell: React.FC = () => {
   const { user } = useSupabaseAuth();
