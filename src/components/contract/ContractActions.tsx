@@ -1,45 +1,75 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Status } from '../shared/StatusBadge';
-import ChangeRequestModal from '../shared/ChangeRequestModal';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { Button } from "@/components/ui/button"
+import { updateContractStatus, createContractRevision } from '@/services/contractService';
+import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
+import { useToast } from "@/components/ui/use-toast";
 
 interface ContractActionsProps {
   userType: 'contractor' | 'customer';
   status: Status;
+  contractId: string;
   onStatusChange: (newStatus: Status) => void;
-  onRequestChanges?: () => void;
 }
 
 const ContractActions: React.FC<ContractActionsProps> = ({ 
   userType, 
   status, 
-  onStatusChange,
-  onRequestChanges 
+  contractId,
+  onStatusChange 
 }) => {
-  const [showCommentBox, setShowCommentBox] = useState(false);
-  const [commentText, setCommentText] = useState('');
-
-  const handleApproveContract = () => {
-    onStatusChange('approved');
-  };
-
-  const handleRequestChanges = () => {
-    if (commentText.trim()) {
-      onStatusChange('needs-update');
-      setShowCommentBox(false);
-      setCommentText('');
+  const { user } = useSupabaseAuth();
+  const { toast } = useToast();
+  
+  const handleApproveContract = async () => {
+    try {
+      await updateContractStatus(contractId, 'approved');
+      onStatusChange('approved');
+      toast({
+        title: "Contract Approved",
+        description: "The contract has been approved successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to approve the contract. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
-  const handleReviseContract = () => {
-    onStatusChange('drafting');
-  };
-
-  const handleRequestChangesClick = () => {
-    if (onRequestChanges) {
-      onRequestChanges();
-    } else {
-      setShowCommentBox(true);
+  const handleReviseContract = async (comments: string) => {
+    if (!user?.id) return;
+    
+    try {
+      await Promise.all([
+        updateContractStatus(contractId, 'needs-update'),
+        createContractRevision(contractId, user.id, comments)
+      ]);
+      
+      onStatusChange('needs-update');
+      toast({
+        title: "Revision Requested",
+        description: "The contract revision request has been submitted.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to request contract revision. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -48,76 +78,95 @@ const ContractActions: React.FC<ContractActionsProps> = ({
       {userType === 'contractor' ? (
         <div className="flex justify-end space-x-4">
           {status === 'drafting' && (
-            <button className="btn-amber">
+            <Button variant="default">
               Submit to Customer
-            </button>
+            </Button>
           )}
           {status === 'submitted' && (
-            <button 
+            <Button 
               onClick={() => onStatusChange('approved')}
-              className="btn-amber"
             >
               Mark as Approved
-            </button>
+            </Button>
           )}
           {status !== 'drafting' && (
-            <button 
-              onClick={handleReviseContract}
-              className="px-4 py-2 bg-white border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-            >
-              Revise Contract
-            </button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline">
+                  Revise Contract
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Request Contract Revision</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will notify all parties that the contract needs to be updated. Please provide your revision comments below.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <textarea
+                  className="w-full p-2 border rounded-md"
+                  rows={4}
+                  placeholder="Enter your revision comments here..."
+                  id="revisionComments"
+                />
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => {
+                      const comments = (document.getElementById('revisionComments') as HTMLTextAreaElement).value;
+                      handleReviseContract(comments);
+                    }}
+                  >
+                    Submit Revision
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           )}
         </div>
       ) : (
         <div className="flex justify-end space-x-4">
-          {status === 'submitted' && !showCommentBox && (
+          {status === 'submitted' && (
             <>
-              <button 
-                onClick={handleRequestChangesClick}
-                className="px-4 py-2 bg-white border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-              >
-                Request Changes
-              </button>
-              <button 
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="outline">
+                    Request Changes
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Request Contract Changes</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Please provide details about the changes you need.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <textarea
+                    className="w-full p-2 border rounded-md"
+                    rows={4}
+                    placeholder="Describe the changes needed..."
+                    id="customerRevisionComments"
+                  />
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => {
+                        const comments = (document.getElementById('customerRevisionComments') as HTMLTextAreaElement).value;
+                        handleReviseContract(comments);
+                      }}
+                    >
+                      Submit Request
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+              <Button 
                 onClick={handleApproveContract}
-                className="btn-amber"
               >
                 Approve Contract
-              </button>
+              </Button>
             </>
           )}
-        </div>
-      )}
-      
-      {showCommentBox && (
-        <div className="mt-4">
-          <label htmlFor="change-request" className="block text-sm font-medium text-gray-700 mb-2">
-            Please explain what changes you need:
-          </label>
-          <textarea
-            id="change-request"
-            rows={3}
-            className="shadow-sm focus:ring-amber-500 focus:border-amber-500 block w-full sm:text-sm border-gray-300 rounded-md"
-            value={commentText}
-            onChange={(e) => setCommentText(e.target.value)}
-            placeholder="Describe the changes you're requesting..."
-          ></textarea>
-          <div className="mt-2 flex justify-end space-x-2">
-            <button 
-              onClick={() => setShowCommentBox(false)}
-              className="px-4 py-2 bg-white border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-            >
-              Cancel
-            </button>
-            <button 
-              onClick={handleRequestChanges}
-              className="btn-amber"
-              disabled={!commentText.trim()}
-            >
-              Submit Request
-            </button>
-          </div>
         </div>
       )}
     </div>

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -11,7 +10,6 @@ import ContractTotal from '../components/contract/ContractTotal';
 import ContractSignatures from '../components/contract/ContractSignatures';
 import ContractActions from '../components/contract/ContractActions';
 import CustomerSelection from '../components/shared/CustomerSelection';
-import ChangeRequestModal from '../components/shared/ChangeRequestModal';
 import { useToast } from "@/components/ui/use-toast";
 import { Loader2 } from 'lucide-react';
 import { getContractById } from '@/services/contractService';
@@ -76,7 +74,6 @@ const ContractManagement: React.FC<ContractManagementProps> = ({ userType = 'con
   const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
   const { user } = useSupabaseAuth();
-  const [showChangeRequestModal, setShowChangeRequestModal] = useState(false);
   
   // Fetch the contract data
   const { data: contract, isLoading, isError } = useQuery({
@@ -108,15 +105,6 @@ const ContractManagement: React.FC<ContractManagementProps> = ({ userType = 'con
     toast({
       title: "Status Updated",
       description: `Contract status changed to ${newStatus}.`,
-    });
-  };
-  
-  const handleRequestChanges = (comments: string) => {
-    setStatus('needs-update');
-    setShowChangeRequestModal(false);
-    toast({
-      title: "Changes Requested",
-      description: "Your change request has been submitted to the contractor.",
     });
   };
   
@@ -182,13 +170,15 @@ const ContractManagement: React.FC<ContractManagementProps> = ({ userType = 'con
         <div className="bg-white shadow-lg rounded-lg overflow-hidden">
           <ContractHeader
             id={contract.id}
+            displayId={contract.display_id}
             jobId={contract.estimate_id || 'N/A'}
             status={status}
-            date={contract.created_at.substring(0, 10)}
-            companyLogo={companyLogo}
+            date={contract.created_at}
+            companyLogo={null}
           />
           
-          {userType === 'contractor' && (
+          {/* Only show CustomerSelection when in drafting mode and no customer selected */}
+          {userType === 'contractor' && status === 'drafting' && !customer && (
             <div className="px-6 py-4 bg-gray-50 border-b">
               <h3 className="text-sm font-semibold text-gray-700 mb-3">CUSTOMER INFORMATION</h3>
               <CustomerSelection 
@@ -209,28 +199,21 @@ const ContractManagement: React.FC<ContractManagementProps> = ({ userType = 'con
           />
           
           <ContractSections sections={contractSections} />
-
+          
           <ContractTotal total={contract.total_amount} />
-
+          
           <ContractSignatures
             status={status}
             contractorName={contractorInfo.name}
             customerName={customer?.name || 'Customer'}
             date={contract.created_at.substring(0, 10)}
           />
-
+          
           <ContractActions
             userType={userType}
             status={status}
+            contractId={contract.id}
             onStatusChange={handleStatusChange}
-            onRequestChanges={() => setShowChangeRequestModal(true)}
-          />
-          
-          <ChangeRequestModal
-            isOpen={showChangeRequestModal}
-            onClose={() => setShowChangeRequestModal(false)}
-            onSubmit={handleRequestChanges}
-            documentType="contract"
           />
         </div>
       </div>

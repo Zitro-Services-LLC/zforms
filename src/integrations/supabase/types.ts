@@ -9,6 +9,44 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      contract_revisions: {
+        Row: {
+          comments: string | null
+          contract_id: string
+          created_at: string
+          id: string
+          revision_type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          comments?: string | null
+          contract_id: string
+          created_at?: string
+          id?: string
+          revision_type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          comments?: string | null
+          contract_id?: string
+          created_at?: string
+          id?: string
+          revision_type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_revisions_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contractor_licenses: {
         Row: {
           agency: string
@@ -118,10 +156,12 @@ export type Database = {
       }
       contracts: {
         Row: {
+          contract_number: number
           contractor_signature_date: string | null
           created_at: string
           customer_id: string
           customer_signature_date: string | null
+          display_id: string
           end_date: string | null
           estimate_id: string | null
           id: string
@@ -137,10 +177,12 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          contract_number: number
           contractor_signature_date?: string | null
           created_at?: string
           customer_id: string
           customer_signature_date?: string | null
+          display_id: string
           end_date?: string | null
           estimate_id?: string | null
           id?: string
@@ -156,10 +198,12 @@ export type Database = {
           user_id: string
         }
         Update: {
+          contract_number?: number
           contractor_signature_date?: string | null
           created_at?: string
           customer_id?: string
           customer_signature_date?: string | null
+          display_id?: string
           end_date?: string | null
           estimate_id?: string | null
           id?: string

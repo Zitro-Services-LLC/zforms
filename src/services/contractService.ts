@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import type { Contract, ContractStatus } from "@/types/contract";
 
@@ -87,4 +86,39 @@ export async function getContractById(contractId: string, userId: string | undef
   };
   
   return typedContract;
+}
+
+export async function createContractRevision(
+  contractId: string,
+  userId: string,
+  comments: string
+): Promise<void> {
+  const { error } = await supabase
+    .from('contract_revisions')
+    .insert({
+      contract_id: contractId,
+      user_id: userId,
+      revision_type: 'revision_requested',
+      comments
+    });
+
+  if (error) {
+    console.error('Error creating contract revision:', error);
+    throw error;
+  }
+}
+
+export async function updateContractStatus(
+  contractId: string,
+  status: ContractStatus
+): Promise<void> {
+  const { error } = await supabase
+    .from('contracts')
+    .update({ status })
+    .eq('id', contractId);
+
+  if (error) {
+    console.error('Error updating contract status:', error);
+    throw error;
+  }
 }

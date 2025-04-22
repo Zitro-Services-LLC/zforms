@@ -3,6 +3,7 @@ export type ContractStatus = 'drafting' | 'submitted' | 'approved' | 'needs-upda
 
 export interface Contract {
   id: string;
+  display_id: string;
   title: string;
   customer_id: string;
   user_id: string;
