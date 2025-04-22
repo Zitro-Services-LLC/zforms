@@ -68,7 +68,8 @@ const EstimatesList = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead>ID</TableHead>
-                  <TableHead>Customer ID</TableHead>
+                  <TableHead>Title</TableHead>
+                  <TableHead>Customer</TableHead>
                   <TableHead>Date</TableHead>
                   <TableHead>Total</TableHead>
                   <TableHead>Status</TableHead>
@@ -78,9 +79,10 @@ const EstimatesList = () => {
               <TableBody>
                 {estimates.map((estimate) => (
                   <TableRow key={estimate.id}>
-                    <TableCell>{estimate.id}</TableCell>
+                    <TableCell>{estimate.title}</TableCell>
+                    <TableCell>{estimate.title}</TableCell>
                     <TableCell>{estimate.customer_id}</TableCell>
-                    <TableCell>{estimate.date}</TableCell>
+                    <TableCell>{new Date(estimate.date).toLocaleDateString()}</TableCell>
                     <TableCell>${Number(estimate.total).toFixed(2)}</TableCell>
                     <TableCell>
                       <StatusBadge status={mapStatusToType(estimate.status)} />
