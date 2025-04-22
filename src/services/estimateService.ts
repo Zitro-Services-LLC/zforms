@@ -1,20 +1,26 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import type { LineItem } from "@/types/estimate";
 
 // Get all estimates for the user
 export async function getEstimates() {
-  const { data, error } = await supabase
-    .from('estimates')
-    .select('*')
-    .order('created_at', { ascending: false });
+  try {
+    console.log("Fetching estimates...");
+    const { data, error } = await supabase
+      .from('estimates')
+      .select('*')
+      .order('created_at', { ascending: false });
 
-  if (error) {
-    console.error("Failed to fetch estimates:", error);
+    if (error) {
+      console.error("Failed to fetch estimates:", error);
+      throw error;
+    }
+
+    console.log("Estimates fetched:", data?.length || 0);
+    return data || [];
+  } catch (error) {
+    console.error("Error in getEstimates:", error);
     throw error;
   }
-
-  return data || [];
 }
 
 // Create a new estimate and add items
@@ -72,4 +78,3 @@ export async function createEstimate(estimateData: {
 
   return newEstimate;
 }
-

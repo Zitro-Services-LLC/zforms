@@ -16,8 +16,10 @@ import StatusBadge, { Status } from '../components/shared/StatusBadge';
 import DownloadPdfButton from '../components/shared/DownloadPdfButton';
 import { useQuery } from '@tanstack/react-query';
 import { getEstimates } from '@/services/estimateService';
+import { useToast } from '@/components/ui/use-toast';
 
 const EstimatesList = () => {
+  const { toast } = useToast();
   const { data: estimates = [], isLoading, isError } = useQuery({
     queryKey: ['estimates'],
     queryFn: getEstimates,
@@ -40,6 +42,21 @@ const EstimatesList = () => {
         return 'drafting'; // Default fallback
     }
   };
+
+  React.useEffect(() => {
+    if (isError) {
+      toast({
+        title: "Error loading estimates",
+        description: "There was a problem loading your estimates. Please try again later.",
+        variant: "destructive"
+      });
+    }
+  }, [isError, toast]);
+
+  // Log data for debugging
+  React.useEffect(() => {
+    console.log('Estimates data:', estimates);
+  }, [estimates]);
 
   return (
     <AppLayout userType="contractor">
@@ -79,7 +96,7 @@ const EstimatesList = () => {
               <TableBody>
                 {estimates.map((estimate) => (
                   <TableRow key={estimate.id}>
-                    <TableCell>{estimate.title}</TableCell>
+                    <TableCell>{estimate.id.slice(0, 8)}...</TableCell>
                     <TableCell>{estimate.title}</TableCell>
                     <TableCell>{estimate.customer_id}</TableCell>
                     <TableCell>{new Date(estimate.date).toLocaleDateString()}</TableCell>
