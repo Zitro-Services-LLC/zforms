@@ -14,7 +14,7 @@ export function EstimatesList() {
     queryKey: ['estimates', user?.id],
     queryFn: () => getEstimates(user?.id),
     enabled: Boolean(user?.id),
-    keepPreviousData: false,
+    staleTime: 0 // Instead of keepPreviousData which is no longer available
   })
 
   React.useEffect(() => {

@@ -1,6 +1,6 @@
+
 import { supabase } from '@/integrations/supabase/client'
 import type { Database } from '@/integrations/supabase/types'
-import type { LineItem } from '@/types/estimate'
 
 // Strongly-typed joined estimate + customer row
 export type EstimateWithCustomer = Database['public']['Tables']['estimates']['Row'] & {
