@@ -3,13 +3,10 @@ import { supabase } from "@/integrations/supabase/client";
 import type { PaymentMethod, PaymentMethodFormData } from "@/types/paymentMethod";
 
 export const createPaymentMethod = async (contractorId: string, data: PaymentMethodFormData) => {
-  // Since we don't have a payment_methods table, we'll store a representation in the contractor's record
-  // This is a temporary solution until a proper payment_methods table is created
-  
   // Get current contractor data
   const { data: contractorData, error: fetchError } = await supabase
     .from('contractors')
-    .select('*')
+    .select('payment_methods')
     .eq('id', contractorId)
     .single();
   
@@ -31,7 +28,7 @@ export const createPaymentMethod = async (contractorId: string, data: PaymentMet
   };
   
   // Prepare payment methods array
-  const existingPaymentMethods = contractorData.payment_methods || [];
+  const existingPaymentMethods = (contractorData?.payment_methods as PaymentMethod[]) || [];
   const updatedPaymentMethods = [...existingPaymentMethods, newPaymentMethod];
   
   // Update contractor record with new payment methods
@@ -56,7 +53,7 @@ export const getPaymentMethods = async (contractorId: string) => {
     .single();
   
   if (error) throw error;
-  return data.payment_methods || [];
+  return (data?.payment_methods as PaymentMethod[]) || [];
 };
 
 export const deletePaymentMethod = async (contractorId: string, paymentMethodId: string) => {
@@ -70,9 +67,9 @@ export const deletePaymentMethod = async (contractorId: string, paymentMethodId:
   if (fetchError) throw fetchError;
   
   // Filter out the payment method to be deleted
-  const paymentMethods = contractorData.payment_methods || [];
+  const paymentMethods = (contractorData?.payment_methods as PaymentMethod[]) || [];
   const updatedPaymentMethods = paymentMethods.filter(
-    (method: PaymentMethod) => method.id !== paymentMethodId
+    method => method.id !== paymentMethodId
   );
   
   // Update contractor record with filtered payment methods
