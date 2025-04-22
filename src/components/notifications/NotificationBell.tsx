@@ -9,10 +9,9 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
-import { getUnreadCount, markAllAsRead } from "@/services/notificationService";
+import { getUnreadCount, markAllAsRead, initMockNotifications } from "@/services/notificationService";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { NotificationsList } from "./NotificationsList";
-import { supabase } from "@/integrations/supabase/client";
 
 export const NotificationBell: React.FC = () => {
   const { user } = useSupabaseAuth();
@@ -22,6 +21,9 @@ export const NotificationBell: React.FC = () => {
 
   useEffect(() => {
     if (!user) return;
+
+    // Initialize mock notifications for development
+    initMockNotifications(user.id);
 
     const fetchUnreadCount = async () => {
       try {
@@ -34,29 +36,17 @@ export const NotificationBell: React.FC = () => {
 
     fetchUnreadCount();
 
-    // Set up real-time subscription for new notifications
-    const channel = supabase
-      .channel('public:notifications')
-      .on(
-        'postgres_changes',
-        { 
-          event: 'INSERT', 
-          schema: 'public', 
-          table: 'notifications',
-          filter: `contractor_id=eq.${user.id}`
-        },
-        (payload) => {
-          setUnreadCount(prev => prev + 1);
-          toast({
-            title: "New Notification",
-            description: "You have a new notification"
-          });
-        }
-      )
-      .subscribe();
+    // For demo purposes, we'll simulate a new notification every minute
+    const interval = setInterval(() => {
+      setUnreadCount(prev => prev + 1);
+      toast({
+        title: "New Notification",
+        description: "You have a new notification"
+      });
+    }, 60000); // 60 seconds
 
     return () => {
-      supabase.removeChannel(channel);
+      clearInterval(interval);
     };
   }, [user, toast]);
 

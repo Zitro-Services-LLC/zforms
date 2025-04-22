@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { useToast } from "@/hooks/use-toast";
-import { getNotifications, markAsRead } from "@/services/notificationService";
+import { getNotifications, markAsRead, initMockNotifications } from "@/services/notificationService";
 import type { Notification } from "@/types/notification";
 import { formatDistanceToNow } from "date-fns";
 import { Check } from "lucide-react";
@@ -25,6 +25,9 @@ export const NotificationsList: React.FC<NotificationsListProps> = ({
 
   useEffect(() => {
     if (!user) return;
+
+    // Initialize mock notifications for development
+    initMockNotifications(user.id);
 
     const fetchNotifications = async () => {
       try {
