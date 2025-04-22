@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSupabaseAuth } from './useSupabaseAuth';
 import { getContractById } from '@/services/contractService';
@@ -20,16 +20,21 @@ export function useContractData(id: string | undefined) {
   });
 
   // Update status and customer when contract data is loaded
-  React.useEffect(() => {
+  useEffect(() => {
     if (contract) {
       setStatus(contract.status as Status);
       if (contract.customer) {
         setCustomer({
           id: contract.customer_id,
-          name: `${contract.customer.first_name} ${contract.customer.last_name}`,
-          address: contract.customer.billing_address || 'Address not provided',
-          phone: contract.customer.phone || 'Phone not provided',
-          email: contract.customer.email || 'Email not provided'
+          first_name: contract.customer.first_name,
+          last_name: contract.customer.last_name,
+          email: contract.customer.email || '',
+          phone: contract.customer.phone || null,
+          billing_address: contract.customer.billing_address || null,
+          property_address: contract.customer.property_address || null,
+          same_as_billing: true,
+          user_id: contract.user_id,
+          profile_image_url: null
         });
       }
     }

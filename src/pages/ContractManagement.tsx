@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import AppLayout from '../components/layouts/AppLayout';
@@ -11,6 +12,8 @@ import { ContractLoadingState } from '../components/contract/ContractLoadingStat
 import { ContractErrorState } from '../components/contract/ContractErrorState';
 import { ContractCustomerSection } from '../components/contract/ContractCustomerSection';
 import { useContractData } from '@/hooks/useContractData';
+import { customerToPartyInfo } from '@/utils/customerUtils';
+import type { PartyInfo } from '@/utils/customerUtils';
 
 interface ContractManagementProps {
   userType?: 'contractor' | 'customer';
@@ -90,12 +93,15 @@ The contractor will make every effort to complete the work according to this sch
     }
   ];
 
-  const contractorInfo = {
+  const contractorInfo: PartyInfo = {
     name: 'Professional Renovations LLC',
     address: '123 Builder St, Construction City, CC 12345',
     phone: '(555) 123-4567',
     email: 'contact@professionalrenovations.com'
   };
+
+  // Convert customer to PartyInfo
+  const customerInfo = customerToPartyInfo(customer);
 
   return (
     <AppLayout userType={userType}>
@@ -119,12 +125,7 @@ The contractor will make every effort to complete the work according to this sch
           
           <ContractPartyInfo
             contractor={contractorInfo}
-            customer={customer || {
-              name: 'Customer information not available',
-              address: '',
-              phone: '',
-              email: ''
-            }}
+            customer={customerInfo}
           />
           
           <ContractSections sections={contractSections} />
@@ -134,7 +135,7 @@ The contractor will make every effort to complete the work according to this sch
           <ContractSignatures
             status={status}
             contractorName={contractorInfo.name}
-            customerName={customer?.name || 'Customer'}
+            customerName={customerInfo.name}
             date={contract.created_at.substring(0, 10)}
           />
           
