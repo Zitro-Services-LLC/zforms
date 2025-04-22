@@ -1,10 +1,24 @@
 
 import { supabase } from '@/integrations/supabase/client'
 import type { Database } from '@/integrations/supabase/types'
+import type { LineItem } from '@/types/estimate'
 
 // Strongly-typed joined estimate + customer row
 export type EstimateWithCustomer = Database['public']['Tables']['estimates']['Row'] & {
-  customer: Database['public']['Tables']['customers']['Row'] | null
+  customer: {
+    id: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    phone?: string | null;
+    profile_image_url?: string | null;
+    billing_address?: string | null;
+    property_address?: string | null;
+    same_as_billing?: boolean | null;
+    created_at?: string | null;
+    updated_at?: string | null;
+    user_id?: string;
+  } | null
 }
 
 // Get all estimates for the user, with joined customer info
@@ -33,7 +47,7 @@ export async function getEstimates(userId?: string): Promise<EstimateWithCustome
     throw error
   }
   console.log("getEstimates data:", data)
-  return data || []
+  return data as EstimateWithCustomer[]
 }
 
 // Create a new estimate and add items
