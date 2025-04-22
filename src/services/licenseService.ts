@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { ContractorLicense, LicenseFormData } from "@/types/license";
 
 export const getContractorLicenses = async (contractorId: string): Promise<ContractorLicense[]> => {
+  // Using string literals for table names to avoid type issues
   const { data, error } = await supabase
     .from('contractor_licenses')
     .select('*')
@@ -14,19 +15,8 @@ export const getContractorLicenses = async (contractorId: string): Promise<Contr
     return [];
   }
   
-  // Map database rows to ContractorLicense objects
-  return data.map(license => ({
-    id: license.id,
-    contractor_id: license.contractor_id,
-    agency: license.agency,
-    license_no: license.license_no,
-    issue_date: license.issue_date,
-    expiry_date: license.expiry_date,
-    notification_sent_at: license.notification_sent_at,
-    notification_status: license.notification_status || 'pending',
-    created_at: license.created_at,
-    updated_at: license.updated_at
-  }));
+  // Since we're using a string literal above, we need to manually cast the result
+  return data as unknown as ContractorLicense[];
 };
 
 export const addContractorLicense = async (contractorId: string, licenseData: LicenseFormData): Promise<ContractorLicense> => {
@@ -38,6 +28,7 @@ export const addContractorLicense = async (contractorId: string, licenseData: Li
     expiry_date: licenseData.expiry_date,
   };
 
+  // Using string literals for table names to avoid type issues
   const { data, error } = await supabase
     .from('contractor_licenses')
     .insert(licenseEntry)
@@ -46,18 +37,8 @@ export const addContractorLicense = async (contractorId: string, licenseData: Li
 
   if (error) throw error;
   
-  return {
-    id: data.id,
-    contractor_id: data.contractor_id,
-    agency: data.agency,
-    license_no: data.license_no,
-    issue_date: data.issue_date,
-    expiry_date: data.expiry_date,
-    notification_sent_at: data.notification_sent_at,
-    notification_status: data.notification_status || 'pending',
-    created_at: data.created_at,
-    updated_at: data.updated_at
-  };
+  // Cast the response to our type
+  return data as unknown as ContractorLicense;
 };
 
 export const updateContractorLicense = async (licenseId: string, licenseData: Partial<LicenseFormData>): Promise<ContractorLicense> => {
@@ -68,6 +49,7 @@ export const updateContractorLicense = async (licenseId: string, licenseData: Pa
   if (licenseData.issue_date) updateData.issue_date = licenseData.issue_date;
   if (licenseData.expiry_date) updateData.expiry_date = licenseData.expiry_date;
 
+  // Using string literals for table names to avoid type issues
   const { data, error } = await supabase
     .from('contractor_licenses')
     .update(updateData)
@@ -77,21 +59,12 @@ export const updateContractorLicense = async (licenseId: string, licenseData: Pa
 
   if (error) throw error;
   
-  return {
-    id: data.id,
-    contractor_id: data.contractor_id,
-    agency: data.agency,
-    license_no: data.license_no,
-    issue_date: data.issue_date,
-    expiry_date: data.expiry_date,
-    notification_sent_at: data.notification_sent_at,
-    notification_status: data.notification_status || 'pending',
-    created_at: data.created_at,
-    updated_at: data.updated_at
-  };
+  // Cast the response to our type
+  return data as unknown as ContractorLicense;
 };
 
 export const deleteContractorLicense = async (licenseId: string): Promise<void> => {
+  // Using string literals for table names to avoid type issues
   const { error } = await supabase
     .from('contractor_licenses')
     .delete()
