@@ -1,17 +1,25 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import type { PaymentMethod, PaymentMethodFormData } from "@/types/paymentMethod";
-import { Json } from "@/integrations/supabase/types";
+import type { Database } from "@/integrations/supabase/types";
 
-export const createPaymentMethod = async (contractorId: string, data: PaymentMethodFormData) => {
-  // Get current contractor data
-  const { data: contractorData, error: fetchError } = await supabase
+type ContractorRow = Database['public']['Tables']['contractors']['Row'];
+
+async function findContractorForUser(userId: string): Promise<ContractorRow> {
+  const { data, error } = await supabase
     .from('contractors')
-    .select('payment_methods')
-    .eq('id', contractorId)
-    .single();
+    .select('*')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (error) throw new Error('Error finding contractor profile: ' + error.message);
+  if (!data) throw new Error('Please create a contractor profile before adding payment methods');
   
-  if (fetchError) throw fetchError;
+  return data;
+}
+
+export const createPaymentMethod = async (userId: string, data: PaymentMethodFormData) => {
+  const contractor = await findContractorForUser(userId);
   
   // Create a payment method object
   const newPaymentMethod: PaymentMethod = {
@@ -28,66 +36,52 @@ export const createPaymentMethod = async (contractorId: string, data: PaymentMet
     details: {}
   };
   
-  // Prepare payment methods array - properly handle the Json to PaymentMethod[] conversion
-  const existingPaymentMethods: PaymentMethod[] = contractorData?.payment_methods 
-    ? (contractorData.payment_methods as unknown as PaymentMethod[]) 
+  // Prepare payment methods array
+  const existingPaymentMethods: PaymentMethod[] = contractor.payment_methods 
+    ? (contractor.payment_methods as unknown as PaymentMethod[]) 
     : [];
   
   const updatedPaymentMethods = [...existingPaymentMethods, newPaymentMethod];
   
-  // Update contractor record with new payment methods - convert back to Json for storage
-  const { data: result, error } = await supabase
+  // Update contractor record with new payment methods
+  const { error } = await supabase
     .from('contractors')
     .update({
-      payment_methods: updatedPaymentMethods as unknown as Json
+      payment_methods: updatedPaymentMethods as any
     })
-    .eq('id', contractorId)
-    .select()
-    .single();
+    .eq('user_id', userId);
   
-  if (error) throw error;
+  if (error) throw new Error('Failed to create payment method: ' + error.message);
   return newPaymentMethod;
 };
 
-export const getPaymentMethods = async (contractorId: string) => {
-  const { data, error } = await supabase
-    .from('contractors')
-    .select('payment_methods')
-    .eq('id', contractorId)
-    .single();
-  
-  if (error) throw error;
-  return data?.payment_methods 
-    ? (data.payment_methods as unknown as PaymentMethod[]) 
+export const getPaymentMethods = async (userId: string): Promise<PaymentMethod[]> => {
+  const contractor = await findContractorForUser(userId);
+  return contractor.payment_methods 
+    ? (contractor.payment_methods as unknown as PaymentMethod[]) 
     : [];
 };
 
-export const deletePaymentMethod = async (contractorId: string, paymentMethodId: string) => {
-  // Get current contractor data
-  const { data: contractorData, error: fetchError } = await supabase
-    .from('contractors')
-    .select('payment_methods')
-    .eq('id', contractorId)
-    .single();
+export const deletePaymentMethod = async (userId: string, paymentMethodId: string) => {
+  const contractor = await findContractorForUser(userId);
   
-  if (fetchError) throw fetchError;
-  
-  // Filter out the payment method to be deleted - properly handle the Json to PaymentMethod[] conversion
-  const paymentMethods: PaymentMethod[] = contractorData?.payment_methods 
-    ? (contractorData.payment_methods as unknown as PaymentMethod[]) 
+  // Filter out the payment method to be deleted
+  const paymentMethods: PaymentMethod[] = contractor.payment_methods 
+    ? (contractor.payment_methods as unknown as PaymentMethod[]) 
     : [];
   
   const updatedPaymentMethods = paymentMethods.filter(
     method => method.id !== paymentMethodId
   );
   
-  // Update contractor record with filtered payment methods - convert back to Json for storage
+  // Update contractor record with filtered payment methods
   const { error } = await supabase
     .from('contractors')
     .update({
-      payment_methods: updatedPaymentMethods as unknown as Json
+      payment_methods: updatedPaymentMethods as any
     })
-    .eq('id', contractorId);
+    .eq('user_id', userId);
   
-  if (error) throw error;
+  if (error) throw new Error('Failed to delete payment method: ' + error.message);
 };
+
