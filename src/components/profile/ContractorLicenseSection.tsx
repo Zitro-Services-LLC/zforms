@@ -9,6 +9,7 @@ import { getContractorLicenses, addContractorLicense, updateContractorLicense, d
 import { LicenseCard } from './licenses/LicenseCard';
 import { AddLicenseDialog } from './licenses/AddLicenseDialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { supabase } from '@/integrations/supabase/client';
 
 const ContractorLicenseSection: React.FC = () => {
   const { toast } = useToast();
@@ -19,17 +20,52 @@ const ContractorLicenseSection: React.FC = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [editingLicense, setEditingLicense] = useState<ContractorLicense | null>(null);
   const [licenseToDelete, setLicenseToDelete] = useState<string | null>(null);
+  const [contractorId, setContractorId] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchLicenses();
+    fetchContractorId();
   }, [user]);
 
-  const fetchLicenses = async () => {
+  useEffect(() => {
+    if (contractorId) {
+      fetchLicenses();
+    }
+  }, [contractorId]);
+
+  const fetchContractorId = async () => {
     if (!user) return;
     
     try {
+      const { data, error } = await supabase
+        .from('contractors')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+        
+      if (error) {
+        console.error('Error fetching contractor:', error);
+        toast({
+          title: "Error",
+          description: "Could not find your contractor profile.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      if (data) {
+        setContractorId(data.id);
+      }
+    } catch (error) {
+      console.error('Exception fetching contractor:', error);
+    }
+  };
+
+  const fetchLicenses = async () => {
+    if (!contractorId) return;
+    
+    try {
       setLoading(true);
-      const licenseData = await getContractorLicenses(user.id);
+      const licenseData = await getContractorLicenses(contractorId);
       setLicenses(licenseData);
     } catch (error) {
       console.error('Error fetching licenses:', error);
@@ -93,6 +129,15 @@ const ContractorLicenseSection: React.FC = () => {
       return;
     }
     
+    if (!contractorId) {
+      toast({
+        title: "Error",
+        description: "Contractor profile not found. Please refresh and try again.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     try {
       setLoading(true);
       
@@ -109,7 +154,7 @@ const ContractorLicenseSection: React.FC = () => {
         });
       } else {
         // Add new license
-        const newLicense = await addContractorLicense(user.id, data);
+        const newLicense = await addContractorLicense(contractorId, data);
         setLicenses([...licenses, newLicense]);
         
         toast({
