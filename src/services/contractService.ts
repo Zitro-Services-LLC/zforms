@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import type { Contract } from "@/types/contract";
+import type { Contract, ContractStatus } from "@/types/contract";
 
 export async function getContracts(userId: string | undefined): Promise<Contract[]> {
   if (!userId) {
@@ -29,5 +29,12 @@ export async function getContracts(userId: string | undefined): Promise<Contract
   }
 
   console.log('Fetched contracts:', data);
-  return data;
+  
+  // Ensure the status values conform to the ContractStatus type
+  const typedContracts: Contract[] = data.map(contract => ({
+    ...contract,
+    status: contract.status.toLowerCase() as ContractStatus
+  }));
+  
+  return typedContracts;
 }
