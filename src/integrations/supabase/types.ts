@@ -69,8 +69,6 @@ export type Database = {
           created_at: string | null
           id: string
           insurance_info: Json | null
-          license_expiry: string | null
-          license_number: string | null
           logo_url: string | null
           owner_first_name: string | null
           owner_last_name: string | null
@@ -90,8 +88,6 @@ export type Database = {
           created_at?: string | null
           id?: string
           insurance_info?: Json | null
-          license_expiry?: string | null
-          license_number?: string | null
           logo_url?: string | null
           owner_first_name?: string | null
           owner_last_name?: string | null
@@ -111,8 +107,6 @@ export type Database = {
           created_at?: string | null
           id?: string
           insurance_info?: Json | null
-          license_expiry?: string | null
-          license_number?: string | null
           logo_url?: string | null
           owner_first_name?: string | null
           owner_last_name?: string | null

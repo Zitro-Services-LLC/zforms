@@ -1,7 +1,8 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Plus } from 'lucide-react';
+import { Plus, Loader2 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import AppLayout from '../components/layouts/AppLayout';
 import { Button } from '../components/ui/button';
 import {
@@ -14,32 +15,17 @@ import {
 } from '../components/ui/table';
 import StatusBadge from '../components/shared/StatusBadge';
 import DownloadPdfButton from '../components/shared/DownloadPdfButton';
-
-const mockContracts = [
-  {
-    id: 'CON-001',
-    customer: 'John Smith',
-    date: '2025-04-15',
-    value: 2500.00,
-    status: 'submitted' as const,
-  },
-  {
-    id: 'CON-002',
-    customer: 'Sarah Johnson',
-    date: '2025-04-14',
-    value: 1800.00,
-    status: 'approved' as const,
-  },
-  {
-    id: 'CON-003',
-    customer: 'Mike Brown',
-    date: '2025-04-13',
-    value: 3200.00,
-    status: 'drafting' as const,
-  },
-];
+import { getContracts } from '@/services/contractService';
+import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 
 const ContractsList = () => {
+  const { user } = useSupabaseAuth();
+  const { data: contracts = [], isLoading, isError } = useQuery({
+    queryKey: ['contracts'],
+    queryFn: () => getContracts(user?.id),
+    enabled: !!user?.id,
+  });
+
   return (
     <AppLayout userType="contractor">
       <div className="container mx-auto p-6">
@@ -54,39 +40,63 @@ const ContractsList = () => {
         </div>
 
         <div className="bg-white shadow-sm rounded-lg">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>ID</TableHead>
-                <TableHead>Customer</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Value</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {mockContracts.map((contract) => (
-                <TableRow key={contract.id}>
-                  <TableCell>{contract.id}</TableCell>
-                  <TableCell>{contract.customer}</TableCell>
-                  <TableCell>{contract.date}</TableCell>
-                  <TableCell>${contract.value.toFixed(2)}</TableCell>
-                  <TableCell>
-                    <StatusBadge status={contract.status} />
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Button variant="outline" size="sm" asChild>
-                        <Link to={`/contracts/${contract.id}`}>View</Link>
-                      </Button>
-                      <DownloadPdfButton documentType="contract" documentId={contract.id} />
-                    </div>
-                  </TableCell>
+          {isLoading ? (
+            <div className="flex justify-center items-center py-8">
+              <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
+            </div>
+          ) : isError ? (
+            <div className="py-8 text-center text-red-500">
+              Failed to load contracts. Please try again.
+            </div>
+          ) : contracts.length === 0 ? (
+            <div className="py-8 text-center text-muted-foreground">
+              No contracts found. Click <b>New Contract</b> to create your first.
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Title</TableHead>
+                  <TableHead>Customer</TableHead>
+                  <TableHead>Created</TableHead>
+                  <TableHead>Amount</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {contracts.map((contract) => (
+                  <TableRow key={contract.id}>
+                    <TableCell>{contract.title}</TableCell>
+                    <TableCell>
+                      {contract.customer ? 
+                        `${contract.customer.first_name} ${contract.customer.last_name}` : 
+                        'N/A'
+                      }
+                    </TableCell>
+                    <TableCell>{new Date(contract.created_at).toLocaleDateString()}</TableCell>
+                    <TableCell>
+                      {contract.total_amount ? 
+                        `$${contract.total_amount.toFixed(2)}` : 
+                        'N/A'
+                      }
+                    </TableCell>
+                    <TableCell>
+                      <StatusBadge status={contract.status as any} />
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" asChild>
+                          <Link to={`/contracts/${contract.id}`}>View</Link>
+                        </Button>
+                        <DownloadPdfButton documentType="contract" documentId={contract.id} />
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </div>
       </div>
     </AppLayout>
