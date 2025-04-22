@@ -1,34 +1,39 @@
-
 import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
 import type { LineItem } from "@/types/estimate";
 
-// Get all estimates for the user
-export async function getEstimates(userId?: string) {
-  try {
-    console.log("Fetching estimates...");
-    let query = supabase
-      .from('estimates')
-      .select('*')
-      .order('created_at', { ascending: false });
-    
-    // If userId is provided, filter by user_id
-    if (userId) {
-      query = query.eq('user_id', userId);
-    }
+// Strongly-typed joined estimate + customer row
+export type EstimateWithCustomer = Database['public']['Tables']['estimates']['Row'] & {
+  customer: Database['public']['Tables']['customers']['Row'] | null
+};
 
-    const { data, error } = await query;
+// Get all estimates for the user, with joined customer info
+export async function getEstimates(userId?: string): Promise<EstimateWithCustomer[]> {
+  console.log("Fetching estimates for user:", userId);
+  let query = supabase
+    .from<EstimateWithCustomer>('estimates')
+    .select<EstimateWithCustomer, EstimateWithCustomer>(`
+      *,
+      customer:customers (
+        id,
+        first_name,
+        last_name,
+        email
+      )
+    `)
+    .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error("Failed to fetch estimates:", error);
-      throw error;
-    }
+  if (userId) {
+    query = query.eq('user_id', userId);
+  }
 
-    console.log("Estimates fetched:", data?.length || 0);
-    return data || [];
-  } catch (error) {
-    console.error("Error in getEstimates:", error);
+  const { data, error } = await query;
+  if (error) {
+    console.error("getEstimates error:", error);
     throw error;
   }
+  console.log("getEstimates data:", data);
+  return data || [];
 }
 
 // Create a new estimate and add items
