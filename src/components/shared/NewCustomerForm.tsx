@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -29,8 +28,8 @@ export type CustomerFormData = z.infer<typeof customerSchema>;
 
 interface NewCustomerFormProps {
   newCustomer: Omit<Customer, 'id'>;
-  onCustomerChange: (customer: Omit<Customer, 'id'>) => void;
-  onAddCustomer: () => void;
+  onCustomerChange?: (customer: Omit<Customer, 'id'>) => void;
+  onAddCustomer: (customer: Omit<Customer, 'id'>) => void;
   loading?: boolean;
   mode?: "add" | "edit";
 }
@@ -87,8 +86,13 @@ const NewCustomerForm: React.FC<NewCustomerFormProps> = ({
       user_id: newCustomer.user_id
     };
 
-    onCustomerChange(customerData);
-    onAddCustomer();
+    // Optional state update for UI purposes
+    if (onCustomerChange) {
+      onCustomerChange(customerData);
+    }
+    
+    // Pass fresh data directly to parent
+    onAddCustomer(customerData);
   };
 
   return (
