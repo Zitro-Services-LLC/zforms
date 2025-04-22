@@ -23,5 +23,8 @@ export interface Contract {
     first_name: string;
     last_name: string;
     email: string;
+    phone?: string | null;
+    billing_address?: string | null;
+    property_address?: string | null;
   };
 }

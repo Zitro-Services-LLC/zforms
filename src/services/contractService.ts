@@ -17,7 +17,10 @@ export async function getContracts(userId: string | undefined): Promise<Contract
       customer:customers(
         first_name,
         last_name,
-        email
+        email,
+        phone,
+        billing_address,
+        property_address
       )
     `)
     .eq('user_id', userId)
