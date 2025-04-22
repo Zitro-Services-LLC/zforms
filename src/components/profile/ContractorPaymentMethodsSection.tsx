@@ -2,12 +2,12 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { CreditCard, Ban, X } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
+import { CreditCard, Ban } from "lucide-react";
 import { createPaymentMethod, getPaymentMethods, deletePaymentMethod } from '@/services/paymentMethodService';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import type { PaymentMethod, PaymentMethodFormData } from '@/types/paymentMethod';
+import { PaymentMethodsList } from './payment-methods/PaymentMethodsList';
+import { AddPaymentMethodDialog } from './payment-methods/AddPaymentMethodDialog';
 
 const ContractorPaymentMethodsSection: React.FC = () => {
   const { toast } = useToast();
@@ -56,7 +56,7 @@ const ContractorPaymentMethodsSection: React.FC = () => {
       console.error('Error adding payment method:', error);
       toast({
         title: "Error",
-        description: "Failed to add payment method. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to add payment method. Please try again.",
         variant: "destructive"
       });
     } finally {
@@ -79,7 +79,7 @@ const ContractorPaymentMethodsSection: React.FC = () => {
       console.error('Error removing payment method:', error);
       toast({
         title: "Error",
-        description: "Failed to remove payment method. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to remove payment method. Please try again.",
         variant: "destructive"
       });
     } finally {
@@ -117,177 +117,22 @@ const ContractorPaymentMethodsSection: React.FC = () => {
         </Button>
       </div>
 
-      <div className="mt-4 space-y-2">
-        {loading && <p className="text-sm text-gray-500">Loading payment methods...</p>}
-        
-        {!loading && paymentMethods.length === 0 && (
-          <p className="text-sm text-gray-500">No payment methods added yet.</p>
-        )}
-        
-        {paymentMethods.map(method => (
-          <div 
-            key={method.id}
-            className="flex justify-between items-center p-3 border rounded-md bg-gray-50"
-          >
-            <div className="flex items-center gap-2">
-              {method.type === 'credit_card' ? (
-                <>
-                  <CreditCard className="h-4 w-4" />
-                  <span>
-                    Card ending in {method.cardLast4} (Expires {method.cardExpMonth}/{method.cardExpYear})
-                  </span>
-                </>
-              ) : (
-                <>
-                  <Ban className="h-4 w-4" />
-                  <span>
-                    {method.bankName} account ending in {method.accountLast4}
-                  </span>
-                </>
-              )}
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleDeletePaymentMethod(method.id)}
-              disabled={loading}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        ))}
+      <div className="mt-4">
+        <PaymentMethodsList
+          paymentMethods={paymentMethods}
+          onDelete={handleDeletePaymentMethod}
+          loading={loading}
+        />
       </div>
 
-      <Dialog open={isAddingMethod} onOpenChange={setIsAddingMethod}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {methodType === 'credit_card' ? 'Add Credit Card' : 'Add Bank Account'}
-            </DialogTitle>
-          </DialogHeader>
-          <PaymentMethodForm
-            type={methodType}
-            onSubmit={handleAddPaymentMethod}
-            onCancel={() => setIsAddingMethod(false)}
-            isSubmitting={loading}
-          />
-        </DialogContent>
-      </Dialog>
+      <AddPaymentMethodDialog
+        isOpen={isAddingMethod}
+        onClose={() => setIsAddingMethod(false)}
+        onSubmit={handleAddPaymentMethod}
+        methodType={methodType}
+        isSubmitting={loading}
+      />
     </div>
-  );
-};
-
-interface PaymentMethodFormProps {
-  type: 'credit_card' | 'bank_account';
-  onSubmit: (data: PaymentMethodFormData) => Promise<void>;
-  onCancel: () => void;
-  isSubmitting: boolean;
-}
-
-const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({ 
-  type, 
-  onSubmit, 
-  onCancel,
-  isSubmitting 
-}) => {
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    
-    const formData = new FormData(e.currentTarget);
-    const data: PaymentMethodFormData = {
-      type,
-      ...(type === 'credit_card' ? {
-        cardNumber: formData.get('cardNumber') as string,
-        cardExpMonth: parseInt(formData.get('expMonth') as string),
-        cardExpYear: parseInt(formData.get('expYear') as string),
-      } : {
-        bankName: formData.get('bankName') as string,
-        accountNumber: formData.get('accountNumber') as string,
-        routingNumber: formData.get('routingNumber') as string,
-      })
-    };
-
-    await onSubmit(data);
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      {type === 'credit_card' ? (
-        <>
-          <div className="space-y-2">
-            <label htmlFor="cardNumber">Card Number</label>
-            <Input
-              id="cardNumber"
-              name="cardNumber"
-              placeholder="Card number"
-              required
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label htmlFor="expMonth">Expiry Month</label>
-              <Input
-                id="expMonth"
-                name="expMonth"
-                type="number"
-                min="1"
-                max="12"
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="expYear">Expiry Year</label>
-              <Input
-                id="expYear"
-                name="expYear"
-                type="number"
-                min={new Date().getFullYear()}
-                required
-              />
-            </div>
-          </div>
-        </>
-      ) : (
-        <>
-          <div className="space-y-2">
-            <label htmlFor="bankName">Bank Name</label>
-            <Input
-              id="bankName"
-              name="bankName"
-              placeholder="Bank name"
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <label htmlFor="routingNumber">Routing Number</label>
-            <Input
-              id="routingNumber"
-              name="routingNumber"
-              placeholder="Routing number"
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <label htmlFor="accountNumber">Account Number</label>
-            <Input
-              id="accountNumber"
-              name="accountNumber"
-              placeholder="Account number"
-              required
-            />
-          </div>
-        </>
-      )}
-      
-      <div className="flex justify-end gap-2">
-        <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
-          Cancel
-        </Button>
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? 'Adding...' : 'Add Payment Method'}
-        </Button>
-      </div>
-    </form>
   );
 };
 
