@@ -1,9 +1,13 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 
 export async function getContracts(userId: string | undefined) {
-  if (!userId) return [];
+  if (!userId) {
+    console.log('No user ID provided to getContracts');
+    return [];
+  }
+  
+  console.log('Fetching contracts for user:', userId);
   
   const { data, error } = await supabase
     .from('contracts')
@@ -23,5 +27,6 @@ export async function getContracts(userId: string | undefined) {
     throw error;
   }
 
+  console.log('Fetched contracts:', data);
   return data;
 }

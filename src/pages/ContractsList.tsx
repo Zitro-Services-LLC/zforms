@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Loader2 } from 'lucide-react';
@@ -20,11 +19,16 @@ import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 
 const ContractsList = () => {
   const { user } = useSupabaseAuth();
+  
+  console.log('Current user:', user?.id);
+  
   const { data: contracts = [], isLoading, isError } = useQuery({
-    queryKey: ['contracts'],
+    queryKey: ['contracts', user?.id],
     queryFn: () => getContracts(user?.id),
     enabled: !!user?.id,
   });
+
+  console.log('Contracts from query:', contracts);
 
   return (
     <AppLayout userType="contractor">
