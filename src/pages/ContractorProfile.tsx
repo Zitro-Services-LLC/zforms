@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useForm } from "react-hook-form";
 import AppLayout from '../components/layouts/AppLayout';
@@ -6,12 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Building, Upload, X, Plus } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { Building, Upload, X } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import { Separator } from "@/components/ui/separator";
 import ContractorLicenseSection from '@/components/profile/ContractorLicenseSection';
 import ContractorPasswordSection from '@/components/profile/ContractorPasswordSection';
 import ContractorPaymentMethodsSection from '@/components/profile/ContractorPaymentMethodsSection';
+import ContractorContactSection from '@/components/profile/ContractorContactSection';
 
 type ContractorProfileFormValues = {
   companyName: string;
@@ -168,6 +168,10 @@ const ContractorProfile = () => {
                   </div>
                 </div>
               </div>
+
+              <Separator className="my-6" />
+              
+              <ContractorContactSection />
 
               <Separator className="my-6" />
               
