@@ -15,7 +15,7 @@ import {
 import StatusBadge, { Status } from '../components/shared/StatusBadge';
 import DownloadPdfButton from '../components/shared/DownloadPdfButton';
 import { useQuery } from '@tanstack/react-query';
-import { getEstimates } from '@/services/estimateService';
+import { getEstimates, type EstimateWithCustomer } from '@/services/estimateService';
 import { useToast } from '@/components/ui/use-toast';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 
@@ -23,6 +23,7 @@ const EstimatesList = () => {
   const { toast } = useToast();
   const { user } = useSupabaseAuth();
   
+  // Use proper React Query configuration
   const { data: estimates = [], isLoading, isError } = useQuery({
     queryKey: ['estimates', user?.id],
     queryFn: () => getEstimates(user?.id),
@@ -47,6 +48,12 @@ const EstimatesList = () => {
     }
   };
 
+  // Debug logging
+  React.useEffect(() => {
+    console.log('Auth state:', user);
+    console.log('Estimates data:', { isLoading, isError, count: estimates.length, estimates });
+  }, [user, isLoading, isError, estimates]);
+
   React.useEffect(() => {
     if (isError) {
       toast({
@@ -56,11 +63,6 @@ const EstimatesList = () => {
       });
     }
   }, [isError, toast]);
-
-  // Log data for debugging
-  React.useEffect(() => {
-    console.log('Estimates data:', estimates);
-  }, [estimates]);
 
   return (
     <AppLayout userType="contractor">
@@ -102,7 +104,11 @@ const EstimatesList = () => {
                   <TableRow key={estimate.id}>
                     <TableCell>{estimate.id.slice(0, 8)}...</TableCell>
                     <TableCell>{estimate.title}</TableCell>
-                    <TableCell>{estimate.customer_id}</TableCell>
+                    <TableCell>
+                      {estimate.customer 
+                        ? `${estimate.customer.first_name} ${estimate.customer.last_name}` 
+                        : 'Unknown Customer'}
+                    </TableCell>
                     <TableCell>{new Date(estimate.date).toLocaleDateString()}</TableCell>
                     <TableCell>${Number(estimate.total).toFixed(2)}</TableCell>
                     <TableCell>

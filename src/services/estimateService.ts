@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 import type { LineItem } from "@/types/estimate";
@@ -10,9 +11,11 @@ export type EstimateWithCustomer = Database['public']['Tables']['estimates']['Ro
 // Get all estimates for the user, with joined customer info
 export async function getEstimates(userId?: string): Promise<EstimateWithCustomer[]> {
   console.log("Fetching estimates for user:", userId);
-  let query = supabase
-    .from<EstimateWithCustomer>('estimates')
-    .select<EstimateWithCustomer, EstimateWithCustomer>(`
+  
+  // Use the correct typing for Supabase queries
+  const query = supabase
+    .from('estimates')
+    .select(`
       *,
       customer:customers (
         id,
@@ -24,7 +27,7 @@ export async function getEstimates(userId?: string): Promise<EstimateWithCustome
     .order('created_at', { ascending: false });
 
   if (userId) {
-    query = query.eq('user_id', userId);
+    query.eq('user_id', userId);
   }
 
   const { data, error } = await query;
@@ -33,7 +36,7 @@ export async function getEstimates(userId?: string): Promise<EstimateWithCustome
     throw error;
   }
   console.log("getEstimates data:", data);
-  return data || [];
+  return data as EstimateWithCustomer[] || [];
 }
 
 // Create a new estimate and add items
