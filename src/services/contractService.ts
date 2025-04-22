@@ -1,7 +1,8 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import type { Contract } from "@/types/contract";
 
-export async function getContracts(userId: string | undefined) {
+export async function getContracts(userId: string | undefined): Promise<Contract[]> {
   if (!userId) {
     console.log('No user ID provided to getContracts');
     return [];
