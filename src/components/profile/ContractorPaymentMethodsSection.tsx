@@ -1,50 +1,89 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { CreditCard, Ban, X } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { deletePaymentMethod } from '@/services/paymentMethodService';
+import { createPaymentMethod, getPaymentMethods, deletePaymentMethod } from '@/services/paymentMethodService';
+import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import type { PaymentMethod, PaymentMethodFormData } from '@/types/paymentMethod';
 
 const ContractorPaymentMethodsSection: React.FC = () => {
   const { toast } = useToast();
+  const { user } = useSupabaseAuth();
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [isAddingMethod, setIsAddingMethod] = useState(false);
   const [methodType, setMethodType] = useState<'credit_card' | 'bank_account'>('credit_card');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPaymentMethods = async () => {
+      if (!user) return;
+      
+      try {
+        setLoading(true);
+        const methods = await getPaymentMethods(user.id);
+        setPaymentMethods(methods);
+      } catch (error) {
+        console.error('Error fetching payment methods:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load payment methods",
+          variant: "destructive"
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPaymentMethods();
+  }, [user, toast]);
 
   const handleAddPaymentMethod = async (formData: PaymentMethodFormData) => {
+    if (!user) return;
+    
     try {
-      // Implementation will come in next iteration
+      setLoading(true);
+      const newMethod = await createPaymentMethod(user.id, formData);
+      setPaymentMethods([...paymentMethods, newMethod]);
       setIsAddingMethod(false);
       toast({
         title: "Payment Method Added",
         description: "Your payment method has been added successfully."
       });
     } catch (error) {
+      console.error('Error adding payment method:', error);
       toast({
         title: "Error",
         description: "Failed to add payment method. Please try again.",
         variant: "destructive"
       });
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleDeletePaymentMethod = async (id: string) => {
+    if (!user) return;
+    
     try {
-      await deletePaymentMethod(id);
+      setLoading(true);
+      await deletePaymentMethod(user.id, id);
       setPaymentMethods(methods => methods.filter(m => m.id !== id));
       toast({
         title: "Payment Method Removed",
         description: "Your payment method has been removed successfully."
       });
     } catch (error) {
+      console.error('Error removing payment method:', error);
       toast({
         title: "Error",
         description: "Failed to remove payment method. Please try again.",
         variant: "destructive"
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -59,6 +98,7 @@ const ContractorPaymentMethodsSection: React.FC = () => {
             setMethodType('credit_card');
             setIsAddingMethod(true);
           }}
+          disabled={loading}
         >
           <CreditCard className="mr-2 h-4 w-4" />
           Add Credit Card
@@ -70,6 +110,7 @@ const ContractorPaymentMethodsSection: React.FC = () => {
             setMethodType('bank_account');
             setIsAddingMethod(true);
           }}
+          disabled={loading}
         >
           <Ban className="mr-2 h-4 w-4" />
           Add Bank Account
@@ -77,6 +118,12 @@ const ContractorPaymentMethodsSection: React.FC = () => {
       </div>
 
       <div className="mt-4 space-y-2">
+        {loading && <p className="text-sm text-gray-500">Loading payment methods...</p>}
+        
+        {!loading && paymentMethods.length === 0 && (
+          <p className="text-sm text-gray-500">No payment methods added yet.</p>
+        )}
+        
         {paymentMethods.map(method => (
           <div 
             key={method.id}
@@ -103,6 +150,7 @@ const ContractorPaymentMethodsSection: React.FC = () => {
               variant="ghost"
               size="sm"
               onClick={() => handleDeletePaymentMethod(method.id)}
+              disabled={loading}
             >
               <X className="h-4 w-4" />
             </Button>
@@ -121,6 +169,7 @@ const ContractorPaymentMethodsSection: React.FC = () => {
             type={methodType}
             onSubmit={handleAddPaymentMethod}
             onCancel={() => setIsAddingMethod(false)}
+            isSubmitting={loading}
           />
         </DialogContent>
       </Dialog>
@@ -132,14 +181,17 @@ interface PaymentMethodFormProps {
   type: 'credit_card' | 'bank_account';
   onSubmit: (data: PaymentMethodFormData) => Promise<void>;
   onCancel: () => void;
+  isSubmitting: boolean;
 }
 
-const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({ type, onSubmit, onCancel }) => {
-  const [loading, setLoading] = useState(false);
-
+const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({ 
+  type, 
+  onSubmit, 
+  onCancel,
+  isSubmitting 
+}) => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setLoading(true);
     
     const formData = new FormData(e.currentTarget);
     const data: PaymentMethodFormData = {
@@ -155,11 +207,7 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({ type, onSubmit, o
       })
     };
 
-    try {
-      await onSubmit(data);
-    } finally {
-      setLoading(false);
-    }
+    await onSubmit(data);
   };
 
   return (
@@ -232,11 +280,11 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({ type, onSubmit, o
       )}
       
       <div className="flex justify-end gap-2">
-        <Button type="button" variant="outline" onClick={onCancel}>
+        <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
           Cancel
         </Button>
-        <Button type="submit" disabled={loading}>
-          {loading ? 'Adding...' : 'Add Payment Method'}
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? 'Adding...' : 'Add Payment Method'}
         </Button>
       </div>
     </form>

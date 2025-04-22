@@ -1,14 +1,16 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import type { ContractorLicense } from "@/types/license";
-import { updateContractorLicense } from '@/services/licenseService';
+import { updateContractorLicense, getContractorLicense } from '@/services/licenseService';
+import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 
 const ContractorLicenseSection: React.FC = () => {
   const { toast } = useToast();
+  const { user } = useSupabaseAuth();
   const [loading, setLoading] = useState(false);
   
   const form = useForm<ContractorLicense>({
@@ -20,10 +22,42 @@ const ContractorLicenseSection: React.FC = () => {
     }
   });
 
+  useEffect(() => {
+    const fetchLicense = async () => {
+      if (!user) return;
+      
+      try {
+        setLoading(true);
+        const licenseData = await getContractorLicense(user.id);
+        form.reset(licenseData);
+      } catch (error) {
+        console.error('Error fetching license:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load license information",
+          variant: "destructive"
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLicense();
+  }, [user, form, toast]);
+
   const onSubmit = async (data: ContractorLicense) => {
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to update your license.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     try {
       setLoading(true);
-      await updateContractorLicense('your-contractor-id', data);
+      await updateContractorLicense(user.id, data);
       toast({
         title: "License Updated",
         description: "Your license information has been updated successfully."
@@ -53,6 +87,7 @@ const ContractorLicenseSection: React.FC = () => {
               id="agency"
               {...form.register('agency')}
               placeholder="Enter issuing agency"
+              disabled={loading}
             />
           </div>
           
@@ -64,6 +99,7 @@ const ContractorLicenseSection: React.FC = () => {
               id="number"
               {...form.register('number')}
               placeholder="Enter license number"
+              disabled={loading}
             />
           </div>
         </div>
@@ -77,6 +113,7 @@ const ContractorLicenseSection: React.FC = () => {
               id="issueDate"
               type="date"
               {...form.register('issueDate')}
+              disabled={loading}
             />
           </div>
 
@@ -88,6 +125,7 @@ const ContractorLicenseSection: React.FC = () => {
               id="expiryDate"
               type="date"
               {...form.register('expiryDate')}
+              disabled={loading}
             />
           </div>
         </div>

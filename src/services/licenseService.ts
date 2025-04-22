@@ -6,10 +6,8 @@ export const updateContractorLicense = async (contractorId: string, licenseData:
   const { data, error } = await supabase
     .from('contractors')
     .update({
-      license_agency: licenseData.agency,
       license_number: licenseData.number,
-      license_issue_date: licenseData.issueDate,
-      license_expiry_date: licenseData.expiryDate,
+      license_expiry: licenseData.expiryDate,
     })
     .eq('id', contractorId)
     .select()
@@ -22,16 +20,16 @@ export const updateContractorLicense = async (contractorId: string, licenseData:
 export const getContractorLicense = async (contractorId: string) => {
   const { data, error } = await supabase
     .from('contractors')
-    .select('license_agency, license_number, license_issue_date, license_expiry_date')
+    .select('license_number, license_expiry')
     .eq('id', contractorId)
     .single();
 
   if (error) throw error;
 
   return {
-    agency: data.license_agency || '',
+    agency: '', // Agency field is not stored in the database
     number: data.license_number || '',
-    issueDate: data.license_issue_date || '',
-    expiryDate: data.license_expiry_date || '',
+    issueDate: '', // Issue date field is not stored in the database
+    expiryDate: data.license_expiry || '',
   };
 };
