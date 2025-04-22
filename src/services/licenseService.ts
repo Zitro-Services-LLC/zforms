@@ -1,13 +1,10 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import type { ContractorLicense, LicenseFormData } from "@/types/license";
-import type { Database } from "@/types/database";
-
-type DbClient = typeof supabase;
 
 export const getContractorLicenses = async (contractorId: string): Promise<ContractorLicense[]> => {
   const { data, error } = await supabase
-    .from<Database['public']['Tables']['contractor_licenses']>('contractor_licenses')
+    .from('contractor_licenses')
     .select('*')
     .eq('contractor_id', contractorId);
 
@@ -17,7 +14,7 @@ export const getContractorLicenses = async (contractorId: string): Promise<Contr
     return [];
   }
   
-  return data;
+  return data as ContractorLicense[];
 };
 
 export const addContractorLicense = async (contractorId: string, licenseData: LicenseFormData): Promise<ContractorLicense> => {
@@ -30,14 +27,14 @@ export const addContractorLicense = async (contractorId: string, licenseData: Li
   };
 
   const { data, error } = await supabase
-    .from<Database['public']['Tables']['contractor_licenses']>('contractor_licenses')
+    .from('contractor_licenses')
     .insert(licenseEntry)
     .select()
     .single();
 
   if (error) throw error;
   
-  return data;
+  return data as ContractorLicense;
 };
 
 export const updateContractorLicense = async (licenseId: string, licenseData: Partial<LicenseFormData>): Promise<ContractorLicense> => {
@@ -49,7 +46,7 @@ export const updateContractorLicense = async (licenseId: string, licenseData: Pa
   if (licenseData.expiry_date) updateData.expiry_date = licenseData.expiry_date;
 
   const { data, error } = await supabase
-    .from<Database['public']['Tables']['contractor_licenses']>('contractor_licenses')
+    .from('contractor_licenses')
     .update(updateData)
     .eq('id', licenseId)
     .select()
@@ -57,12 +54,12 @@ export const updateContractorLicense = async (licenseId: string, licenseData: Pa
 
   if (error) throw error;
   
-  return data;
+  return data as ContractorLicense;
 };
 
 export const deleteContractorLicense = async (licenseId: string): Promise<void> => {
   const { error } = await supabase
-    .from<Database['public']['Tables']['contractor_licenses']>('contractor_licenses')
+    .from('contractor_licenses')
     .delete()
     .eq('id', licenseId);
 

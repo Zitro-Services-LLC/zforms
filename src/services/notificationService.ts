@@ -1,6 +1,6 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import type { Notification, NotificationPreferences } from "@/types/notification";
-import type { Database } from "@/types/database";
 
 let mockNotifications: Notification[] = [];
 let mockUnreadCount = 0;
@@ -8,7 +8,7 @@ let mockUnreadCount = 0;
 export const getNotifications = async (contractorId: string, limit = 10): Promise<Notification[]> => {
   try {
     const { data, error } = await supabase
-      .from<Database['public']['Tables']['notifications']>('notifications')
+      .from('notifications')
       .select('*')
       .eq('contractor_id', contractorId)
       .order('created_at', { ascending: false })
@@ -20,7 +20,7 @@ export const getNotifications = async (contractorId: string, limit = 10): Promis
     }
     
     if (data && data.length > 0) {
-      return data;
+      return data as Notification[];
     }
     
     return mockNotifications.filter(n => n.contractor_id === contractorId).slice(0, limit);
@@ -33,7 +33,7 @@ export const getNotifications = async (contractorId: string, limit = 10): Promis
 export const getUnreadCount = async (contractorId: string): Promise<number> => {
   try {
     const { count, error } = await supabase
-      .from<Database['public']['Tables']['notifications']>('notifications')
+      .from('notifications')
       .select('*', { count: 'exact', head: true })
       .eq('contractor_id', contractorId)
       .eq('is_read', false);
@@ -50,28 +50,62 @@ export const getUnreadCount = async (contractorId: string): Promise<number> => {
 };
 
 export const markAsRead = async (notificationId: string): Promise<void> => {
-  const notificationIndex = mockNotifications.findIndex(n => n.id === notificationId);
-  if (notificationIndex >= 0) {
-    mockNotifications[notificationIndex].is_read = true;
-    mockUnreadCount = Math.max(0, mockUnreadCount - 1);
+  try {
+    await supabase
+      .from('notifications')
+      .update({ is_read: true })
+      .eq('id', notificationId);
+  } catch (error) {
+    console.error("Error marking notification as read:", error);
+    
+    // Fallback to mock implementation
+    const notificationIndex = mockNotifications.findIndex(n => n.id === notificationId);
+    if (notificationIndex >= 0) {
+      mockNotifications[notificationIndex].is_read = true;
+      mockUnreadCount = Math.max(0, mockUnreadCount - 1);
+    }
   }
 };
 
 export const markAllAsRead = async (contractorId: string): Promise<void> => {
-  mockNotifications = mockNotifications.map(n => 
-    n.contractor_id === contractorId ? { ...n, is_read: true } : n
-  );
-  mockUnreadCount = 0;
+  try {
+    await supabase
+      .from('notifications')
+      .update({ is_read: true })
+      .eq('contractor_id', contractorId);
+  } catch (error) {
+    console.error("Error marking all notifications as read:", error);
+    
+    // Fallback to mock implementation
+    mockNotifications = mockNotifications.map(n => 
+      n.contractor_id === contractorId ? { ...n, is_read: true } : n
+    );
+    mockUnreadCount = 0;
+  }
 };
 
 export const getNotificationPreferences = async (contractorId: string): Promise<NotificationPreferences> => {
-  const { data, error } = await supabase
-    .from<Database['public']['Tables']['notification_preferences']>('notification_preferences')
-    .select('*')
-    .eq('contractor_id', contractorId)
-    .single();
+  try {
+    const { data, error } = await supabase
+      .from('notification_preferences')
+      .select('*')
+      .eq('contractor_id', contractorId)
+      .single();
     
-  if (error || !data) {
+    if (error || !data) {
+      return {
+        contractor_id: contractorId,
+        email_enabled: true,
+        in_app_enabled: true,
+        sms_enabled: false,
+        timezone: 'UTC'
+      };
+    }
+    
+    return data as NotificationPreferences;
+  } catch (error) {
+    console.error("Error fetching notification preferences:", error);
+    
     return {
       contractor_id: contractorId,
       email_enabled: true,
@@ -80,8 +114,6 @@ export const getNotificationPreferences = async (contractorId: string): Promise<
       timezone: 'UTC'
     };
   }
-  
-  return data;
 };
 
 export const updateNotificationPreferences = async (
@@ -89,7 +121,7 @@ export const updateNotificationPreferences = async (
   preferences: Partial<NotificationPreferences>
 ): Promise<NotificationPreferences> => {
   const { data, error } = await supabase
-    .from<Database['public']['Tables']['notification_preferences']>('notification_preferences')
+    .from('notification_preferences')
     .upsert({
       contractor_id: contractorId,
       ...preferences
@@ -99,7 +131,7 @@ export const updateNotificationPreferences = async (
     
   if (error) throw error;
   
-  return data;
+  return data as NotificationPreferences;
 };
 
 export const initMockNotifications = (contractorId: string) => {
