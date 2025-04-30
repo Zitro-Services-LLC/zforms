@@ -9,49 +9,12 @@ import { cn } from '@/lib/utils';
 import NewCustomerForm from './NewCustomerForm';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
-// Sample data with complete Customer type properties
-const customers = [
-  {
-    id: '1',
-    first_name: 'John',
-    last_name: 'Doe',
-    email: 'john@example.com',
-    phone: '555-123-4567',
-    property_address: '123 Main St',
-    billing_address: '123 Main St',
-    same_as_billing: true,
-    user_id: 'user_1'
-  },
-  {
-    id: '2',
-    first_name: 'Jane',
-    last_name: 'Smith',
-    email: 'jane@example.com',
-    phone: '555-987-6543',
-    property_address: '456 Oak Ave',
-    billing_address: '456 Oak Ave',
-    same_as_billing: true,
-    user_id: 'user_1'
-  },
-  {
-    id: '3',
-    first_name: 'Robert',
-    last_name: 'Johnson',
-    email: 'robert@example.com',
-    phone: '555-333-4444',
-    property_address: '789 Pine Rd',
-    billing_address: '789 Pine Rd',
-    same_as_billing: true,
-    user_id: 'user_1'
-  },
-];
-
 interface ExistingCustomerSelectorProps {
   onSelectCustomer: (customer: Customer | null) => void; 
   selectedCustomer: Customer | null;
   onAddNewCustomer?: (customer: Omit<Customer, 'id'>) => void;
   disabled?: boolean;
-  customers?: Customer[]; // Added the customers prop
+  customers: Customer[]; // Now required
   selectedCustomerId?: string;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -64,7 +27,7 @@ const ExistingCustomerSelector: React.FC<ExistingCustomerSelectorProps> = ({
   selectedCustomer,
   onAddNewCustomer,
   disabled = false,
-  customers: providedCustomers, // Use provided customers or fall back to default
+  customers,
   selectedCustomerId,
   open: controlledOpen,
   onOpenChange: setControlledOpen,
@@ -77,12 +40,9 @@ const ExistingCustomerSelector: React.FC<ExistingCustomerSelectorProps> = ({
   // Use controlled props if provided, otherwise use internal state
   const isOpen = controlledOpen !== undefined ? controlledOpen : open;
   const setIsOpen = setControlledOpen || setOpen;
-  
-  // Use provided customers or fall back to default sample data
-  const customersList = providedCustomers || customers;
 
   const handleSelect = (customerId: string) => {
-    const customer = customersList.find(c => c.id === customerId);
+    const customer = customers.find(c => c.id === customerId);
     onSelectCustomer(customer || null);
     setIsOpen(false);
   };
@@ -124,7 +84,7 @@ const ExistingCustomerSelector: React.FC<ExistingCustomerSelectorProps> = ({
               <CommandList>
                 <CommandEmpty>No customer found.</CommandEmpty>
                 <CommandGroup heading="Customers">
-                  {customersList.map(customer => (
+                  {customers.map(customer => (
                     <CommandItem
                       key={customer.id}
                       value={customer.id}

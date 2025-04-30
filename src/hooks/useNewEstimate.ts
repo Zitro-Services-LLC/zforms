@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
@@ -5,7 +6,9 @@ import { useNavigate } from "react-router-dom";
 import type { LineItem } from '@/types/estimate';
 import type { Customer } from '@/types/customer';
 import { createEstimate } from '@/services/estimateService';
+import { getCustomers } from '@/services/customerService';
 import { generateReferenceNumber } from "@/utils/estimateUtils";
+import { useQuery } from "@tanstack/react-query";
 
 type EstimateStatus = "draft" | "submitted";
 
@@ -30,6 +33,17 @@ export function useNewEstimate() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [actionDisabledReason, setActionDisabledReason] = useState<string | null>(null);
   const [estimateImages, setEstimateImages] = useState<File[]>([]);
+
+  // Fetch customers from the database
+  const { 
+    data: customers = [], 
+    isLoading: isLoadingCustomers,
+    isError: isErrorCustomers
+  } = useQuery({
+    queryKey: ['customers', user?.id],
+    queryFn: () => getCustomers(user?.id || ''),
+    enabled: !!user?.id
+  });
 
   useEffect(() => {
     setReferenceNumber(generateReferenceNumber());
@@ -229,6 +243,9 @@ export function useNewEstimate() {
     subtotal, tax, total,
     allRequiredValid,
     estimateImages,
+    customers,
+    isLoadingCustomers,
+    isErrorCustomers,
     handleUpdateLineItem,
     handleDeleteLineItem,
     handleAddLineItem,

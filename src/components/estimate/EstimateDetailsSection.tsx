@@ -23,6 +23,9 @@ interface EstimateDetailsSectionProps {
   onJobNumberChange?: (value: string) => void;
   onJobDescriptionChange?: (value: string) => void;
   readOnly?: boolean;
+  customers?: Customer[];
+  isLoadingCustomers?: boolean;
+  isErrorCustomers?: boolean;
 }
 
 const EstimateDetailsSection: React.FC<EstimateDetailsSectionProps> = ({
@@ -39,7 +42,10 @@ const EstimateDetailsSection: React.FC<EstimateDetailsSectionProps> = ({
   jobDescription = '',
   onJobNumberChange,
   onJobDescriptionChange,
-  readOnly = false
+  readOnly = false,
+  customers = [],
+  isLoadingCustomers = false,
+  isErrorCustomers = false
 }) => {
   return (
     <Card>
@@ -104,6 +110,9 @@ const EstimateDetailsSection: React.FC<EstimateDetailsSectionProps> = ({
             selectedCustomer={selectedCustomer}
             onAddNewCustomer={onAddNewCustomer}
             disabled={readOnly}
+            customers={customers}
+            isLoading={isLoadingCustomers}
+            isError={isErrorCustomers}
           />
         </div>
 

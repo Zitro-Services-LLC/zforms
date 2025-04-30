@@ -34,6 +34,9 @@ const NewEstimate = () => {
     total,
     allRequiredValid,
     estimateImages,
+    customers,
+    isLoadingCustomers,
+    isErrorCustomers,
     setNotes,
     setEstimateDate,
     setReferenceNumber,
@@ -92,6 +95,9 @@ const NewEstimate = () => {
             jobDescription={jobDescription}
             onJobNumberChange={setJobNumber}
             onJobDescriptionChange={setJobDescription}
+            customers={customers}
+            isLoadingCustomers={isLoadingCustomers}
+            isErrorCustomers={isErrorCustomers}
           />
 
           <Tabs defaultValue="items">
