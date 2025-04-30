@@ -179,8 +179,12 @@ export async function uploadEstimateImage(
     throw uploadError;
   }
   
-  // Get file URL
-  const storagePath = uploadData.path;
+  // Get file URL - Add proper null check and type casting
+  const storagePath = uploadData?.path;
+  
+  if (!storagePath) {
+    throw new Error("Failed to get storage path after upload");
+  }
   
   // Insert image record using type assertion
   const { data: imageRecord, error: recordError } = await supabase
@@ -224,7 +228,21 @@ export async function getEstimateImages(estimateId: string): Promise<EstimateIma
 
 // Get image URL
 export function getEstimateImageUrl(imagePath: string): string {
-  return supabase.storage.from('estimate_images').getPublicUrl(imagePath).data.publicUrl;
+  // Fixed: Only proceed if imagePath is a valid string
+  if (!imagePath || typeof imagePath !== 'string') {
+    console.error("Invalid image path:", imagePath);
+    return '';
+  }
+  
+  // Get the public URL safely
+  const result = supabase.storage.from('estimate_images').getPublicUrl(imagePath);
+  
+  // Make sure we have a valid result with publicUrl
+  if (result && result.data && result.data.publicUrl) {
+    return result.data.publicUrl;
+  }
+  
+  return '';
 }
 
 // Delete an estimate image
@@ -241,8 +259,12 @@ export async function deleteEstimateImage(imageId: string): Promise<void> {
     throw fetchError;
   }
   
-  // Add type assertion to help TypeScript understand that image has storage_path
-  const storagePath = (image as { storage_path: string }).storage_path;
+  // Use a proper type guard to ensure we have storage_path
+  if (!image || !image.storage_path) {
+    throw new Error("Could not find storage path for image");
+  }
+  
+  const storagePath = image.storage_path as string;
   
   // Remove from storage
   const { error: storageError } = await supabase
