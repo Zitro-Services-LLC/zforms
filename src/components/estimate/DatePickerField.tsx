@@ -15,6 +15,7 @@ interface DatePickerFieldProps {
   value: string;
   onChange: (value: string) => void;
   disabled?: boolean;
+  id?: string; // Added id prop to fix type error
 }
 
 const DatePickerField: React.FC<DatePickerFieldProps> = ({
@@ -22,6 +23,7 @@ const DatePickerField: React.FC<DatePickerFieldProps> = ({
   value,
   onChange,
   disabled,
+  id,
 }) => {
   const asDate = value ? new Date(value) : undefined;
 
@@ -34,6 +36,7 @@ const DatePickerField: React.FC<DatePickerFieldProps> = ({
             variant={"outline"}
             className="w-full justify-start text-left font-normal"
             disabled={disabled}
+            id={id} // Use id if provided
           >
             <CalendarIcon className="mr-2 h-4 w-4 opacity-60" />
             {asDate ? format(asDate, "PPP") : <span>Pick a date</span>}

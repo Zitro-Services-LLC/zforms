@@ -33,6 +33,28 @@ export interface NotificationPreferences {
   timezone: string;
 }
 
+export interface EstimateActivity {
+  id: string;
+  estimate_id: string;
+  user_id: string;
+  action_type: 'created' | 'updated' | 'status_changed' | 'viewed' | 'commented' | 'requested_changes' | 'sent' | 'exported';
+  action_details?: Record<string, any>;
+  created_at: string;
+  ip_address?: string | null;
+}
+
+export interface EstimateImage {
+  id: string;
+  estimate_id: string;
+  storage_path: string;
+  file_name: string;
+  size?: number;
+  content_type?: string;
+  created_at: string;
+  updated_at: string;
+  caption?: string;
+}
+
 export interface Database {
   public: {
     Tables: {
@@ -50,6 +72,16 @@ export interface Database {
         Row: NotificationPreferences;
         Insert: Omit<NotificationPreferences, 'created_at' | 'updated_at'>;
         Update: Partial<NotificationPreferences>;
+      };
+      estimate_activities: {
+        Row: EstimateActivity;
+        Insert: Omit<EstimateActivity, 'id' | 'created_at'>;
+        Update: Partial<EstimateActivity>;
+      };
+      estimate_images: {
+        Row: EstimateImage;
+        Insert: Omit<EstimateImage, 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<EstimateImage>;
       };
     };
   };

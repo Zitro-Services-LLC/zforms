@@ -2,6 +2,7 @@
 import { supabase } from '@/integrations/supabase/client'
 import type { Database } from '@/integrations/supabase/types'
 import type { LineItem } from '@/types/estimate'
+import type { EstimateActivity, EstimateImage } from '@/types/database.d'
 
 // Strongly-typed joined estimate + customer row
 export type EstimateWithCustomer = Database['public']['Tables']['estimates']['Row'] & {
@@ -19,28 +20,6 @@ export type EstimateWithCustomer = Database['public']['Tables']['estimates']['Ro
     updated_at?: string | null;
     user_id?: string;
   } | null
-}
-
-export type EstimateActivity = {
-  id: string;
-  estimate_id: string;
-  user_id: string;
-  action_type: 'created' | 'updated' | 'status_changed' | 'viewed' | 'commented' | 'requested_changes' | 'sent' | 'exported';
-  action_details?: any;
-  created_at: string;
-  ip_address?: string | null;
-}
-
-export type EstimateImage = {
-  id: string;
-  estimate_id: string;
-  storage_path: string;
-  file_name: string;
-  size?: number;
-  content_type?: string;
-  created_at: string;
-  updated_at: string;
-  caption?: string;
 }
 
 // Get all estimates for the user, with joined customer info
@@ -146,14 +125,15 @@ export async function trackEstimateActivity(
   details?: any
 ): Promise<void> {
   try {
+    // Type casting to avoid TypeScript errors related to the new table not being in the schema yet
     await supabase
-      .from('estimate_activities')
+      .from('estimate_activities' as any)
       .insert({
         estimate_id: estimateId,
         user_id: userId,
         action_type: actionType,
         action_details: details || {}
-      })
+      } as any)
   } catch (error) {
     console.error("Error tracking estimate activity:", error)
     // Don't throw here, as this is a non-critical operation
@@ -163,7 +143,7 @@ export async function trackEstimateActivity(
 // Get estimate activity history
 export async function getEstimateActivities(estimateId: string): Promise<EstimateActivity[]> {
   const { data, error } = await supabase
-    .from('estimate_activities')
+    .from('estimate_activities' as any)
     .select('*')
     .eq('estimate_id', estimateId)
     .order('created_at', { ascending: false })
@@ -173,7 +153,7 @@ export async function getEstimateActivities(estimateId: string): Promise<Estimat
     throw error
   }
 
-  return data as EstimateActivity[]
+  return data as unknown as EstimateActivity[]
 }
 
 // Upload an image for an estimate
@@ -204,7 +184,7 @@ export async function uploadEstimateImage(
   
   // Insert image record
   const { data: imageRecord, error: recordError } = await supabase
-    .from('estimate_images')
+    .from('estimate_images' as any)
     .insert({
       estimate_id: estimateId,
       storage_path: storagePath,
@@ -212,7 +192,7 @@ export async function uploadEstimateImage(
       size: file.size,
       content_type: file.type,
       caption: caption || null
-    })
+    } as any)
     .select()
     .single();
   
@@ -223,13 +203,13 @@ export async function uploadEstimateImage(
     throw recordError;
   }
   
-  return imageRecord as EstimateImage;
+  return imageRecord as unknown as EstimateImage;
 }
 
 // Get all images for an estimate
 export async function getEstimateImages(estimateId: string): Promise<EstimateImage[]> {
   const { data, error } = await supabase
-    .from('estimate_images')
+    .from('estimate_images' as any)
     .select('*')
     .eq('estimate_id', estimateId)
     .order('created_at', { ascending: true })
@@ -239,7 +219,7 @@ export async function getEstimateImages(estimateId: string): Promise<EstimateIma
     throw error;
   }
   
-  return data as EstimateImage[];
+  return data as unknown as EstimateImage[];
 }
 
 // Get image URL
@@ -251,7 +231,7 @@ export function getEstimateImageUrl(imagePath: string): string {
 export async function deleteEstimateImage(imageId: string): Promise<void> {
   // Get the image record first to get the storage path
   const { data: image, error: fetchError } = await supabase
-    .from('estimate_images')
+    .from('estimate_images' as any)
     .select('storage_path')
     .eq('id', imageId)
     .single();
@@ -274,7 +254,7 @@ export async function deleteEstimateImage(imageId: string): Promise<void> {
   
   // Delete the record
   const { error: deleteError } = await supabase
-    .from('estimate_images')
+    .from('estimate_images' as any)
     .delete()
     .eq('id', imageId);
   

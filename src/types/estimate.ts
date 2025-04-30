@@ -15,4 +15,6 @@ export interface EstimateData {
   tax: number;
   total: number;
   notes?: string;
+  jobNumber?: string;
+  jobDescription?: string;
 }
