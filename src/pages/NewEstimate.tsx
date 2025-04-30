@@ -1,6 +1,4 @@
 
-// MAIN FORM PAGE AFTER REFACTOR
-
 import React from 'react';
 import AppLayout from '../components/layouts/AppLayout';
 import EstimateFormHeader from '../components/estimate/EstimateFormHeader';
@@ -12,6 +10,9 @@ import EstimatePreviewDialog from '../components/estimate/EstimatePreviewDialog'
 import NewEstimateActions from '../components/estimate/NewEstimateActions';
 import { useNewEstimate } from '@/hooks/useNewEstimate';
 import { useNavigate } from 'react-router-dom';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import EstimateImageGallery from '@/components/estimate/EstimateImageGallery';
 
 const NewEstimate = () => {
   const navigate = useNavigate();
@@ -21,6 +22,8 @@ const NewEstimate = () => {
     notes,
     estimateDate,
     referenceNumber,
+    jobNumber,
+    jobDescription,
     showPreview,
     taxRate,
     isSaving,
@@ -30,9 +33,12 @@ const NewEstimate = () => {
     tax,
     total,
     allRequiredValid,
+    estimateImages,
     setNotes,
     setEstimateDate,
     setReferenceNumber,
+    setJobNumber,
+    setJobDescription,
     setTaxRate,
     handleUpdateLineItem,
     handleDeleteLineItem,
@@ -42,6 +48,8 @@ const NewEstimate = () => {
     handleSaveDraft,
     handleSubmitToCustomer,
     handlePreview,
+    handleAddEstimateImage,
+    handleRemoveEstimateImage,
     setShowPreview,
   } = useNewEstimate();
 
@@ -69,7 +77,7 @@ const NewEstimate = () => {
           </div>
         )}
 
-        <div className="space-y-6 bg-white shadow-sm rounded-lg p-6">
+        <div className="space-y-6">
           <EstimateDetailsSection
             estimateDate={estimateDate}
             referenceNumber={referenceNumber}
@@ -80,26 +88,60 @@ const NewEstimate = () => {
             taxRate={taxRate}
             onTaxRateChange={setTaxRate}
             onAddNewCustomer={handleAddNewCustomer}
+            jobNumber={jobNumber}
+            jobDescription={jobDescription}
+            onJobNumberChange={setJobNumber}
+            onJobDescriptionChange={setJobDescription}
           />
 
-          <EstimateItemsSection
-            items={items}
-            onUpdateItem={handleUpdateLineItem}
-            onDeleteItem={handleDeleteLineItem}
-            onAddItem={handleAddLineItem}
-          />
+          <Tabs defaultValue="items">
+            <TabsList className="grid grid-cols-2 mb-4 w-full max-w-md">
+              <TabsTrigger value="items">Line Items</TabsTrigger>
+              <TabsTrigger value="attachments">Images</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="items" className="space-y-6">
+              <EstimateItemsSection
+                items={items}
+                onUpdateItem={handleUpdateLineItem}
+                onDeleteItem={handleDeleteLineItem}
+                onAddItem={handleAddLineItem}
+              />
 
-          <EstimateNotesSection
-            notes={notes}
-            onNotesChange={setNotes}
-          />
+              <EstimateNotesSection
+                notes={notes}
+                onNotesChange={setNotes}
+              />
 
-          <EstimateTotals 
-            subtotal={subtotal}
-            tax={tax}
-            total={total}
-            taxRate={taxRate}
-          />
+              <EstimateTotals 
+                subtotal={subtotal}
+                tax={tax}
+                total={total}
+                taxRate={taxRate}
+              />
+            </TabsContent>
+            
+            <TabsContent value="attachments">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Project Images</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-sm text-gray-500 mb-4">
+                    Add images of the project site, reference materials, or other relevant visuals.
+                  </div>
+                  
+                  {/* Placeholder until we have actual image upload functionality */}
+                  <div className="border border-dashed rounded-lg p-8 text-center text-gray-500 bg-gray-50">
+                    <p>Image upload will be available soon.</p>
+                    <p className="text-sm mt-2">
+                      You'll be able to add and manage project images here.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
 
           <NewEstimateActions
             onSaveDraft={handleSaveDraft}
@@ -129,4 +171,3 @@ const NewEstimate = () => {
 };
 
 export default NewEstimate;
-

@@ -1,87 +1,128 @@
 
 import React from 'react';
 import DatePickerField from './DatePickerField';
-import { Input } from "@/components/ui/input";
-import CustomerSelection from '@/components/shared/CustomerSelection';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import ExistingCustomerSelector from '../shared/ExistingCustomerSelector';
 import type { Customer } from '@/types/customer';
+import { Textarea } from '@/components/ui/textarea';
 
 interface EstimateDetailsSectionProps {
   estimateDate: string;
   referenceNumber: string;
+  onDateChange: (value: string) => void;
+  onReferenceChange: (value: string) => void;
+  onCustomerSelect: (customer: Customer | null) => void;
   selectedCustomer: Customer | null;
   taxRate: number;
-  onDateChange: (date: string) => void;
-  onReferenceChange: (reference: string) => void;
-  onCustomerSelect: (customer: Customer | null) => void;
-  onTaxRateChange: (taxRate: number) => void;
-  onAddNewCustomer: (customerData: Omit<Customer, 'id'>) => void;
+  onTaxRateChange: (value: number) => void;
+  onAddNewCustomer?: (customer: Omit<Customer, 'id'>) => void;
+  jobNumber?: string;
+  jobDescription?: string;
+  onJobNumberChange?: (value: string) => void;
+  onJobDescriptionChange?: (value: string) => void;
+  readOnly?: boolean;
 }
 
 const EstimateDetailsSection: React.FC<EstimateDetailsSectionProps> = ({
   estimateDate,
   referenceNumber,
-  selectedCustomer,
-  taxRate,
   onDateChange,
   onReferenceChange,
   onCustomerSelect,
+  selectedCustomer,
+  taxRate,
   onTaxRateChange,
-  onAddNewCustomer
+  onAddNewCustomer,
+  jobNumber = '',
+  jobDescription = '',
+  onJobNumberChange,
+  onJobDescriptionChange,
+  readOnly = false
 }) => {
   return (
-    <div>
-      <h2 className="text-lg font-semibold mb-4">Estimate Details</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <div className="mb-4">
-            <label htmlFor="reference" className="block text-sm font-medium text-gray-700 mb-1">
-              Reference/Estimate #
-            </label>
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-lg">Estimate Details</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="grid gap-6 md:grid-cols-2">
+          <div className="space-y-2">
+            <Label htmlFor="reference-number">Reference Number</Label>
             <Input
-              id="reference"
+              id="reference-number"
               value={referenceNumber}
               onChange={(e) => onReferenceChange(e.target.value)}
-              placeholder="EST-20250101-001"
-              className="w-full"
+              placeholder="Enter reference number"
+              disabled={readOnly}
             />
           </div>
-          <div className="mb-4">
-            <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">
-              Estimate Date
-            </label>
+
+          <div className="space-y-2">
+            <Label htmlFor="estimate-date">Date</Label>
             <DatePickerField
-              label="Estimate Date"
+              id="estimate-date"
               value={estimateDate}
               onChange={onDateChange}
+              disabled={readOnly}
             />
           </div>
-          <div className="mb-4">
-            <label htmlFor="tax-rate" className="block text-sm font-medium text-gray-700 mb-1">
-              Tax Rate (%)
-            </label>
+
+          {onJobNumberChange && (
+            <div className="space-y-2">
+              <Label htmlFor="job-number">Job Number</Label>
+              <Input
+                id="job-number"
+                value={jobNumber}
+                onChange={(e) => onJobNumberChange(e.target.value)}
+                placeholder="Enter job number (optional)"
+                disabled={readOnly}
+              />
+            </div>
+          )}
+
+          <div className="space-y-2">
+            <Label htmlFor="tax-rate">Tax Rate (%)</Label>
             <Input
               id="tax-rate"
               type="number"
               value={taxRate}
-              onChange={(e) => onTaxRateChange(parseFloat(e.target.value))}
-              min="0"
-              max="100"
-              step="0.01"
-              className="w-full"
+              onChange={(e) => onTaxRateChange(Number(e.target.value))}
+              min={0}
+              max={100}
+              step={0.1}
+              disabled={readOnly}
             />
           </div>
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Customer
-          </label>
-          <CustomerSelection
+
+        <div className="space-y-2">
+          <Label>Customer</Label>
+          <ExistingCustomerSelector
             onSelectCustomer={onCustomerSelect}
+            selectedCustomer={selectedCustomer}
             onAddNewCustomer={onAddNewCustomer}
+            disabled={readOnly}
           />
         </div>
-      </div>
-    </div>
+
+        {onJobDescriptionChange && (
+          <div className="space-y-2">
+            <Label htmlFor="job-description">Job Description</Label>
+            <Textarea
+              id="job-description"
+              value={jobDescription}
+              onChange={(e) => onJobDescriptionChange(e.target.value)}
+              placeholder="Enter job description (optional)"
+              rows={3}
+              disabled={readOnly}
+              className="resize-none"
+            />
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 

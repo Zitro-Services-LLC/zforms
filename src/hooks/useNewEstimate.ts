@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
@@ -5,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import type { LineItem } from '@/types/estimate';
 import type { Customer } from '@/types/customer';
 import { createEstimate } from '@/services/estimateService';
+import { generateReferenceNumber } from "@/utils/estimateUtils";
 
 type EstimateStatus = "draft" | "submitted";
 
@@ -20,27 +22,19 @@ export function useNewEstimate() {
   const [notes, setNotes] = useState('');
   const [estimateDate, setEstimateDate] = useState(new Date().toISOString().split('T')[0]);
   const [referenceNumber, setReferenceNumber] = useState('');
+  const [jobNumber, setJobNumber] = useState('');
+  const [jobDescription, setJobDescription] = useState('');
   const [showPreview, setShowPreview] = useState(false);
   const [taxRate, setTaxRate] = useState(8);
   const [isSaving, setIsSaving] = useState(false);
   const [estimateStatus, setEstimateStatus] = useState<EstimateStatus>("draft");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [actionDisabledReason, setActionDisabledReason] = useState<string | null>(null);
-
-  const generateReferenceNumber = useCallback(() => {
-    const date = new Date();
-    const pad = (n: number) => n.toString().padStart(2, '0');
-    const dateString =
-      date.getFullYear().toString() +
-      pad(date.getMonth() + 1) +
-      pad(date.getDate());
-    const rand = Math.floor(Math.random() * 9000 + 1000);
-    return `EST-${dateString}-${rand}`;
-  }, []);
+  const [estimateImages, setEstimateImages] = useState<File[]>([]);
 
   useEffect(() => {
     setReferenceNumber(generateReferenceNumber());
-  }, [generateReferenceNumber]);
+  }, []);
 
   const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.rate), 0);
   const tax = subtotal * (taxRate / 100);
@@ -110,6 +104,18 @@ export function useNewEstimate() {
       id: ''
     });
   };
+  
+  const handleAddEstimateImage = (file: File) => {
+    setEstimateImages(prev => [...prev, file]);
+    toast({
+      title: "Image Added",
+      description: `${file.name} will be uploaded when saving the estimate.`,
+    });
+  };
+
+  const handleRemoveEstimateImage = (index: number) => {
+    setEstimateImages(prev => prev.filter((_, i) => i !== index));
+  };
 
   const saveEstimate = async (status: EstimateStatus) => {
     setErrorMessage(null);
@@ -154,7 +160,9 @@ export function useNewEstimate() {
         tax_amount: tax,
         total,
         notes,
-        status
+        status,
+        job_number: jobNumber || undefined,
+        job_description: jobDescription || undefined
       }, items);
 
       setEstimateStatus(status);
@@ -200,6 +208,8 @@ export function useNewEstimate() {
     notes, setNotes,
     estimateDate, setEstimateDate,
     referenceNumber, setReferenceNumber,
+    jobNumber, setJobNumber,
+    jobDescription, setJobDescription,
     showPreview, setShowPreview,
     taxRate, setTaxRate,
     isSaving,
@@ -208,6 +218,7 @@ export function useNewEstimate() {
     actionDisabledReason,
     subtotal, tax, total,
     allRequiredValid,
+    estimateImages,
     handleUpdateLineItem,
     handleDeleteLineItem,
     handleAddLineItem,
@@ -216,5 +227,7 @@ export function useNewEstimate() {
     handleSaveDraft,
     handleSubmitToCustomer,
     handlePreview,
+    handleAddEstimateImage,
+    handleRemoveEstimateImage,
   };
 }

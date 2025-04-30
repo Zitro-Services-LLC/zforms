@@ -21,6 +21,28 @@ export type EstimateWithCustomer = Database['public']['Tables']['estimates']['Ro
   } | null
 }
 
+export type EstimateActivity = {
+  id: string;
+  estimate_id: string;
+  user_id: string;
+  action_type: 'created' | 'updated' | 'status_changed' | 'viewed' | 'commented' | 'requested_changes' | 'sent' | 'exported';
+  action_details?: any;
+  created_at: string;
+  ip_address?: string | null;
+}
+
+export type EstimateImage = {
+  id: string;
+  estimate_id: string;
+  storage_path: string;
+  file_name: string;
+  size?: number;
+  content_type?: string;
+  created_at: string;
+  updated_at: string;
+  caption?: string;
+}
+
 // Get all estimates for the user, with joined customer info
 export async function getEstimates(userId?: string): Promise<EstimateWithCustomer[]> {
   console.log("Fetching estimates for user:", userId)
@@ -61,7 +83,9 @@ export async function createEstimate(estimateData: {
   tax_amount: number,
   total: number,
   notes?: string,
-  status: "draft" | "submitted"
+  status: "draft" | "submitted",
+  job_number?: string,
+  job_description?: string,
 }, items: LineItem[]) {
   // Insert main estimate record
   const { data: newEstimate, error } = await supabase
@@ -76,7 +100,10 @@ export async function createEstimate(estimateData: {
       tax_amount: estimateData.tax_amount,
       total: estimateData.total,
       notes: estimateData.notes || "",
-      status: estimateData.status
+      status: estimateData.status,
+      job_number: estimateData.job_number || null,
+      job_description: estimateData.job_description || null,
+      last_modified_by: estimateData.user_id
     }])
     .select()
     .single()
@@ -103,5 +130,179 @@ export async function createEstimate(estimateData: {
     throw itemsError
   }
 
+  // Track activity
+  await trackEstimateActivity(estimate_id, estimateData.user_id, 'created', {
+    status: estimateData.status
+  })
+
   return newEstimate
+}
+
+// Track estimate activity
+export async function trackEstimateActivity(
+  estimateId: string,
+  userId: string,
+  actionType: EstimateActivity['action_type'],
+  details?: any
+): Promise<void> {
+  try {
+    await supabase
+      .from('estimate_activities')
+      .insert({
+        estimate_id: estimateId,
+        user_id: userId,
+        action_type: actionType,
+        action_details: details || {}
+      })
+  } catch (error) {
+    console.error("Error tracking estimate activity:", error)
+    // Don't throw here, as this is a non-critical operation
+  }
+}
+
+// Get estimate activity history
+export async function getEstimateActivities(estimateId: string): Promise<EstimateActivity[]> {
+  const { data, error } = await supabase
+    .from('estimate_activities')
+    .select('*')
+    .eq('estimate_id', estimateId)
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    console.error("Error fetching estimate activities:", error)
+    throw error
+  }
+
+  return data as EstimateActivity[]
+}
+
+// Upload an image for an estimate
+export async function uploadEstimateImage(
+  estimateId: string, 
+  file: File, 
+  caption?: string
+): Promise<EstimateImage> {
+  const fileName = `${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
+  const filePath = `${estimateId}/${fileName}`;
+  
+  // Upload file to storage
+  const { data: uploadData, error: uploadError } = await supabase
+    .storage
+    .from('estimate_images')
+    .upload(filePath, file, {
+      cacheControl: '3600',
+      upsert: false
+    });
+  
+  if (uploadError) {
+    console.error("Error uploading image:", uploadError);
+    throw uploadError;
+  }
+  
+  // Get file URL
+  const storagePath = uploadData.path;
+  
+  // Insert image record
+  const { data: imageRecord, error: recordError } = await supabase
+    .from('estimate_images')
+    .insert({
+      estimate_id: estimateId,
+      storage_path: storagePath,
+      file_name: fileName,
+      size: file.size,
+      content_type: file.type,
+      caption: caption || null
+    })
+    .select()
+    .single();
+  
+  if (recordError) {
+    console.error("Error creating image record:", recordError);
+    // Try to clean up the uploaded file
+    await supabase.storage.from('estimate_images').remove([storagePath]);
+    throw recordError;
+  }
+  
+  return imageRecord as EstimateImage;
+}
+
+// Get all images for an estimate
+export async function getEstimateImages(estimateId: string): Promise<EstimateImage[]> {
+  const { data, error } = await supabase
+    .from('estimate_images')
+    .select('*')
+    .eq('estimate_id', estimateId)
+    .order('created_at', { ascending: true })
+  
+  if (error) {
+    console.error("Error fetching estimate images:", error);
+    throw error;
+  }
+  
+  return data as EstimateImage[];
+}
+
+// Get image URL
+export function getEstimateImageUrl(imagePath: string): string {
+  return supabase.storage.from('estimate_images').getPublicUrl(imagePath).data.publicUrl;
+}
+
+// Delete an estimate image
+export async function deleteEstimateImage(imageId: string): Promise<void> {
+  // Get the image record first to get the storage path
+  const { data: image, error: fetchError } = await supabase
+    .from('estimate_images')
+    .select('storage_path')
+    .eq('id', imageId)
+    .single();
+  
+  if (fetchError) {
+    console.error("Error fetching image:", fetchError);
+    throw fetchError;
+  }
+  
+  // Remove from storage
+  const { error: storageError } = await supabase
+    .storage
+    .from('estimate_images')
+    .remove([image.storage_path]);
+  
+  if (storageError) {
+    console.error("Error removing image from storage:", storageError);
+    throw storageError;
+  }
+  
+  // Delete the record
+  const { error: deleteError } = await supabase
+    .from('estimate_images')
+    .delete()
+    .eq('id', imageId);
+  
+  if (deleteError) {
+    console.error("Error deleting image record:", deleteError);
+    throw deleteError;
+  }
+}
+
+// Update estimate view status
+export async function trackEstimateView(
+  estimateId: string,
+  userId: string
+): Promise<void> {
+  // Update last viewed timestamp
+  const { error } = await supabase
+    .from('estimates')
+    .update({
+      last_viewed_at: new Date().toISOString(),
+      last_viewed_by: userId
+    })
+    .eq('id', estimateId);
+  
+  if (error) {
+    console.error("Error updating estimate view status:", error);
+    // Don't throw here, as this is a non-critical operation
+  }
+  
+  // Track activity
+  await trackEstimateActivity(estimateId, userId, 'viewed');
 }
