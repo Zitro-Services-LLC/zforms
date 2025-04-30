@@ -1,16 +1,28 @@
 
 export interface LineItem {
-  id: number;
+  id: string;
   description: string;
   quantity: number;
   rate: number;
   amount: number;
 }
 
+export interface EstimateParty {
+  name: string;
+  address: string;
+  phone: string;
+  email: string;
+}
+
 export interface EstimateData {
   id: string;
-  customer: any;
-  items: LineItem[];
+  jobId?: string;
+  status: string;
+  date: string;
+  contractor: EstimateParty;
+  customer: EstimateParty;
+  description?: string;
+  lineItems: LineItem[];
   subtotal: number;
   tax: number;
   total: number;
@@ -18,3 +30,5 @@ export interface EstimateData {
   jobNumber?: string;
   jobDescription?: string;
 }
+
+export type EstimateWithCustomerAndItems = EstimateData;

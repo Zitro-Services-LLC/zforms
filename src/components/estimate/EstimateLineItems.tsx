@@ -2,7 +2,7 @@
 import React from 'react';
 
 interface LineItem {
-  id: number;
+  id: string;
   description: string;
   quantity: number;
   rate: number;

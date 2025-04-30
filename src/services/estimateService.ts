@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client'
 import type { Database } from '@/integrations/supabase/types'
 import type { LineItem } from '@/types/estimate'
@@ -19,7 +18,56 @@ export type EstimateWithCustomer = Database['public']['Tables']['estimates']['Ro
     created_at?: string | null;
     updated_at?: string | null;
     user_id?: string;
-  } | null
+  } | null;
+  contractor?: {
+    id?: string;
+    company_name?: string;
+    company_address?: string | null;
+    company_phone?: string | null;
+    company_email?: string | null;
+    logo_url?: string | null;
+  } | null;
+}
+
+// Get a single estimate by ID with joined customer info
+export async function getEstimateById(id: string): Promise<EstimateWithCustomer> {
+  const { data, error } = await supabase
+    .from('estimates')
+    .select(`
+      *,
+      customer:customers(*),
+      contractor:contractors(*)
+    `)
+    .eq('id', id)
+    .single();
+
+  if (error) {
+    console.error("getEstimateById error:", error);
+    throw error;
+  }
+
+  return data as EstimateWithCustomer;
+}
+
+// Get all estimate line items for a specific estimate
+export async function getEstimateItems(estimateId: string): Promise<LineItem[]> {
+  const { data, error } = await supabase
+    .from('estimate_items')
+    .select('*')
+    .eq('estimate_id', estimateId);
+
+  if (error) {
+    console.error("getEstimateItems error:", error);
+    throw error;
+  }
+
+  return data.map(item => ({
+    id: item.id,
+    description: item.description,
+    quantity: Number(item.quantity),
+    rate: Number(item.rate),
+    amount: Number(item.amount)
+  }));
 }
 
 // Get all estimates for the user, with joined customer info
