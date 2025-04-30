@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Customer } from '@/types/customer';
 import { Button } from '@/components/ui/button';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Check, ChevronsUpDown, UserPlus } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -121,9 +121,9 @@ const ExistingCustomerSelector: React.FC<ExistingCustomerSelectorProps> = ({
             ) : isLoading ? (
               <CommandEmpty>Loading customers...</CommandEmpty>
             ) : (
-              <>
+              <CommandList>
                 <CommandEmpty>No customer found.</CommandEmpty>
-                <CommandGroup>
+                <CommandGroup heading="Customers">
                   {customersList.map(customer => (
                     <CommandItem
                       key={customer.id}
@@ -140,7 +140,7 @@ const ExistingCustomerSelector: React.FC<ExistingCustomerSelectorProps> = ({
                     </CommandItem>
                   ))}
                 </CommandGroup>
-              </>
+              </CommandList>
             )}
             {onAddNewCustomer && (
               <div className="p-2 border-t">
