@@ -241,11 +241,14 @@ export async function deleteEstimateImage(imageId: string): Promise<void> {
     throw fetchError;
   }
   
+  // Add type assertion to help TypeScript understand that image has storage_path
+  const storagePath = (image as { storage_path: string }).storage_path;
+  
   // Remove from storage
   const { error: storageError } = await supabase
     .storage
     .from('estimate_images')
-    .remove([image.storage_path]);
+    .remove([storagePath]);
   
   if (storageError) {
     console.error("Error removing image from storage:", storageError);
