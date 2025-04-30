@@ -127,13 +127,13 @@ export async function trackEstimateActivity(
   try {
     // Using type assertion to work around TypeScript errors until Supabase types are updated
     await supabase
-      .from('estimate_activities' as any)
+      .from('estimate_activities')
       .insert({
         estimate_id: estimateId,
         user_id: userId,
         action_type: actionType,
         action_details: details || {}
-      } as any)
+      })
   } catch (error) {
     console.error("Error tracking estimate activity:", error)
     // Don't throw here, as this is a non-critical operation
@@ -143,7 +143,7 @@ export async function trackEstimateActivity(
 // Get estimate activity history
 export async function getEstimateActivities(estimateId: string): Promise<EstimateActivity[]> {
   const { data, error } = await supabase
-    .from('estimate_activities' as any)
+    .from('estimate_activities')
     .select('*')
     .eq('estimate_id', estimateId)
     .order('created_at', { ascending: false })
@@ -153,7 +153,7 @@ export async function getEstimateActivities(estimateId: string): Promise<Estimat
     throw error
   }
 
-  return data as unknown as EstimateActivity[]
+  return data as EstimateActivity[]
 }
 
 // Upload an image for an estimate
@@ -186,9 +186,9 @@ export async function uploadEstimateImage(
     throw new Error("Failed to get storage path after upload");
   }
   
-  // Insert image record using type assertion
+  // Insert image record
   const { data: imageRecord, error: recordError } = await supabase
-    .from('estimate_images' as any)
+    .from('estimate_images')
     .insert({
       estimate_id: estimateId,
       storage_path: storagePath,
@@ -196,7 +196,7 @@ export async function uploadEstimateImage(
       size: file.size,
       content_type: file.type,
       caption: caption || null
-    } as any)
+    })
     .select()
     .single();
   
@@ -207,23 +207,23 @@ export async function uploadEstimateImage(
     throw recordError;
   }
   
-  return imageRecord as unknown as EstimateImage;
+  return imageRecord as EstimateImage;
 }
 
 // Get all images for an estimate
 export async function getEstimateImages(estimateId: string): Promise<EstimateImage[]> {
   const { data, error } = await supabase
-    .from('estimate_images' as any)
+    .from('estimate_images')
     .select('*')
     .eq('estimate_id', estimateId)
-    .order('created_at', { ascending: true })
+    .order('created_at', { ascending: true });
   
   if (error) {
     console.error("Error fetching estimate images:", error);
     throw error;
   }
   
-  return data as unknown as EstimateImage[];
+  return data as EstimateImage[];
 }
 
 // Get image URL
@@ -249,7 +249,7 @@ export function getEstimateImageUrl(imagePath: string): string {
 export async function deleteEstimateImage(imageId: string): Promise<void> {
   // Get the image record first to get the storage path
   const { data: image, error: fetchError } = await supabase
-    .from('estimate_images' as any)
+    .from('estimate_images')
     .select('storage_path')
     .eq('id', imageId)
     .single();
@@ -279,7 +279,7 @@ export async function deleteEstimateImage(imageId: string): Promise<void> {
   
   // Delete the record
   const { error: deleteError } = await supabase
-    .from('estimate_images' as any)
+    .from('estimate_images')
     .delete()
     .eq('id', imageId);
   
@@ -294,13 +294,13 @@ export async function trackEstimateView(
   estimateId: string,
   userId: string
 ): Promise<void> {
-  // Update last viewed timestamp using type assertion for new fields
+  // Update last viewed timestamp
   const { error } = await supabase
     .from('estimates')
     .update({
       last_viewed_at: new Date().toISOString(),
       last_viewed_by: userId
-    } as any)
+    })
     .eq('id', estimateId);
   
   if (error) {

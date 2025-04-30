@@ -131,13 +131,14 @@ const NewEstimate = () => {
                     Add images of the project site, reference materials, or other relevant visuals.
                   </div>
                   
-                  {/* Placeholder until we have actual image upload functionality */}
-                  <div className="border border-dashed rounded-lg p-8 text-center text-gray-500 bg-gray-50">
-                    <p>Image upload will be available soon.</p>
-                    <p className="text-sm mt-2">
-                      You'll be able to add and manage project images here.
-                    </p>
-                  </div>
+                  <EstimateImageGallery 
+                    images={estimateImages || []}
+                    onAddImages={handleAddEstimateImage}
+                    onImagesChange={(images) => {
+                      // Handle changes to the images array
+                      console.log("Images changed:", images);
+                    }}
+                  />
                 </CardContent>
               </Card>
             </TabsContent>

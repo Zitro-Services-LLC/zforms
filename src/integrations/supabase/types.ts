@@ -280,6 +280,91 @@ export type Database = {
         }
         Relationships: []
       }
+      estimate_activities: {
+        Row: {
+          action_details: Json | null
+          action_type: string
+          created_at: string
+          estimate_id: string
+          id: string
+          ip_address: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          action_details?: Json | null
+          action_type: string
+          created_at?: string
+          estimate_id: string
+          id?: string
+          ip_address?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          action_details?: Json | null
+          action_type?: string
+          created_at?: string
+          estimate_id?: string
+          id?: string
+          ip_address?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estimate_activities_estimate_id_fkey"
+            columns: ["estimate_id"]
+            isOneToOne: false
+            referencedRelation: "estimates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      estimate_images: {
+        Row: {
+          caption: string | null
+          content_type: string | null
+          created_at: string
+          estimate_id: string
+          file_name: string
+          id: string
+          size: number | null
+          storage_path: string
+          updated_at: string
+        }
+        Insert: {
+          caption?: string | null
+          content_type?: string | null
+          created_at?: string
+          estimate_id: string
+          file_name: string
+          id?: string
+          size?: number | null
+          storage_path: string
+          updated_at?: string
+        }
+        Update: {
+          caption?: string | null
+          content_type?: string | null
+          created_at?: string
+          estimate_id?: string
+          file_name?: string
+          id?: string
+          size?: number | null
+          storage_path?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estimate_images_estimate_id_fkey"
+            columns: ["estimate_id"]
+            isOneToOne: false
+            referencedRelation: "estimates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       estimate_items: {
         Row: {
           amount: number
@@ -328,6 +413,11 @@ export type Database = {
           date: string
           expiry_date: string | null
           id: string
+          job_description: string | null
+          job_number: string | null
+          last_modified_by: string | null
+          last_viewed_at: string | null
+          last_viewed_by: string | null
           notes: string | null
           status: string
           subtotal: number
@@ -344,6 +434,11 @@ export type Database = {
           date?: string
           expiry_date?: string | null
           id?: string
+          job_description?: string | null
+          job_number?: string | null
+          last_modified_by?: string | null
+          last_viewed_at?: string | null
+          last_viewed_by?: string | null
           notes?: string | null
           status?: string
           subtotal?: number
@@ -360,6 +455,11 @@ export type Database = {
           date?: string
           expiry_date?: string | null
           id?: string
+          job_description?: string | null
+          job_number?: string | null
+          last_modified_by?: string | null
+          last_viewed_at?: string | null
+          last_viewed_by?: string | null
           notes?: string | null
           status?: string
           subtotal?: number
