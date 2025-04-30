@@ -1,4 +1,3 @@
-
 import React from 'react';
 import AppLayout from '../components/layouts/AppLayout';
 import EstimateFormHeader from '../components/estimate/EstimateFormHeader';
@@ -12,7 +11,7 @@ import { useNewEstimate } from '@/hooks/useNewEstimate';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import EstimateImageGallery from '@/components/estimate/EstimateImageGallery';
+import FileUploadGallery from '@/components/estimate/FileUploadGallery';
 
 const NewEstimate = () => {
   const navigate = useNavigate();
@@ -131,13 +130,10 @@ const NewEstimate = () => {
                     Add images of the project site, reference materials, or other relevant visuals.
                   </div>
                   
-                  <EstimateImageGallery 
-                    images={estimateImages || []}
-                    onAddImages={handleAddEstimateImage}
-                    onImagesChange={(images) => {
-                      // Handle changes to the images array
-                      console.log("Images changed:", images);
-                    }}
+                  <FileUploadGallery 
+                    files={estimateImages}
+                    onAddFiles={handleAddEstimateImage}
+                    onRemoveFile={handleRemoveEstimateImage}
                   />
                 </CardContent>
               </Card>

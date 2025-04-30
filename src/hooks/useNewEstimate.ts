@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
@@ -105,16 +104,27 @@ export function useNewEstimate() {
     });
   };
   
-  const handleAddEstimateImage = (file: File) => {
-    setEstimateImages(prev => [...prev, file]);
-    toast({
-      title: "Image Added",
-      description: `${file.name} will be uploaded when saving the estimate.`,
-    });
+  const handleAddEstimateImage = (files: File[]) => {
+    setEstimateImages(prev => [...prev, ...files]);
+    if (files.length === 1) {
+      toast({
+        title: "Image Added",
+        description: `${files[0].name} will be uploaded when saving the estimate.`,
+      });
+    } else {
+      toast({
+        title: "Images Added",
+        description: `${files.length} images will be uploaded when saving the estimate.`,
+      });
+    }
   };
 
   const handleRemoveEstimateImage = (index: number) => {
     setEstimateImages(prev => prev.filter((_, i) => i !== index));
+    toast({
+      title: "Image Removed",
+      description: "The image has been removed from the upload queue.",
+    });
   };
 
   const saveEstimate = async (status: EstimateStatus) => {
