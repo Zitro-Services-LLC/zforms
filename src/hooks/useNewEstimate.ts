@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
@@ -19,7 +18,7 @@ export function useNewEstimate() {
 
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [items, setItems] = useState<LineItem[]>([
-    { id: 1, description: '', quantity: 0, rate: 0, amount: 0 }
+    { id: "1", description: '', quantity: 0, rate: 0, amount: 0 }
   ]);
   const [notes, setNotes] = useState('');
   const [estimateDate, setEstimateDate] = useState(new Date().toISOString().split('T')[0]);
@@ -73,7 +72,7 @@ export function useNewEstimate() {
     }
   }, [isReferenceValid, isCustomerValid, isItemsValid, isTaxRateValid, allRequiredValid]);
 
-  const handleUpdateLineItem = (id: number, field: keyof LineItem, value: string | number) => {
+  const handleUpdateLineItem = (id: string, field: keyof LineItem, value: string | number) => {
     setItems(items.map(item => {
       if (item.id === id) {
         const updatedItem = { ...item, [field]: value };
@@ -84,7 +83,7 @@ export function useNewEstimate() {
     }));
   };
 
-  const handleDeleteLineItem = (id: number) => {
+  const handleDeleteLineItem = (id: string) => {
     if (items.length > 1) {
       setItems(items.filter(item => item.id !== id));
     } else {
@@ -97,7 +96,8 @@ export function useNewEstimate() {
   };
 
   const handleAddLineItem = () => {
-    const newId = Math.max(...items.map(item => item.id)) + 1;
+    // Generate a unique string ID using timestamp
+    const newId = `${Date.now()}`;
     setItems([...items, { id: newId, description: '', quantity: 0, rate: 0, amount: 0 }]);
   };
 

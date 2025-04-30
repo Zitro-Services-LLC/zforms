@@ -3,19 +3,12 @@ import React from 'react';
 import { Input } from "@/components/ui/input";
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-interface EditableLineItem {
-  id: number;
-  description: string;
-  quantity: number;
-  rate: number;
-  amount: number;
-}
+import { LineItem } from "@/types/estimate";
 
 interface EditableEstimateLineItemProps {
-  item: EditableLineItem;
-  onUpdate: (id: number, field: keyof EditableLineItem, value: string | number) => void;
-  onDelete: (id: number) => void;
+  item: LineItem;
+  onUpdate: (id: string, field: keyof LineItem, value: string | number) => void;
+  onDelete: (id: string) => void;
 }
 
 const EditableEstimateLineItem: React.FC<EditableEstimateLineItemProps> = ({
@@ -23,7 +16,7 @@ const EditableEstimateLineItem: React.FC<EditableEstimateLineItemProps> = ({
   onUpdate,
   onDelete,
 }) => {
-  const handleInputChange = (field: keyof EditableLineItem, value: string) => {
+  const handleInputChange = (field: keyof LineItem, value: string) => {
     if (field === 'quantity' || field === 'rate') {
       const numValue = parseFloat(value) || 0;
       onUpdate(item.id, field, numValue);

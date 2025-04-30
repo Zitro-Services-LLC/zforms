@@ -7,8 +7,8 @@ import { useToast } from "@/hooks/use-toast";
 
 interface EstimateItemsSectionProps {
   items: LineItem[];
-  onUpdateItem: (id: number, field: keyof LineItem, value: string | number) => void;
-  onDeleteItem: (id: number) => void;
+  onUpdateItem: (id: string, field: keyof LineItem, value: string | number) => void;
+  onDeleteItem: (id: string) => void;
   onAddItem: () => void;
 }
 
