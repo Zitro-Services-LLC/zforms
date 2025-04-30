@@ -125,7 +125,7 @@ export async function trackEstimateActivity(
   details?: any
 ): Promise<void> {
   try {
-    // Type casting to avoid TypeScript errors related to the new table not being in the schema yet
+    // Using type assertion to work around TypeScript errors until Supabase types are updated
     await supabase
       .from('estimate_activities' as any)
       .insert({
@@ -182,7 +182,7 @@ export async function uploadEstimateImage(
   // Get file URL
   const storagePath = uploadData.path;
   
-  // Insert image record
+  // Insert image record using type assertion
   const { data: imageRecord, error: recordError } = await supabase
     .from('estimate_images' as any)
     .insert({
@@ -269,13 +269,13 @@ export async function trackEstimateView(
   estimateId: string,
   userId: string
 ): Promise<void> {
-  // Update last viewed timestamp
+  // Update last viewed timestamp using type assertion for new fields
   const { error } = await supabase
     .from('estimates')
     .update({
       last_viewed_at: new Date().toISOString(),
       last_viewed_by: userId
-    })
+    } as any)
     .eq('id', estimateId);
   
   if (error) {

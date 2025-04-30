@@ -1,4 +1,3 @@
-
 export interface ContractorLicense {
   id: string;
   contractor_id: string;

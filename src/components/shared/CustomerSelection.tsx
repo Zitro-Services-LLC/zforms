@@ -46,13 +46,10 @@ const CustomerSelection: React.FC<CustomerSelectionProps> = ({ onSelectCustomer,
     }
   }, [user]);
 
-  const handleSelectCustomer = (customerId: string) => {
-    setSelectedCustomerId(customerId);
-    const customer = customers.find(c => c.id === customerId);
-    if (customer) {
-      setSelectedCustomer(customer);
-      onSelectCustomer(customer);
-    }
+  const handleSelectCustomer = (customer: Customer | null) => {
+    setSelectedCustomerId(customer?.id || '');
+    setSelectedCustomer(customer);
+    onSelectCustomer(customer);
     setOpen(false);
   };
 

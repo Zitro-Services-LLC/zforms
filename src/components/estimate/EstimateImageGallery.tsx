@@ -8,7 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useToast } from "@/hooks/use-toast";
-import { getEstimateImageUrl, deleteEstimateImage, type EstimateImage } from '@/services/estimateService';
+import { getEstimateImageUrl, deleteEstimateImage } from '@/services/estimateService';
+import type { EstimateImage } from '@/types/database.d';
 
 interface EstimateImageGalleryProps {
   images: EstimateImage[];

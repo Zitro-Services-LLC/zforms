@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Separator } from '@/components/ui/separator';
-import type { EstimateActivity } from '@/services/estimateService';
+import type { EstimateActivity } from '@/types/database.d';
 
 type ActivityIconProps = {
   actionType: EstimateActivity['action_type'];

@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 import NewCustomerForm from './NewCustomerForm';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
-// Sample data
+// Sample data with complete Customer type properties
 const customers = [
   {
     id: '1',
@@ -18,6 +18,9 @@ const customers = [
     email: 'john@example.com',
     phone: '555-123-4567',
     property_address: '123 Main St',
+    billing_address: '123 Main St',
+    same_as_billing: true,
+    user_id: 'user_1'
   },
   {
     id: '2',
@@ -26,6 +29,9 @@ const customers = [
     email: 'jane@example.com',
     phone: '555-987-6543',
     property_address: '456 Oak Ave',
+    billing_address: '456 Oak Ave',
+    same_as_billing: true,
+    user_id: 'user_1'
   },
   {
     id: '3',
@@ -34,6 +40,9 @@ const customers = [
     email: 'robert@example.com',
     phone: '555-333-4444',
     property_address: '789 Pine Rd',
+    billing_address: '789 Pine Rd',
+    same_as_billing: true,
+    user_id: 'user_1'
   },
 ];
 
@@ -129,7 +138,17 @@ const ExistingCustomerSelector: React.FC<ExistingCustomerSelectorProps> = ({
             <DialogHeader>
               <DialogTitle>Add New Customer</DialogTitle>
             </DialogHeader>
-            <NewCustomerForm onSubmit={handleAddNewCustomer} />
+            <NewCustomerForm onAddCustomer={handleAddNewCustomer} newCustomer={{
+              first_name: '',
+              last_name: '',
+              email: '',
+              phone: '',
+              billing_address: '',
+              property_address: '',
+              same_as_billing: true,
+              profile_image_url: null,
+              user_id: ''
+            }} />
           </DialogContent>
         </Dialog>
       )}
