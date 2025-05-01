@@ -2,6 +2,9 @@
 import React, { useState } from 'react';
 import { Building, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
+import { uploadContractorLogo, deleteContractorLogo } from "@/services/logoService";
 
 interface ContractorLogoSectionProps {
   logoPreview: string | null;
@@ -14,6 +17,105 @@ const ContractorLogoSection: React.FC<ContractorLogoSectionProps> = ({
   onLogoChange,
   setLogoPreview
 }) => {
+  const { toast } = useToast();
+  const { user } = useSupabaseAuth();
+  const [uploading, setUploading] = useState(false);
+
+  const handleLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || !e.target.files[0]) return;
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "You must be logged in to upload a logo",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const file = e.target.files[0];
+    
+    // Basic validation
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Invalid File Type",
+        description: "Please select an image file",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      toast({
+        title: "File Too Large",
+        description: "Logo image must be less than 5MB",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      setUploading(true);
+      
+      // Create a preview for immediate UI feedback
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setLogoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+      
+      // Upload to Supabase storage
+      const logoUrl = await uploadContractorLogo(file, user.id);
+      
+      // The actual update of the contractor profile with the logo URL
+      // will be handled by the parent component via the onLogoChange callback
+      onLogoChange(e);
+      
+      toast({
+        title: "Logo Updated",
+        description: "Your company logo has been updated successfully"
+      });
+    } catch (error) {
+      console.error('Error uploading logo:', error);
+      toast({
+        title: "Upload Failed",
+        description: "Failed to upload logo. Please try again.",
+        variant: "destructive"
+      });
+      setLogoPreview(null);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleRemoveLogo = async () => {
+    if (!user || !logoPreview) return;
+    
+    try {
+      setUploading(true);
+      
+      // If this is a previously saved logo (not just a preview), delete it from storage
+      if (logoPreview.includes('contractor-logos')) {
+        await deleteContractorLogo(user.id, logoPreview);
+      }
+      
+      setLogoPreview(null);
+      
+      toast({
+        title: "Logo Removed",
+        description: "Your company logo has been removed"
+      });
+    } catch (error) {
+      console.error('Error removing logo:', error);
+      toast({
+        title: "Removal Failed",
+        description: "Failed to remove logo. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
+
   return (
     <div className="border-t pt-6">
       <h2 className="text-lg font-semibold mb-4">Company Logo</h2>
@@ -32,25 +134,27 @@ const ContractorLogoSection: React.FC<ContractorLogoSectionProps> = ({
           <div className="flex items-center gap-4">
             <label 
               htmlFor="logo-upload" 
-              className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md"
+              className={`cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <Upload className="h-4 w-4" />
-              <span>Choose File</span>
+              <span>{uploading ? "Uploading..." : "Choose File"}</span>
             </label>
             <input 
               id="logo-upload" 
               type="file" 
               className="hidden" 
               accept="image/*"
-              onChange={onLogoChange}
+              onChange={handleLogoChange}
+              disabled={uploading}
             />
             {logoPreview && (
               <Button 
                 type="button" 
                 variant="outline" 
-                onClick={() => setLogoPreview(null)}
+                onClick={handleRemoveLogo}
+                disabled={uploading}
               >
-                Remove
+                {uploading ? "Removing..." : "Remove"}
               </Button>
             )}
           </div>

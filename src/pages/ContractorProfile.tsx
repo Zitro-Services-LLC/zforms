@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AppLayout from '../components/layouts/AppLayout';
 import { useForm } from "react-hook-form";
 import { Separator } from "@/components/ui/separator";
@@ -10,9 +10,13 @@ import ContractorContactSection from '@/components/profile/ContractorContactSect
 import { useContractorData } from '@/hooks/useContractorData';
 import ContractorLogoSection from '@/components/profile/ContractorLogoSection';
 import ContractorCompanyForm from '@/components/profile/ContractorCompanyForm';
+import { uploadContractorLogo } from '@/services/logoService';
+import { useToast } from '@/hooks/use-toast';
 
 const ContractorProfile = () => {
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [selectedLogo, setSelectedLogo] = useState<File | null>(null);
+  const { toast } = useToast();
   const { loading, contractorData, updateContractorData } = useContractorData();
   
   const form = useForm({
@@ -24,20 +28,53 @@ const ContractorProfile = () => {
     }
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (contractorData) {
       form.reset(contractorData);
+      
+      // Set logo preview if available
+      if (contractorData.logo_url) {
+        setLogoPreview(contractorData.logo_url);
+      }
     }
   }, [contractorData, form]);
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setLogoPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      setSelectedLogo(file);
+    }
+  };
+
+  const handleSubmit = async (data: any) => {
+    try {
+      let logoUrl = contractorData?.logo_url || null;
+      
+      // If a new logo was selected, upload it
+      if (selectedLogo && contractorData?.user_id) {
+        logoUrl = await uploadContractorLogo(selectedLogo, contractorData.user_id);
+      }
+      
+      // Update contractor data including the logo URL
+      await updateContractorData({
+        ...data,
+        logo_url: logoUrl
+      });
+      
+      toast({
+        title: "Profile Updated",
+        description: "Your company profile has been updated successfully"
+      });
+      
+      // Reset selected logo state since it's been uploaded
+      setSelectedLogo(null);
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      toast({
+        title: "Update Failed",
+        description: "Failed to update your profile. Please try again.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -49,7 +86,7 @@ const ContractorProfile = () => {
           
           <ContractorCompanyForm 
             form={form}
-            onSubmit={updateContractorData}
+            onSubmit={handleSubmit}
             loading={loading}
           />
 

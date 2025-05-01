@@ -1,109 +1,120 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 
 export interface ContractorFormData {
   companyName: string;
   companyAddress: string;
   companyPhone: string;
   companyEmail: string;
+  logo_url?: string | null;
 }
 
 export const useContractorData = () => {
   const [loading, setLoading] = useState(true);
   const [contractorData, setContractorData] = useState<ContractorFormData | null>(null);
-  const { toast } = useToast();
+  const { user } = useSupabaseAuth();
 
   useEffect(() => {
-    fetchContractorData();
-  }, []);
-
-  const fetchContractorData = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) {
-        toast({
-          title: "Error",
-          description: "You must be logged in to view your profile",
-          variant: "destructive",
-        });
+    const fetchContractorData = async () => {
+      if (!user) {
+        setLoading(false);
         return;
       }
 
-      const { data, error } = await supabase
-        .from('contractors')
-        .select('company_name, company_address, company_phone, company_email')
-        .eq('user_id', session.user.id)
-        .maybeSingle();
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from('contractors')
+          .select('company_name, company_address, company_phone, company_email, logo_url, user_id')
+          .eq('user_id', user.id)
+          .single();
 
-      if (error) throw error;
+        if (error) {
+          console.error("Error fetching contractor data:", error);
+          return;
+        }
 
-      if (data) {
-        setContractorData({
-          companyName: data.company_name,
-          companyAddress: data.company_address || '',
-          companyPhone: data.company_phone || '',
-          companyEmail: data.company_email || '',
-        });
+        if (data) {
+          setContractorData({
+            companyName: data.company_name || '',
+            companyAddress: data.company_address || '',
+            companyPhone: data.company_phone || '',
+            companyEmail: data.company_email || '',
+            logo_url: data.logo_url || null,
+            user_id: data.user_id
+          });
+        }
+      } catch (error) {
+        console.error("Error in fetchContractorData:", error);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('Error fetching contractor data:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load contractor profile",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+
+    fetchContractorData();
+  }, [user]);
 
   const updateContractorData = async (data: ContractorFormData) => {
+    if (!user) return;
+
     try {
       setLoading(true);
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) {
-        toast({
-          title: "Error",
-          description: "You must be logged in to update your profile",
-          variant: "destructive",
-        });
-        return;
+
+      // Check if contractor record exists
+      const { data: existingData, error: fetchError } = await supabase
+        .from('contractors')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (fetchError) {
+        console.error("Error checking contractor existence:", fetchError);
+        throw fetchError;
       }
 
-      const { error } = await supabase
-        .from('contractors')
-        .update({
-          company_name: data.companyName,
-          company_address: data.companyAddress,
-          company_phone: data.companyPhone,
-          company_email: data.companyEmail,
-        })
-        .eq('user_id', session.user.id);
+      const updateData = {
+        company_name: data.companyName,
+        company_address: data.companyAddress,
+        company_phone: data.companyPhone,
+        company_email: data.companyEmail,
+        logo_url: data.logo_url,
+        user_id: user.id
+      };
 
-      if (error) throw error;
+      let result;
 
-      setContractorData(data);
-      toast({
-        title: "Success",
-        description: "Company profile updated successfully",
+      // If contractor exists, update, otherwise insert
+      if (existingData) {
+        result = await supabase
+          .from('contractors')
+          .update(updateData)
+          .eq('user_id', user.id);
+      } else {
+        result = await supabase
+          .from('contractors')
+          .insert([updateData]);
+      }
+
+      if (result.error) {
+        console.error("Error updating contractor data:", result.error);
+        throw result.error;
+      }
+
+      // Update local state
+      setContractorData({
+        ...data,
+        user_id: user.id
       });
+
     } catch (error) {
-      console.error('Error updating contractor data:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update company profile",
-        variant: "destructive",
-      });
+      console.error("Error in updateContractorData:", error);
+      throw error;
     } finally {
       setLoading(false);
     }
   };
 
-  return {
-    loading,
-    contractorData,
-    updateContractorData,
-  };
+  return { loading, contractorData, updateContractorData };
 };
