@@ -1,16 +1,9 @@
 
 import React from 'react';
-
-interface LineItem {
-  id: number;
-  description: string;
-  quantity: number;
-  rate: number;
-  amount: number;
-}
+import { InvoiceLineItem } from '@/types/invoice';
 
 interface InvoiceLineItemsProps {
-  lineItems: LineItem[];
+  lineItems: InvoiceLineItem[];
 }
 
 const InvoiceLineItems: React.FC<InvoiceLineItemsProps> = ({ lineItems }) => {

@@ -10,7 +10,7 @@ export interface PartyInfo {
   id?: string;
 }
 
-export interface LineItem {
+export interface InvoiceLineItem {
   id: number;
   description: string;
   quantity: number;
@@ -48,7 +48,7 @@ export interface InvoiceData {
   dueDate: string;
   contractor: PartyInfo;
   customer: PartyInfo;
-  lineItems: LineItem[];
+  lineItems: InvoiceLineItem[];
   subtotal: number;
   tax: number;
   total: number;

@@ -1,6 +1,6 @@
 
 import { Status } from "../components/shared/StatusBadge";
-import type { InvoiceData, PaymentMethod } from "@/types";
+import type { InvoiceData, InvoiceLineItem, PaymentMethod } from "@/types";
 
 export const mockInvoiceData: InvoiceData = {
   id: 'I-101',
