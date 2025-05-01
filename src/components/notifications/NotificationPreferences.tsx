@@ -38,7 +38,7 @@ export const NotificationPreferences: React.FC = () => {
     fetchPreferences();
   }, [user, toast]);
 
-  const handleTogglePreference = (field: keyof NotificationPrefsType, value: boolean) => {
+  const handleTogglePreference = (field: keyof AppNotificationPreferences, value: boolean) => {
     if (!preferences) return;
     
     setPreferences({
