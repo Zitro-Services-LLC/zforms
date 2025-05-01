@@ -1,90 +1,76 @@
-import React, { useState } from 'react';
-import { Button } from "@/components/ui/button";
-import { CreditCard, Ban, X } from "lucide-react";
 
-interface PaymentMethod {
-  id: string;
-  type: 'card' | 'bank';
-  displayName: string;
-}
+import React, { useState } from 'react';
+import { usePaymentMethods } from '@/hooks/usePaymentMethods';
+import { PaymentMethodsList } from './payment-methods/PaymentMethodsList';
+import { AddPaymentMethodButtons } from './payment-methods/AddPaymentMethodButtons';
+import { AddPaymentMethodDialog } from './payment-methods/AddPaymentMethodDialog';
+import { AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const CustomerPaymentMethodsSection: React.FC = () => {
-  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([
-    { id: '1', type: 'card', displayName: 'Visa **** **** **** 1234 | Expires 12/2025' },
-    { id: '2', type: 'bank', displayName: 'Wells Fargo - Checking **** 5678' },
-  ]);
+  const {
+    paymentMethods,
+    isAddingMethod,
+    setIsAddingMethod,
+    methodType,
+    setMethodType,
+    loading,
+    handleAddPaymentMethod,
+    handleDeletePaymentMethod
+  } = usePaymentMethods();
 
-  const removePaymentMethod = (id: string) => {
-    setPaymentMethods(paymentMethods.filter(method => method.id !== id));
+  const openAddCreditCardDialog = () => {
+    setMethodType('credit_card');
+    setIsAddingMethod(true);
   };
 
-  // These functions would typically open modals or forms to add payment methods
-  const handleAddCreditCard = () => {
-    console.log("Add credit card clicked");
-    // Modal would open here
+  const openAddBankAccountDialog = () => {
+    setMethodType('bank_account');
+    setIsAddingMethod(true);
   };
 
-  const handleAddBankAccount = () => {
-    console.log("Add bank account clicked");
-    // Modal would open here
+  const closeAddPaymentMethodDialog = () => {
+    setIsAddingMethod(false);
   };
 
   return (
-    <div className="space-y-4">
-      <h2 className="text-lg font-semibold">My Payment Methods (for Contractors)</h2>
-      
-      <div className="flex flex-wrap gap-2">
-        <Button 
-          type="button" 
-          variant="outline"
-          className="flex items-center gap-2"
-          onClick={handleAddCreditCard}
-        >
-          <CreditCard className="h-4 w-4" />
-          <span>Add Credit Card +</span>
-        </Button>
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-xl font-semibold mb-2">My Payment Methods</h2>
+        <p className="text-gray-500 text-sm mb-4">
+          Add and manage your payment methods securely
+        </p>
         
-        <Button 
-          type="button" 
-          variant="outline"
-          className="flex items-center gap-2"
-          onClick={handleAddBankAccount}
-        >
-          <Ban className="h-4 w-4" />
-          <span>Add Bank Account +</span>
-        </Button>
+        <Alert className="mb-6">
+          <AlertCircle className="h-4 w-4 mr-2" />
+          <AlertDescription>
+            Payment methods added here can be used to pay contractors for their services.
+          </AlertDescription>
+        </Alert>
+      </div>
+
+      <AddPaymentMethodButtons 
+        onAddCreditCard={openAddCreditCardDialog}
+        onAddBankAccount={openAddBankAccountDialog}
+        disabled={loading || isAddingMethod}
+      />
+      
+      <div className="mt-8">
+        <h3 className="text-lg font-medium mb-4">Saved Payment Methods</h3>
+        <PaymentMethodsList 
+          paymentMethods={paymentMethods}
+          onDelete={handleDeletePaymentMethod}
+          loading={loading}
+        />
       </div>
       
-      <div className="mt-4 space-y-2">
-        {paymentMethods.length > 0 ? (
-          paymentMethods.map(method => (
-            <div 
-              key={method.id} 
-              className="flex justify-between items-center p-3 border rounded-md bg-gray-50"
-            >
-              <div className="flex items-center gap-2">
-                {method.type === 'card' ? (
-                  <CreditCard className="h-4 w-4 text-gray-600" />
-                ) : (
-                  <Ban className="h-4 w-4 text-gray-600" />
-                )}
-                <span>{method.displayName}</span>
-              </div>
-              <button
-                onClick={() => removePaymentMethod(method.id)}
-                className="text-gray-500 hover:text-red-500"
-                aria-label="Remove payment method"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-          ))
-        ) : (
-          <div className="text-center p-4 text-gray-500 border border-dashed rounded-md">
-            No payment methods saved yet
-          </div>
-        )}
-      </div>
+      <AddPaymentMethodDialog 
+        isOpen={isAddingMethod}
+        onClose={closeAddPaymentMethodDialog}
+        onSubmit={handleAddPaymentMethod}
+        methodType={methodType}
+        isSubmitting={loading}
+      />
     </div>
   );
 };

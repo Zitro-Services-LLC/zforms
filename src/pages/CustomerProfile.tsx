@@ -5,7 +5,9 @@ import CustomerProfileForm from '@/components/profile/CustomerProfileForm';
 import CustomerPasswordSection from '@/components/profile/CustomerPasswordSection';
 import CustomerPaymentMethodsSection from '@/components/profile/CustomerPaymentMethodsSection';
 import { Separator } from "@/components/ui/separator";
-import { User } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { User, Upload } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -161,25 +163,19 @@ const CustomerProfile = () => {
         <div className="bg-white shadow-lg rounded-lg p-6 mb-6">
           <h1 className="text-2xl font-bold mb-6 text-gray-900">Customer Profile</h1>
           
-          {/* Profile Image Upload Section */}
-          <div className="mb-8 flex flex-col md:flex-row gap-6">
+          <div className="flex flex-col md:flex-row mb-8 items-start md:items-center gap-6">
             <div className="flex-shrink-0">
-              <div className="w-32 h-32 border rounded-lg bg-gray-50 flex items-center justify-center overflow-hidden">
-                {profilePicture ? (
-                  <img src={profilePicture} alt="Profile" className="max-h-full max-w-full object-cover" />
-                ) : (
-                  <User className="h-16 w-16 text-gray-300" />
-                )}
-              </div>
-            </div>
-            <div className="flex-grow space-y-4">
-              <p className="text-sm text-gray-500">Upload your profile picture.</p>
-              <div className="flex items-center gap-4">
-                <label 
-                  htmlFor="profile-upload" 
-                  className={`cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                >
-                  <span>{loading ? 'Uploading...' : 'Choose File'}</span>
+              <div className="relative">
+                <div className="h-24 w-24 rounded-full bg-gray-100 border flex items-center justify-center overflow-hidden">
+                  {profilePicture ? (
+                    <img src={profilePicture} alt="Profile" className="h-full w-full object-cover" />
+                  ) : (
+                    <User className="h-12 w-12 text-gray-300" />
+                  )}
+                </div>
+                <label htmlFor="profile-upload" className="absolute bottom-0 right-0 bg-amber-500 text-white p-1 rounded-full cursor-pointer hover:bg-amber-600 transition-colors">
+                  <Upload className="h-4 w-4" />
+                  <span className="sr-only">Upload profile picture</span>
                 </label>
                 <input 
                   id="profile-upload" 
@@ -189,34 +185,42 @@ const CustomerProfile = () => {
                   onChange={handleProfilePictureChange}
                   disabled={loading}
                 />
-                {profilePicture && (
-                  <button 
-                    type="button" 
-                    className={`px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    onClick={handleRemoveProfilePicture}
-                    disabled={loading}
-                  >
-                    Remove
-                  </button>
-                )}
               </div>
             </div>
+            <div>
+              <h2 className="text-lg font-medium">Your Profile Picture</h2>
+              <p className="text-sm text-gray-500">Update your profile photo</p>
+              {profilePicture && (
+                <button 
+                  onClick={handleRemoveProfilePicture}
+                  disabled={loading}
+                  className="text-sm text-red-600 hover:text-red-800 mt-1"
+                >
+                  {loading ? "Removing..." : "Remove picture"}
+                </button>
+              )}
+            </div>
           </div>
-
-          <Separator className="my-6" />
           
-          {/* Contact Info Section */}
-          <CustomerProfileForm />
-
-          <Separator className="my-6" />
-          
-          {/* Password Section */}
-          <CustomerPasswordSection />
-
-          <Separator className="my-6" />
-          
-          {/* Payment Methods Section */}
-          <CustomerPaymentMethodsSection />
+          <Tabs defaultValue="profile" className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="profile">Profile</TabsTrigger>
+              <TabsTrigger value="password">Password</TabsTrigger>
+              <TabsTrigger value="payment">Payment Methods</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="profile" className="mt-6">
+              <CustomerProfileForm />
+            </TabsContent>
+            
+            <TabsContent value="password" className="mt-6">
+              <CustomerPasswordSection />
+            </TabsContent>
+            
+            <TabsContent value="payment" className="mt-6">
+              <CustomerPaymentMethodsSection />
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </AppLayout>
