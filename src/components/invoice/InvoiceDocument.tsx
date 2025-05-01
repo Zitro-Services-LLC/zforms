@@ -11,6 +11,7 @@ import InvoiceCustomerSection from './InvoiceCustomerSection';
 import InvoicePaymentOptions from './InvoicePaymentOptions';
 import InvoiceActions from './InvoiceActions';
 import type { InvoiceData, PartyInfo, PaymentMethod } from '@/types';
+import { useContractorData } from '@/hooks/useContractorData';
 
 interface InvoiceDocumentProps {
   invoiceData: InvoiceData;
@@ -43,7 +44,7 @@ const InvoiceDocument: React.FC<InvoiceDocumentProps> = ({
   onSelectCustomer,
   onAddNewCustomer
 }) => {
-  const companyLogo = null; // Replace with actual logo URL when available
+  const { contractorData } = useContractorData();
 
   return (
     <div className="bg-white shadow-lg rounded-lg overflow-hidden">
@@ -53,7 +54,7 @@ const InvoiceDocument: React.FC<InvoiceDocumentProps> = ({
         date={invoiceData.date}
         dueDate={invoiceData.dueDate}
         status={status}
-        companyLogo={companyLogo}
+        companyLogo={contractorData?.logo_url}
       />
       
       {userType === 'contractor' && onSelectCustomer && onAddNewCustomer && (

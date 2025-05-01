@@ -12,6 +12,7 @@ import { ContractLoadingState } from '../components/contract/ContractLoadingStat
 import { ContractErrorState } from '../components/contract/ContractErrorState';
 import { ContractCustomerSection } from '../components/contract/ContractCustomerSection';
 import { useContractData } from '@/hooks/useContractData';
+import { useContractorData } from '@/hooks/useContractorData';
 import { customerToPartyInfo } from '@/utils/customerUtils';
 import type { PartyInfo } from '@/utils/customerUtils';
 
@@ -30,9 +31,11 @@ const ContractManagement: React.FC<ContractManagementProps> = ({ userType = 'con
     handleStatusChange,
     setCustomer
   } = useContractData(id);
+  
+  const { loading: loadingContractor, contractorData } = useContractorData();
 
   // Show loading state
-  if (isLoading) {
+  if (isLoading || loadingContractor) {
     return (
       <AppLayout userType={userType}>
         <ContractLoadingState />
@@ -94,10 +97,10 @@ The contractor will make every effort to complete the work according to this sch
   ];
 
   const contractorInfo: PartyInfo = {
-    name: 'Professional Renovations LLC',
-    address: '123 Builder St, Construction City, CC 12345',
-    phone: '(555) 123-4567',
-    email: 'contact@professionalrenovations.com'
+    name: contractorData?.companyName || 'Professional Renovations LLC',
+    address: contractorData?.companyAddress || '123 Builder St, Construction City, CC 12345',
+    phone: contractorData?.companyPhone || '(555) 123-4567',
+    email: contractorData?.companyEmail || 'contact@professionalrenovations.com'
   };
 
   // Convert customer to PartyInfo
@@ -113,7 +116,7 @@ The contractor will make every effort to complete the work according to this sch
             jobId={contract.estimate_id || 'N/A'}
             status={status}
             date={contract.created_at}
-            companyLogo={null}
+            companyLogo={contractorData?.logo_url}
           />
           
           {userType === 'contractor' && status === 'drafting' && !customer && (

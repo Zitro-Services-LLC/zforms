@@ -1,15 +1,14 @@
 
 import React from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Card } from "@/components/ui/card";
-import { Eye } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import EstimateHeader from './EstimateHeader';
+import EstimatePartyInfo from './EstimatePartyInfo';
+import EstimateLineItems from './EstimateLineItems';
+import EstimateTotals from './EstimateTotals';
+import { useContractorData } from '@/hooks/useContractorData';
 
-interface EstimatePreviewDialogProps {
+interface EstimatePreviewProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   estimateData: {
@@ -23,90 +22,75 @@ interface EstimatePreviewDialogProps {
   };
 }
 
-const EstimatePreviewDialog: React.FC<EstimatePreviewDialogProps> = ({
+const EstimatePreviewDialog: React.FC<EstimatePreviewProps> = ({
   open,
   onOpenChange,
-  estimateData,
+  estimateData
 }) => {
+  const { loading: loadingContractor, contractorData } = useContractorData();
+  
+  const contractorParty = {
+    name: contractorData?.companyName || "Your Company Name",
+    address: contractorData?.companyAddress || "Your Company Address",
+    phone: contractorData?.companyPhone || "Your Company Phone",
+    email: contractorData?.companyEmail || "Your Company Email"
+  };
+
+  const customerParty = estimateData.customer ? {
+    name: `${estimateData.customer.first_name} ${estimateData.customer.last_name}`,
+    address: estimateData.customer.billing_address || '',
+    phone: estimateData.customer.phone || '',
+    email: estimateData.customer.email || ''
+  } : {
+    name: "Customer Name",
+    address: "Customer Address",
+    phone: "Customer Phone",
+    email: "Customer Email"
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Eye className="h-5 w-5" />
-            Estimate Preview
-          </DialogTitle>
-        </DialogHeader>
-        
-        <div className="space-y-6 py-4">
-          <Card className="p-6">
-            <div className="grid grid-cols-2 gap-6">
-              <div>
-                <h3 className="font-semibold mb-2">From</h3>
-                <p className="text-sm text-muted-foreground">
-                  Your Company Name<br />
-                  123 Business Street<br />
-                  City, State ZIP
-                </p>
+      <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
+        <div className="bg-white p-4 rounded-lg">
+          <EstimateHeader
+            id={estimateData.id}
+            jobId="Preview"
+            status="draft"
+            date={new Date().toISOString()}
+            companyLogo={contractorData?.logo_url}
+          />
+
+          <EstimatePartyInfo
+            contractor={contractorParty}
+            customer={customerParty}
+          />
+
+          <EstimateLineItems lineItems={estimateData.items} />
+
+          <div className="p-6">
+            {estimateData.notes && (
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold mb-2">Notes</h3>
+                <p className="text-gray-600 whitespace-pre-line">{estimateData.notes}</p>
               </div>
-              
-              {estimateData.customer && (
-                <div>
-                  <h3 className="font-semibold mb-2">To</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {estimateData.customer.name}<br />
-                    {estimateData.customer.billingAddress}
-                  </p>
-                </div>
-              )}
-            </div>
-          </Card>
+            )}
 
-          <Card className="p-6">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left py-2">Description</th>
-                  <th className="text-right py-2">Quantity</th>
-                  <th className="text-right py-2">Rate</th>
-                  <th className="text-right py-2">Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                {estimateData.items.map((item) => (
-                  <tr key={item.id} className="border-b">
-                    <td className="py-2">{item.description}</td>
-                    <td className="text-right py-2">{item.quantity}</td>
-                    <td className="text-right py-2">${item.rate}</td>
-                    <td className="text-right py-2">${(item.quantity * item.rate).toFixed(2)}</td>
-                  </tr>
-                ))}
-              </tbody>
-              <tfoot>
-                <tr className="border-t">
-                  <td colSpan={3} className="text-right py-2">Subtotal:</td>
-                  <td className="text-right py-2">${estimateData.subtotal.toFixed(2)}</td>
-                </tr>
-                <tr>
-                  <td colSpan={3} className="text-right py-2">Tax (8%):</td>
-                  <td className="text-right py-2">${estimateData.tax.toFixed(2)}</td>
-                </tr>
-                <tr className="font-bold">
-                  <td colSpan={3} className="text-right py-2">Total:</td>
-                  <td className="text-right py-2">${estimateData.total.toFixed(2)}</td>
-                </tr>
-              </tfoot>
-            </table>
-          </Card>
+            <EstimateTotals
+              subtotal={estimateData.subtotal}
+              tax={estimateData.tax}
+              total={estimateData.total}
+              taxRate={(estimateData.tax / estimateData.subtotal) * 100}
+            />
+          </div>
 
-          {estimateData.notes && (
-            <Card className="p-6">
-              <h3 className="font-semibold mb-2">Notes</h3>
-              <p className="text-sm text-muted-foreground whitespace-pre-line">
-                {estimateData.notes}
-              </p>
-            </Card>
-          )}
+          <div className="flex justify-end mt-4">
+            <Button
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
+              Close Preview
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

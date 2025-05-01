@@ -3,6 +3,7 @@ import React from 'react';
 import StatusBadge, { Status } from '../shared/StatusBadge';
 import DownloadPdfButton from '../shared/DownloadPdfButton';
 import { Building } from 'lucide-react';
+import { useContractorData } from '@/hooks/useContractorData';
 
 interface InvoiceHeaderProps {
   id: string;
@@ -33,34 +34,65 @@ const InvoiceHeader: React.FC<InvoiceHeaderProps> = ({
 
   const formattedDate = formatDate(date);
   const formattedDueDate = formatDate(dueDate);
+  const { loading, contractorData } = useContractorData();
 
   return (
-    <div className="px-6 pt-6 pb-3 border-b">
-      <div className="flex flex-col md:flex-row justify-between items-start gap-4">
-        <div className="flex items-center">
-          <div className="w-16 h-16 mr-4 flex items-center justify-center overflow-hidden">
-            {companyLogo ? (
-              <img 
-                src={companyLogo} 
-                alt="Company Logo" 
-                className="max-h-full object-contain"
-              />
-            ) : (
-              <div className="w-full h-full bg-gray-100 rounded-md flex items-center justify-center">
-                <Building className="h-8 w-8 text-gray-400" />
-              </div>
+    <div className="px-6 pt-6 pb-3 border-b bg-white">
+      <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+        {/* Left column: Logo */}
+        <div className="w-32 h-32 flex items-center justify-center overflow-hidden">
+          {companyLogo ? (
+            <img 
+              src={companyLogo} 
+              alt="Company Logo" 
+              className="max-h-full max-w-full object-contain" 
+            />
+          ) : (
+            <div className="w-full h-full bg-gray-100 rounded-md flex items-center justify-center">
+              <Building className="h-12 w-12 text-gray-400" />
+            </div>
+          )}
+        </div>
+
+        {/* Middle column: Company info */}
+        <div className="text-center md:text-left flex-1 px-4">
+          <h1 className="text-xl font-bold text-gray-800">
+            {contractorData?.companyName || "Bob's New Construction"}
+          </h1>
+          <div className="mt-1 text-sm text-gray-600 space-y-1">
+            {contractorData?.companyAddress && (
+              <p>Address: {contractorData.companyAddress}</p>
+            )}
+            {contractorData?.companyPhone && (
+              <p>Tel: {contractorData.companyPhone}</p>
+            )}
+            {contractorData?.companyEmail && (
+              <p>Email: {contractorData.companyEmail}</p>
             )}
           </div>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Invoice #{id}</h1>
-            <p className="text-sm text-gray-500">
-              Job #{jobId} | Date: {formattedDate} | Due: {formattedDueDate}
-            </p>
-          </div>
         </div>
-        <div className="flex flex-col items-end">
-          <StatusBadge status={status} />
-          <DownloadPdfButton documentType="invoice" documentId={id} />
+
+        {/* Right column: Invoice info */}
+        <div className="text-right flex flex-col items-end">
+          <h2 className="text-4xl font-bold text-blue-600 mb-4">INVOICE</h2>
+          <div className="bg-gray-100 px-4 py-2 rounded-md w-64">
+            <div className="flex justify-between mb-2">
+              <span className="font-medium">DATE</span>
+              <span>{formattedDate}</span>
+            </div>
+            <div className="flex justify-between mb-2">
+              <span className="font-medium">DUE DATE</span>
+              <span>{formattedDueDate}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="font-medium">INVOICE #</span>
+              <span>{id}</span>
+            </div>
+          </div>
+          <div className="mt-2 flex space-x-2">
+            <StatusBadge status={status} />
+            <DownloadPdfButton documentType="invoice" documentId={id} />
+          </div>
         </div>
       </div>
     </div>
