@@ -1,6 +1,5 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { v4 as uuidv4 } from "uuid";
 import { useToast } from "@/hooks/use-toast";
 
 /**
@@ -15,7 +14,7 @@ export const uploadContractorLogo = async (file: File, userId: string): Promise<
   }
 
   const fileExt = file.name.split('.').pop();
-  const fileName = `${uuidv4()}.${fileExt}`;
+  const fileName = `${crypto.randomUUID()}.${fileExt}`;
   const filePath = `${userId}/${fileName}`;
 
   const { error: uploadError } = await supabase.storage
