@@ -1,11 +1,10 @@
-
 import { supabase } from "@/integrations/supabase/client";
-import type { Notification, NotificationPreferences } from "@/types/notification";
+import type { AppNotification, AppNotificationPreferences } from "@/types";
 
-let mockNotifications: Notification[] = [];
+let mockNotifications: AppNotification[] = [];
 let mockUnreadCount = 0;
 
-export const getNotifications = async (contractorId: string, limit = 10): Promise<Notification[]> => {
+export const getNotifications = async (contractorId: string, limit = 10): Promise<AppNotification[]> => {
   try {
     const { data, error } = await supabase
       .from('notifications')
@@ -20,7 +19,7 @@ export const getNotifications = async (contractorId: string, limit = 10): Promis
     }
     
     if (data && data.length > 0) {
-      return data as Notification[];
+      return data as AppNotification[];
     }
     
     return mockNotifications.filter(n => n.contractor_id === contractorId).slice(0, limit);
@@ -84,7 +83,7 @@ export const markAllAsRead = async (contractorId: string): Promise<void> => {
   }
 };
 
-export const getNotificationPreferences = async (contractorId: string): Promise<NotificationPreferences> => {
+export const getNotificationPreferences = async (contractorId: string): Promise<AppNotificationPreferences> => {
   try {
     const { data, error } = await supabase
       .from('notification_preferences')
@@ -102,7 +101,7 @@ export const getNotificationPreferences = async (contractorId: string): Promise<
       };
     }
     
-    return data as NotificationPreferences;
+    return data as AppNotificationPreferences;
   } catch (error) {
     console.error("Error fetching notification preferences:", error);
     
@@ -118,8 +117,8 @@ export const getNotificationPreferences = async (contractorId: string): Promise<
 
 export const updateNotificationPreferences = async (
   contractorId: string, 
-  preferences: Partial<NotificationPreferences>
-): Promise<NotificationPreferences> => {
+  preferences: Partial<AppNotificationPreferences>
+): Promise<AppNotificationPreferences> => {
   const { data, error } = await supabase
     .from('notification_preferences')
     .upsert({
@@ -131,7 +130,7 @@ export const updateNotificationPreferences = async (
     
   if (error) throw error;
   
-  return data as NotificationPreferences;
+  return data as AppNotificationPreferences;
 };
 
 export const initMockNotifications = (contractorId: string) => {

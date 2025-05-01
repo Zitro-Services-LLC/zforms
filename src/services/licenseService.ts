@@ -1,8 +1,7 @@
-
 import { supabase } from "@/integrations/supabase/client";
-import type { ContractorLicense, LicenseFormData } from "@/types/license";
+import type { AppContractorLicense, LicenseFormData } from "@/types";
 
-export const getContractorLicenses = async (contractorId: string): Promise<ContractorLicense[]> => {
+export const getContractorLicenses = async (contractorId: string): Promise<AppContractorLicense[]> => {
   const { data, error } = await supabase
     .from('contractor_licenses')
     .select('*')
@@ -17,10 +16,10 @@ export const getContractorLicenses = async (contractorId: string): Promise<Contr
     return [];
   }
   
-  return data as ContractorLicense[];
+  return data as AppContractorLicense[];
 };
 
-export const addContractorLicense = async (contractorId: string, licenseData: LicenseFormData): Promise<ContractorLicense> => {
+export const addContractorLicense = async (contractorId: string, licenseData: LicenseFormData): Promise<AppContractorLicense> => {
   // First, verify that the contractor exists and belongs to the current user
   const { data: contractorData, error: contractorError } = await supabase
     .from('contractors')
@@ -52,10 +51,10 @@ export const addContractorLicense = async (contractorId: string, licenseData: Li
     throw error;
   }
   
-  return data as ContractorLicense;
+  return data as AppContractorLicense;
 };
 
-export const updateContractorLicense = async (licenseId: string, licenseData: Partial<LicenseFormData>): Promise<ContractorLicense> => {
+export const updateContractorLicense = async (licenseId: string, licenseData: Partial<LicenseFormData>): Promise<AppContractorLicense> => {
   const updateData: Record<string, any> = {};
   
   if (licenseData.agency) updateData.agency = licenseData.agency;
@@ -75,7 +74,7 @@ export const updateContractorLicense = async (licenseId: string, licenseData: Pa
     throw error;
   }
   
-  return data as ContractorLicense;
+  return data as AppContractorLicense;
 };
 
 export const deleteContractorLicense = async (licenseId: string): Promise<void> => {

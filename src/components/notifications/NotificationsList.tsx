@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { useToast } from "@/hooks/use-toast";
 import { getNotifications, markAsRead, initMockNotifications } from "@/services/notificationService";
-import type { Notification } from "@/types/notification";
+import type { AppNotification } from "@/types";
 import { formatDistanceToNow } from "date-fns";
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -20,7 +19,7 @@ export const NotificationsList: React.FC<NotificationsListProps> = ({
 }) => {
   const { user } = useSupabaseAuth();
   const { toast } = useToast();
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -63,7 +62,7 @@ export const NotificationsList: React.FC<NotificationsListProps> = ({
     }
   };
 
-  const getNotificationContent = (notification: Notification) => {
+  const getNotificationContent = (notification: AppNotification) => {
     switch (notification.type) {
       case 'warn60':
         return `License ${notification.payload?.license_no} will expire in about 60 days`;

@@ -3,12 +3,25 @@
 export * from './paymentMethod';
 export * from './invoice';
 export * from './customer';
-export * from './estimate';
 export * from './contract';
-export * from './notification';
-export * from './license';
-export * from './database.d';
 
-// Explicitly handle the LineItem conflicts by exporting them with their own names
-import { LineItem as EstimateLineItem } from './estimate';
-export { EstimateLineItem };
+// Use export type for modules with conflicting type names
+// estimate.ts and invoice.ts both define different LineItem types
+export type { LineItem as EstimateLineItem } from './estimate';
+
+// notification types - use explicit exports to avoid conflicts
+export type { 
+  Notification as AppNotification,
+  NotificationPreferences as AppNotificationPreferences
+} from './notification';
+
+// license types - use explicit exports to avoid conflicts
+export type {
+  ContractorLicense as AppContractorLicense,
+  LicenseFormData,
+  getDaysUntilExpiry,
+  getLicenseStatus
+} from './license';
+
+// Export database types without conflicts
+export * from './database.d';

@@ -6,12 +6,12 @@ import { getNotificationPreferences, updateNotificationPreferences } from "@/ser
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import type { NotificationPreferences as NotificationPrefsType } from "@/types/notification";
+import type { AppNotificationPreferences } from "@/types";
 
 export const NotificationPreferences: React.FC = () => {
   const { user } = useSupabaseAuth();
   const { toast } = useToast();
-  const [preferences, setPreferences] = useState<NotificationPrefsType | null>(null);
+  const [preferences, setPreferences] = useState<AppNotificationPreferences | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
