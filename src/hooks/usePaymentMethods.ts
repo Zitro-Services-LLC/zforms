@@ -4,7 +4,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import type { PaymentMethod, PaymentMethodFormData } from '@/types/paymentMethod';
 
-export function usePaymentMethods() {
+export function usePaymentMethods(customerId?: string) {
   const { toast } = useToast();
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [isAddingMethod, setIsAddingMethod] = useState(false);
@@ -48,6 +48,19 @@ export function usePaymentMethods() {
             }
           ];
           
+          // Add a different card for contractor view
+          if (customerId) {
+            mockPaymentMethods.push({
+              id: '3',
+              type: 'credit_card',
+              cardLast4: '1111',
+              cardExpMonth: 10,
+              cardExpYear: 2024,
+              cardBrand: 'mastercard',
+              isPrimary: false
+            });
+          }
+          
           setPaymentMethods(mockPaymentMethods);
           setLoading(false);
         }, 1000);
@@ -64,7 +77,7 @@ export function usePaymentMethods() {
     };
 
     fetchPaymentMethods();
-  }, [toast]);
+  }, [toast, customerId]);
 
   const handleAddPaymentMethod = async (formData: PaymentMethodFormData) => {
     try {
@@ -96,7 +109,7 @@ export function usePaymentMethods() {
       
       toast({
         title: "Payment Method Added",
-        description: "Your payment method has been added successfully"
+        description: "The payment method has been added successfully"
       });
       
     } catch (error) {
@@ -124,7 +137,7 @@ export function usePaymentMethods() {
       
       toast({
         title: "Payment Method Removed",
-        description: "Your payment method has been removed successfully"
+        description: "The payment method has been removed successfully"
       });
       
     } catch (error) {

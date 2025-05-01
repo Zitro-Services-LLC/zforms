@@ -4,10 +4,18 @@ import { usePaymentMethods } from '@/hooks/usePaymentMethods';
 import { PaymentMethodsList } from './payment-methods/PaymentMethodsList';
 import { AddPaymentMethodButtons } from './payment-methods/AddPaymentMethodButtons';
 import { AddPaymentMethodDialog } from './payment-methods/AddPaymentMethodDialog';
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Info } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
-const CustomerPaymentMethodsSection: React.FC = () => {
+interface CustomerPaymentMethodsSectionProps {
+  customerId?: string;
+  isContractorView?: boolean;
+}
+
+const CustomerPaymentMethodsSection: React.FC<CustomerPaymentMethodsSectionProps> = ({ 
+  customerId,
+  isContractorView = false 
+}) => {
   const {
     paymentMethods,
     isAddingMethod,
@@ -17,7 +25,7 @@ const CustomerPaymentMethodsSection: React.FC = () => {
     loading,
     handleAddPaymentMethod,
     handleDeletePaymentMethod
-  } = usePaymentMethods();
+  } = usePaymentMethods(customerId);
 
   const openAddCreditCardDialog = () => {
     setMethodType('credit_card');
@@ -36,17 +44,30 @@ const CustomerPaymentMethodsSection: React.FC = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold mb-2">My Payment Methods</h2>
+        <h2 className="text-xl font-semibold mb-2">
+          {isContractorView ? "Customer Payment Methods" : "My Payment Methods"}
+        </h2>
         <p className="text-gray-500 text-sm mb-4">
-          Add and manage your payment methods securely
+          {isContractorView 
+            ? "Manage payment methods for this customer" 
+            : "Add and manage your payment methods securely"}
         </p>
         
-        <Alert className="mb-6">
-          <AlertCircle className="h-4 w-4 mr-2" />
-          <AlertDescription>
-            Payment methods added here can be used to pay contractors for their services.
-          </AlertDescription>
-        </Alert>
+        {isContractorView ? (
+          <Alert className="mb-6 bg-blue-50 border-blue-200">
+            <Info className="h-4 w-4 mr-2 text-blue-600" />
+            <AlertDescription>
+              Payment methods added here can be used to charge invoices for this customer.
+            </AlertDescription>
+          </Alert>
+        ) : (
+          <Alert className="mb-6">
+            <AlertCircle className="h-4 w-4 mr-2" />
+            <AlertDescription>
+              Payment methods added here can be used to pay contractors for their services.
+            </AlertDescription>
+          </Alert>
+        )}
       </div>
 
       <AddPaymentMethodButtons 

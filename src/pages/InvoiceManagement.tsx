@@ -72,6 +72,26 @@ const InvoiceManagement: React.FC<InvoiceManagementProps> = ({ userType = 'contr
   const [showChangeRequestModal, setShowChangeRequestModal] = useState(false);
   const [customer, setCustomer] = useState(invoiceData.customer);
   
+  // Mock customer payment methods
+  const [customerPaymentMethods, setCustomerPaymentMethods] = useState<PaymentMethod[]>([
+    {
+      id: 'cust-card-1',
+      type: 'credit_card',
+      cardLast4: '4242',
+      cardExpMonth: 12,
+      cardExpYear: 2025,
+      cardBrand: 'visa',
+      isPrimary: true
+    },
+    {
+      id: 'cust-bank-1',
+      type: 'bank_account',
+      bankName: 'Chase Bank',
+      accountLast4: '9876',
+      isPrimary: false
+    }
+  ]);
+  
   const handleMarkPaid = () => {
     setStatus('paid');
     toast({
@@ -183,6 +203,7 @@ const InvoiceManagement: React.FC<InvoiceManagementProps> = ({ userType = 'contr
               balanceDue={invoiceData.balanceDue}
               bankTransfer={invoiceData.paymentInstructions.bankTransfer}
               onPaymentSubmit={handlePaymentSubmit}
+              customerPaymentMethods={customerPaymentMethods}
             />
           )}
 
