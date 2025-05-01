@@ -10,59 +10,7 @@ import InvoiceTotals from './InvoiceTotals';
 import InvoiceCustomerSection from './InvoiceCustomerSection';
 import InvoicePaymentOptions from './InvoicePaymentOptions';
 import InvoiceActions from './InvoiceActions';
-import type { PaymentMethod } from '@/types/paymentMethod';
-
-interface PartyInfo {
-  name: string;
-  address: string;
-  phone: string;
-  email: string;
-}
-
-interface LineItem {
-  id: number;
-  description: string;
-  quantity: number;
-  rate: number;
-  amount: number;
-}
-
-interface Payment {
-  id: number;
-  date: string;
-  amount: number;
-  method: string;
-  note: string;
-}
-
-interface BankTransfer {
-  accountName: string;
-  accountNumber: string;
-  routingNumber: string;
-  bankName: string;
-}
-
-interface InvoiceData {
-  id: string;
-  jobId: string;
-  estimateId: string;
-  contractId: string;
-  status: Status;
-  date: string;
-  dueDate: string;
-  contractor: PartyInfo;
-  customer: PartyInfo;
-  lineItems: LineItem[];
-  subtotal: number;
-  tax: number;
-  total: number;
-  paymentHistory: Payment[];
-  balanceDue: number;
-  paymentInstructions: {
-    bankTransfer: BankTransfer;
-    creditCard: string;
-  };
-}
+import type { InvoiceData, PartyInfo, PaymentMethod } from '@/types';
 
 interface InvoiceDocumentProps {
   invoiceData: InvoiceData;

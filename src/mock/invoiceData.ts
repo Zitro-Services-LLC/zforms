@@ -1,8 +1,8 @@
 
 import { Status } from "../components/shared/StatusBadge";
-import type { PaymentMethod } from "@/types/paymentMethod";
+import type { InvoiceData, PaymentMethod } from "@/types";
 
-export const mockInvoiceData = {
+export const mockInvoiceData: InvoiceData = {
   id: 'I-101',
   jobId: 'JOB-00123',
   estimateId: 'E-101',

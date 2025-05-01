@@ -2,23 +2,15 @@
 import { useState } from 'react';
 import { useToast } from "@/components/ui/use-toast";
 import { Status } from '@/components/shared/StatusBadge';
-import type { PaymentMethod } from '@/types/paymentMethod';
+import type { PartyInfo, PaymentMethod, InvoiceData } from '@/types';
 import { mockInvoiceData, mockCustomerPaymentMethods } from '@/mock/invoiceData';
-
-interface Customer {
-  name: string;
-  address: string;
-  phone: string;
-  email: string;
-  id?: string;
-}
 
 export function useInvoiceManagement(invoiceId?: string, initialUserType: 'contractor' | 'customer' = 'contractor') {
   const { toast } = useToast();
   const [status, setStatus] = useState<Status>(mockInvoiceData.status);
   const [showPaymentOptions, setShowPaymentOptions] = useState(false);
   const [showChangeRequestModal, setShowChangeRequestModal] = useState(false);
-  const [customer, setCustomer] = useState(mockInvoiceData.customer);
+  const [customer, setCustomer] = useState<PartyInfo>(mockInvoiceData.customer);
   const [customerPaymentMethods, setCustomerPaymentMethods] = useState<PaymentMethod[]>(mockCustomerPaymentMethods);
   
   const handleMarkPaid = () => {
@@ -51,7 +43,7 @@ export function useInvoiceManagement(invoiceId?: string, initialUserType: 'contr
     });
   };
   
-  const handleSelectCustomer = (selectedCustomer: any) => {
+  const handleSelectCustomer = (selectedCustomer: PartyInfo) => {
     if (selectedCustomer) {
       setCustomer(selectedCustomer);
       toast({
@@ -61,7 +53,7 @@ export function useInvoiceManagement(invoiceId?: string, initialUserType: 'contr
     }
   };
   
-  const handleAddNewCustomer = (customerData: any) => {
+  const handleAddNewCustomer = (customerData: PartyInfo) => {
     setCustomer({
       ...customerData,
       id: `CUST-${Math.floor(Math.random() * 1000)}`
