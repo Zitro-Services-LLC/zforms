@@ -5,22 +5,43 @@ import type { LineItem } from '@/types/estimate'
 
 // Get a single estimate by ID with joined customer info
 export async function getEstimateById(id: string): Promise<EstimateWithCustomer> {
-  const { data, error } = await supabase
-    .from('estimates')
-    .select(`
-      *,
-      customer:customers(*),
-      contractor:contractors(*)
-    `)
-    .eq('id', id)
-    .single();
+  try {
+    // First, get the estimate with customer info
+    const { data: estimate, error } = await supabase
+      .from('estimates')
+      .select(`
+        *,
+        customer:customers(*)
+      `)
+      .eq('id', id)
+      .single();
 
-  if (error) {
+    if (error) {
+      console.error("getEstimateById error:", error);
+      throw error;
+    }
+
+    // Now get the contractor info separately using user_id from the estimate
+    const { data: contractor, error: contractorError } = await supabase
+      .from('contractors')
+      .select('*')
+      .eq('user_id', estimate.user_id)
+      .maybeSingle();
+
+    if (contractorError) {
+      console.error("Error fetching contractor:", contractorError);
+      // Don't throw here, we can still return the estimate without contractor info
+    }
+
+    // Return combined data
+    return {
+      ...estimate,
+      contractor: contractor || null
+    } as EstimateWithCustomer;
+  } catch (error) {
     console.error("getEstimateById error:", error);
     throw error;
   }
-
-  return data as EstimateWithCustomer;
 }
 
 // Get all estimate line items for a specific estimate

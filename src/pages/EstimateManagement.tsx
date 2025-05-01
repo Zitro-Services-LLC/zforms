@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import AppLayout from '../components/layouts/AppLayout';
@@ -24,7 +23,7 @@ import {
 } from '@/services/estimateService';
 import EstimateActivities from '@/components/estimate/EstimateActivities';
 import { EstimateData, EstimateWithCustomerAndItems } from '@/types/estimate';
-import { EstimateImage } from '@/types/database';
+import { EstimateImage } from '@/types/database.d';
 
 interface EstimateManagementProps {
   userType?: 'contractor' | 'customer';
@@ -103,7 +102,16 @@ const EstimateManagement: React.FC<EstimateManagementProps> = ({ userType = 'con
         
       } catch (error) {
         console.error("Error loading estimate data:", error);
-        setError("Failed to load estimate data. Please try again later.");
+        
+        // More specific error message based on error type
+        if (error.message?.includes("No rows returned")) {
+          setError("Estimate not found. It may have been deleted or you don't have permission to view it.");
+        } else if (error.code?.includes("PGRST")) {
+          setError("Database error: There seems to be an issue with the estimate data structure. Please contact support.");
+        } else {
+          setError("Failed to load estimate data. Please try again later.");
+        }
+        
         toast({
           title: "Error",
           description: "Could not load estimate data.",
