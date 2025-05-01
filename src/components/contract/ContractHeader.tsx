@@ -34,15 +34,20 @@ const ContractHeader: React.FC<ContractHeaderProps> = ({
 
   const formattedDate = formatDate(date);
   const { loading, contractorData } = useContractorData();
+  
+  console.log("ContractHeader - Logo URL:", companyLogo || contractorData?.logo_url);
+  
+  // Use either the passed logo or fetch from contractor data
+  const logoUrl = companyLogo || contractorData?.logo_url;
 
   return (
     <div className="px-6 pt-6 pb-3 border-b bg-white">
       <div className="flex flex-col md:flex-row justify-between items-center gap-4">
         {/* Left column: Logo */}
         <div className="w-32 h-32 flex items-center justify-center overflow-hidden">
-          {companyLogo ? (
+          {logoUrl ? (
             <img 
-              src={companyLogo} 
+              src={logoUrl} 
               alt="Company Logo" 
               className="max-h-full max-w-full object-contain" 
             />

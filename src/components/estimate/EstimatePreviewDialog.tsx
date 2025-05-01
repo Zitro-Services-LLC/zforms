@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import EstimateHeader from './EstimateHeader';
@@ -28,6 +28,12 @@ const EstimatePreviewDialog: React.FC<EstimatePreviewProps> = ({
   estimateData
 }) => {
   const { loading: loadingContractor, contractorData } = useContractorData();
+  
+  useEffect(() => {
+    if (contractorData && contractorData.logo_url) {
+      console.log("EstimatePreviewDialog - Contractor logo loaded:", contractorData.logo_url);
+    }
+  }, [contractorData]);
   
   const contractorParty = {
     name: contractorData?.companyName || "Your Company Name",
