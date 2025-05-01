@@ -1,7 +1,7 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Building, UserRound } from 'lucide-react';
+import { supabase } from "@/integrations/supabase/client";
 
 interface SidebarProps {
   userType: 'contractor' | 'customer';
@@ -10,6 +10,45 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ userType }) => {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
+  const [companyName, setCompanyName] = useState<string>('');
+  const [userName, setUserName] = useState<string>('');
+
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.user) return;
+
+        if (userType === 'contractor') {
+          // Fetch contractor company name
+          const { data, error } = await supabase
+            .from('contractors')
+            .select('company_name')
+            .eq('user_id', session.user.id)
+            .maybeSingle();
+
+          if (!error && data) {
+            setCompanyName(data.company_name || '');
+          }
+        } else {
+          // Fetch customer name
+          const { data, error } = await supabase
+            .from('customers')
+            .select('first_name, last_name')
+            .eq('user_id', session.user.id)
+            .maybeSingle();
+
+          if (!error && data) {
+            setUserName(`${data.first_name} ${data.last_name}`);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching user info:', error);
+      }
+    };
+
+    fetchUserInfo();
+  }, [userType]);
 
   const contractorLinks = [
     { name: 'Dashboard', path: '/dashboard', icon: (
@@ -131,7 +170,9 @@ const Sidebar: React.FC<SidebarProps> = ({ userType }) => {
             {!collapsed && (
               <div className="ml-3">
                 <p className="text-sm font-medium text-gray-700 truncate">
-                  {userType === 'contractor' ? 'Bob\'s Construction' : 'Alice Smith'}
+                  {userType === 'contractor' 
+                    ? (companyName || 'Company') 
+                    : (userName || 'User')}
                 </p>
                 <span className="text-xs text-amber-600 hover:text-amber-700 truncate">
                   View Profile
