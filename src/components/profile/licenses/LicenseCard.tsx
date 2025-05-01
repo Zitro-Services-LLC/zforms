@@ -30,7 +30,7 @@ export const LicenseCard: React.FC<LicenseCardProps> = ({
             Valid
           </Badge>
         );
-      case 'warning':
+      case 'expiring':
         return (
           <Badge className="bg-amber-100 text-amber-800 border-amber-300">
             Expiring Soon
@@ -50,11 +50,11 @@ export const LicenseCard: React.FC<LicenseCardProps> = ({
   return (
     <Card className={`overflow-hidden ${
       status === 'expired' ? 'border-red-300' :
-      status === 'warning' ? 'border-amber-300' : 'border-gray-200'
+      status === 'expiring' ? 'border-amber-300' : 'border-gray-200'
     }`}>
       <div className={`h-2 w-full ${
         status === 'expired' ? 'bg-red-500' :
-        status === 'warning' ? 'bg-amber-500' : 'bg-green-500'
+        status === 'expiring' ? 'bg-amber-500' : 'bg-green-500'
       }`} />
       <CardContent className="pt-6">
         <div className="flex justify-between items-start">
@@ -79,7 +79,7 @@ export const LicenseCard: React.FC<LicenseCardProps> = ({
           
           <div className="text-sm">
             {daysUntilExpiry > 0 ? (
-              <p className={`text-right ${status === 'warning' ? 'text-amber-600' : 'text-gray-500'}`}>
+              <p className={`text-right ${status === 'expiring' ? 'text-amber-600' : 'text-gray-500'}`}>
                 Expires in {formatDistanceToNow(new Date(license.expiry_date))}
               </p>
             ) : (

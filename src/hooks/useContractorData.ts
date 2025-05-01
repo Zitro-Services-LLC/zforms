@@ -27,7 +27,7 @@ export const useContractorData = () => {
         setLoading(true);
         const { data, error } = await supabase
           .from('contractors')
-          .select('company_name, company_address, company_phone, company_email, logo_url, user_id')
+          .select('company_name, company_address, company_phone, company_email, logo_url')
           .eq('user_id', user.id)
           .single();
 
@@ -43,7 +43,6 @@ export const useContractorData = () => {
             companyPhone: data.company_phone || '',
             companyEmail: data.company_email || '',
             logo_url: data.logo_url || null,
-            user_id: data.user_id
           });
         }
       } catch (error) {
@@ -80,7 +79,7 @@ export const useContractorData = () => {
         company_phone: data.companyPhone,
         company_email: data.companyEmail,
         logo_url: data.logo_url,
-        user_id: user.id
+        user_id: user.id // Inject user_id only in the API call, not in the form state
       };
 
       let result;
@@ -104,8 +103,7 @@ export const useContractorData = () => {
 
       // Update local state
       setContractorData({
-        ...data,
-        user_id: user.id
+        ...data
       });
 
     } catch (error) {

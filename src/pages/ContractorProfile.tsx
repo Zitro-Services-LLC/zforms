@@ -12,11 +12,13 @@ import ContractorLogoSection from '@/components/profile/ContractorLogoSection';
 import ContractorCompanyForm from '@/components/profile/ContractorCompanyForm';
 import { uploadContractorLogo } from '@/services/logoService';
 import { useToast } from '@/hooks/use-toast';
+import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 
 const ContractorProfile = () => {
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [selectedLogo, setSelectedLogo] = useState<File | null>(null);
   const { toast } = useToast();
+  const { user } = useSupabaseAuth();
   const { loading, contractorData, updateContractorData } = useContractorData();
   
   const form = useForm({
@@ -47,12 +49,21 @@ const ContractorProfile = () => {
   };
 
   const handleSubmit = async (data: any) => {
+    if (!user) {
+      toast({
+        title: "Authentication Error",
+        description: "You must be logged in to update your profile",
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
       let logoUrl = contractorData?.logo_url || null;
       
       // If a new logo was selected, upload it
-      if (selectedLogo && contractorData?.user_id) {
-        logoUrl = await uploadContractorLogo(selectedLogo, contractorData.user_id);
+      if (selectedLogo) {
+        logoUrl = await uploadContractorLogo(selectedLogo, user.id);
       }
       
       // Update contractor data including the logo URL

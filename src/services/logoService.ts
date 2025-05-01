@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { v4 as uuidv4 } from "@supabase/supabase-js/dist/module/lib/helpers";
+import { v4 as uuidv4 } from "uuid";
 import { useToast } from "@/hooks/use-toast";
 
 /**
