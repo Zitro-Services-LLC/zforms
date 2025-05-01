@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import AppLayout from '../components/layouts/AppLayout';
@@ -14,6 +13,7 @@ import InvoiceActions from '../components/invoice/InvoiceActions';
 import CustomerSelection from '../components/shared/CustomerSelection';
 import ChangeRequestModal from '../components/shared/ChangeRequestModal';
 import { useToast } from "@/components/ui/use-toast";
+import type { PaymentMethod } from '@/types/paymentMethod';
 
 // Mock data for the invoice
 const invoiceData = {

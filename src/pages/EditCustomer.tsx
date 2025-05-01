@@ -32,6 +32,19 @@ const EditCustomer = () => {
     });
   };
 
+  const handleUpdateCustomer = (customerData: Omit<Customer, 'id'>) => {
+    // This would typically call an API to update the customer
+    toast({
+      title: "Customer Updated",
+      description: "Customer information has been updated successfully."
+    });
+  };
+
+  const setCustomerData = (customerData: Omit<Customer, 'id'>) => {
+    // This would typically update local state
+    console.log('Customer data updated:', customerData);
+  };
+
   if (isLoading) {
     return (
       <AppLayout userType="contractor">
@@ -81,8 +94,11 @@ const EditCustomer = () => {
             
             <TabsContent value="profile" className="mt-6">
               <NewCustomerForm 
-                customer={customer} 
-                onSuccess={handleUpdateSuccess} 
+                newCustomer={customer} 
+                onCustomerChange={setCustomerData}
+                onAddCustomer={handleUpdateCustomer}
+                mode="edit"
+                loading={loading}
               />
             </TabsContent>
             
