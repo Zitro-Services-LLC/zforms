@@ -55,7 +55,7 @@ const EstimatePreviewDialog: React.FC<EstimatePreviewProps> = ({
           <EstimateHeader
             id={estimateData.id}
             jobId="Preview"
-            status="draft"
+            status="drafting"
             date={new Date().toISOString()}
             companyLogo={contractorData?.logo_url}
           />
@@ -65,7 +65,7 @@ const EstimatePreviewDialog: React.FC<EstimatePreviewProps> = ({
             customer={customerParty}
           />
 
-          <EstimateLineItems lineItems={estimateData.items} />
+          <EstimateLineItems items={estimateData.items} />
 
           <div className="p-6">
             {estimateData.notes && (
