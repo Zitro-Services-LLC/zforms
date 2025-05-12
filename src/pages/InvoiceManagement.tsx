@@ -16,7 +16,6 @@ const InvoiceManagement: React.FC<InvoiceManagementProps> = ({ userType = 'contr
   
   const {
     invoiceData,
-    status,
     showPaymentOptions,
     showChangeRequestModal,
     customer,
@@ -38,7 +37,7 @@ const InvoiceManagement: React.FC<InvoiceManagementProps> = ({ userType = 'contr
       <div className="container mx-auto max-w-4xl">
         <InvoiceDocument
           invoiceData={invoiceData}
-          status={status as Status}
+          status={invoiceData.status}
           userType={userType}
           customer={customer}
           totalAmountPaid={totalAmountPaid}

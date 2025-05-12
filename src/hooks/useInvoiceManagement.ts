@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useToast } from "@/components/ui/use-toast";
-import type { PartyInfo, PaymentMethod, Status } from '@/types';
+import type { PartyInfo, PaymentMethod } from '@/types';
 import { useInvoice, useInvoices } from './useInvoices';
 import { mapInvoiceToUI } from '@/utils/invoiceUtils';
 import { useContractorData } from './useContractorData';
@@ -109,12 +109,8 @@ export function useInvoiceManagement(invoiceId?: string, initialUserType: 'contr
   // For now, return the mock data for UI rendering until all components are updated
   const uiInvoiceData = invoiceData ? mapInvoiceToUI(invoiceData, contractorData) : mockInvoiceData;
   
-  // Get status directly from invoiceData and ensure it's cast to the Status type
-  const status = (invoiceData?.status as Status) || mockInvoiceData.status;
-  
   return {
     invoiceData: uiInvoiceData,
-    status,
     showPaymentOptions,
     showChangeRequestModal,
     customer,
