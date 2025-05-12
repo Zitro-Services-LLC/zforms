@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, Eye, EyeOff } from "lucide-react";
 
 interface EmailAuthFormProps {
   tab: "login" | "register";
@@ -17,6 +17,7 @@ const EmailAuthForm: React.FC<EmailAuthFormProps> = ({ tab, setTab }) => {
   const [userType, setUserType] = useState<"contractor" | "customer">("contractor");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
   const { toast } = useToast();
 
   const handleEmailAuth = async (e: React.FormEvent) => {
@@ -60,6 +61,10 @@ const EmailAuthForm: React.FC<EmailAuthFormProps> = ({ tab, setTab }) => {
     }
   };
 
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
   return (
     <form onSubmit={handleEmailAuth} className="space-y-4">
       <div>
@@ -72,15 +77,28 @@ const EmailAuthForm: React.FC<EmailAuthFormProps> = ({ tab, setTab }) => {
           onChange={e => setEmail(e.target.value)}
         />
       </div>
-      <div>
+      <div className="relative">
         <Input
           placeholder="Password"
-          type="password"
+          type={showPassword ? "text" : "password"}
           autoComplete={tab === "login" ? "current-password" : "new-password"}
           value={password}
           disabled={loading}
           onChange={e => setPassword(e.target.value)}
         />
+        <button 
+          type="button"
+          onClick={togglePasswordVisibility}
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+          tabIndex={-1}
+          aria-label={showPassword ? "Hide password" : "Show password"}
+        >
+          {showPassword ? (
+            <EyeOff className="h-4 w-4" />
+          ) : (
+            <Eye className="h-4 w-4" />
+          )}
+        </button>
       </div>
       
       {tab === "register" && (
