@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client'
 import type { LineItem } from '@/types/estimate'
 import { trackEstimateActivity } from './estimateActivity'
@@ -78,4 +77,51 @@ export async function trackEstimateView(
   
   // Track activity
   await trackEstimateActivity(estimateId, userId, 'viewed');
+}
+
+// Delete estimate and related items
+export async function deleteEstimate(estimateId: string): Promise<void> {
+  // Start by deleting related records in child tables
+  const { error: itemsError } = await supabase
+    .from('estimate_items')
+    .delete()
+    .eq('estimate_id', estimateId);
+    
+  if (itemsError) {
+    console.error("Error deleting estimate items:", itemsError);
+    throw itemsError;
+  }
+  
+  // Delete estimate activities
+  const { error: activitiesError } = await supabase
+    .from('estimate_activities')
+    .delete()
+    .eq('estimate_id', estimateId);
+    
+  if (activitiesError) {
+    console.error("Error deleting estimate activities:", activitiesError);
+    throw activitiesError;
+  }
+  
+  // Delete estimate images
+  const { error: imagesError } = await supabase
+    .from('estimate_images')
+    .delete()
+    .eq('estimate_id', estimateId);
+    
+  if (imagesError) {
+    console.error("Error deleting estimate images:", imagesError);
+    throw imagesError;
+  }
+  
+  // Finally delete the estimate itself
+  const { error } = await supabase
+    .from('estimates')
+    .delete()
+    .eq('id', estimateId);
+    
+  if (error) {
+    console.error("Error deleting estimate:", error);
+    throw error;
+  }
 }

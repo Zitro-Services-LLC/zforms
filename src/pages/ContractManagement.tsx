@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import AppLayout from '../components/layouts/AppLayout';
 import ContractHeader from '../components/contract/ContractHeader';
 import ContractPartyInfo from '../components/contract/ContractPartyInfo';
@@ -14,6 +14,9 @@ import { ContractCustomerSection } from '../components/contract/ContractCustomer
 import { useContractData } from '@/hooks/useContractData';
 import { useContractorData } from '@/hooks/useContractorData';
 import { customerToPartyInfo } from '@/utils/customerUtils';
+import { useMutation } from '@tanstack/react-query';
+import { deleteContract } from '@/services/contractService';
+import { useToast } from '@/hooks/use-toast';
 import type { PartyInfo } from '@/utils/customerUtils';
 
 interface ContractManagementProps {
@@ -22,6 +25,9 @@ interface ContractManagementProps {
 
 const ContractManagement: React.FC<ContractManagementProps> = ({ userType = 'contractor' }) => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  
   const {
     contract,
     isLoading,
@@ -33,6 +39,31 @@ const ContractManagement: React.FC<ContractManagementProps> = ({ userType = 'con
   } = useContractData(id);
   
   const { loading: loadingContractor, contractorData } = useContractorData();
+  
+  // Delete mutation
+  const deleteMutation = useMutation({
+    mutationFn: deleteContract,
+    onSuccess: () => {
+      toast({
+        title: "Contract deleted",
+        description: "The contract has been successfully deleted.",
+      });
+      navigate('/contracts');
+    },
+    onError: (error) => {
+      toast({
+        title: "Error deleting contract",
+        description: error instanceof Error ? error.message : "An unknown error occurred",
+        variant: "destructive"
+      });
+    }
+  });
+
+  const handleDeleteContract = () => {
+    if (id) {
+      deleteMutation.mutate(id);
+    }
+  };
 
   // Show loading state
   if (isLoading || loadingContractor) {
@@ -147,6 +178,8 @@ The contractor will make every effort to complete the work according to this sch
             status={status}
             contractId={contract.id}
             onStatusChange={handleStatusChange}
+            onDelete={userType === 'contractor' ? handleDeleteContract : undefined}
+            isDeleting={deleteMutation.isPending}
           />
         </div>
       </div>

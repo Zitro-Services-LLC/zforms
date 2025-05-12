@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import AppLayout from '../components/layouts/AppLayout';
 import EstimateHeader from '../components/estimate/EstimateHeader';
 import EstimateContent from '../components/estimate/EstimateContent';
@@ -15,6 +15,9 @@ import { useEstimateActivities } from '@/hooks/estimate/useEstimateActivities';
 import { useEstimateActions } from '@/hooks/estimate/useEstimateActions';
 import { useCustomerSelection } from '@/hooks/estimate/useCustomerSelection';
 import { Status } from '@/components/shared/StatusBadge';
+import { deleteEstimate } from '@/services/estimate';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useToast } from '@/hooks/use-toast';
 
 interface EstimateManagementProps {
   userType?: 'contractor' | 'customer';
@@ -23,6 +26,9 @@ interface EstimateManagementProps {
 const EstimateManagement: React.FC<EstimateManagementProps> = ({ userType = 'contractor' }) => {
   const { id } = useParams<{ id: string }>();
   const { user } = useSupabaseAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   
   // Use custom hooks to manage state and data
   const { estimate, loading, error, images } = useEstimateData(id);
@@ -51,6 +57,31 @@ const EstimateManagement: React.FC<EstimateManagementProps> = ({ userType = 'con
     user?.id, 
     (estimate?.status as Status) || 'submitted' as Status
   );
+
+  // Delete mutation
+  const deleteMutation = useMutation({
+    mutationFn: deleteEstimate,
+    onSuccess: () => {
+      toast({
+        title: "Estimate deleted",
+        description: "The estimate has been successfully deleted.",
+      });
+      navigate('/estimates');
+    },
+    onError: (error) => {
+      toast({
+        title: "Error deleting estimate",
+        description: error instanceof Error ? error.message : "An unknown error occurred",
+        variant: "destructive"
+      });
+    }
+  });
+
+  const handleDeleteEstimate = () => {
+    if (id) {
+      deleteMutation.mutate(id);
+    }
+  };
 
   // Loading state
   if (loading) {
@@ -110,6 +141,8 @@ const EstimateManagement: React.FC<EstimateManagementProps> = ({ userType = 'con
             onRequestChanges={() => setShowChangeRequestModal(true)}
             onMarkApproved={handleMarkApproved}
             onRevise={handleReviseEstimate}
+            onDelete={handleDeleteEstimate}
+            isDeleting={deleteMutation.isPending}
             showCommentBox={showCommentBox}
             commentText={commentText}
             onCommentChange={(text) => setCommentText(text)}

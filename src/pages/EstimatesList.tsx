@@ -1,14 +1,16 @@
 
 import React from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Plus, Eye } from 'lucide-react'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table'
 import { Button } from '../components/ui/button'
-import { useQuery } from '@tanstack/react-query'
-import { getEstimates } from '@/services/estimate'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { getEstimates, deleteEstimate } from '@/services/estimate'
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth'
 import AppLayout from '@/components/layouts/AppLayout'
 import DownloadPdfButton from '@/components/shared/DownloadPdfButton'
+import DeleteConfirmDialog from '@/components/shared/DeleteConfirmDialog'
+import { useToast } from '@/hooks/use-toast'
 
 type EstimateWithCustomer = Awaited<ReturnType<typeof getEstimates>>[number]
 
@@ -19,11 +21,33 @@ function formatEstimateNumber(idx: number) {
 
 export function EstimatesList() {
   const { user } = useSupabaseAuth()
+  const { toast } = useToast()
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
+  
   const { data: estimates = [], isLoading, isError } = useQuery({
     queryKey: ['estimates', user?.id],
     queryFn: () => getEstimates(user?.id),
     enabled: Boolean(user?.id),
     staleTime: 0
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: deleteEstimate,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['estimates', user?.id] })
+      toast({
+        title: "Estimate deleted",
+        description: "The estimate has been successfully deleted.",
+      })
+    },
+    onError: (error) => {
+      toast({
+        title: "Error deleting estimate",
+        description: error instanceof Error ? error.message : "An unknown error occurred",
+        variant: "destructive"
+      })
+    }
   })
 
   React.useEffect(() => {
@@ -99,6 +123,15 @@ export function EstimatesList() {
                           </Link>
                         </Button>
                         <DownloadPdfButton documentType="estimate" documentId={est.id} compact />
+                        <DeleteConfirmDialog
+                          title="Delete Estimate"
+                          description={`Are you sure you want to delete this estimate for ${est.customer ? `${est.customer.first_name} ${est.customer.last_name}` : 'unknown customer'}?`}
+                          onDelete={() => deleteMutation.mutate(est.id)}
+                          isDeleting={deleteMutation.isPending && deleteMutation.variables === est.id}
+                          variant="outline"
+                          size="sm"
+                          buttonLabel=""
+                        />
                       </div>
                     </TableCell>
                   </TableRow>
@@ -113,4 +146,3 @@ export function EstimatesList() {
 }
 
 export default EstimatesList
-

@@ -14,12 +14,36 @@ import {
 } from '../components/ui/table';
 import StatusBadge from '../components/shared/StatusBadge';
 import DownloadPdfButton from '../components/shared/DownloadPdfButton';
+import DeleteConfirmDialog from '../components/shared/DeleteConfirmDialog';
 import { useInvoices } from '@/hooks/useInvoices';
+import { deleteInvoice } from '@/services/invoice/invoiceMutations';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 
 const InvoicesList = () => {
   const { invoicesQuery } = useInvoices();
   const { data: invoices, isLoading, error } = invoicesQuery;
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const deleteMutation = useMutation({
+    mutationFn: deleteInvoice,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      toast({
+        title: "Invoice deleted",
+        description: "The invoice has been successfully deleted.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error deleting invoice",
+        description: error instanceof Error ? error.message : "An unknown error occurred",
+        variant: "destructive"
+      });
+    }
+  });
 
   return (
     <AppLayout userType="contractor">
@@ -79,6 +103,15 @@ const InvoicesList = () => {
                           <Link to={`/invoices/${invoice.id}`}>View</Link>
                         </Button>
                         <DownloadPdfButton documentType="invoice" documentId={invoice.id} />
+                        <DeleteConfirmDialog
+                          title="Delete Invoice"
+                          description={`Are you sure you want to delete this invoice for ${invoice.customer ? `${invoice.customer.first_name} ${invoice.customer.last_name}` : 'unknown customer'}?`}
+                          onDelete={() => deleteMutation.mutate(invoice.id)}
+                          isDeleting={deleteMutation.isPending && deleteMutation.variables === invoice.id}
+                          variant="outline"
+                          size="sm"
+                          buttonLabel=""
+                        />
                       </div>
                     </TableCell>
                   </TableRow>

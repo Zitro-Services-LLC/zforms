@@ -1,8 +1,9 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { Send, ArrowLeft, Pencil, Check } from "lucide-react";
+import { Send, ArrowLeft, Pencil, Check, Trash } from "lucide-react";
 import { Status } from '../shared/StatusBadge';
+import DeleteConfirmDialog from '../shared/DeleteConfirmDialog';
 
 interface EstimateActionsProps {
   status: Status;
@@ -11,6 +12,8 @@ interface EstimateActionsProps {
   onRequestChanges: () => void;
   onMarkApproved: () => void;
   onRevise: () => void;
+  onDelete?: () => void;
+  isDeleting?: boolean;
   showCommentBox: boolean;
   commentText: string;
   onCommentChange: (text: string) => void;
@@ -25,6 +28,8 @@ const EstimateActions: React.FC<EstimateActionsProps> = ({
   onRequestChanges,
   onMarkApproved,
   onRevise,
+  onDelete,
+  isDeleting,
   showCommentBox,
   commentText,
   onCommentChange,
@@ -34,32 +39,45 @@ const EstimateActions: React.FC<EstimateActionsProps> = ({
   return (
     <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
       {userType === 'contractor' ? (
-        <div className="flex justify-end space-x-4">
-          {status === 'drafting' && (
-            <Button className="bg-amber-500 hover:bg-amber-600 text-white">
-              <Send className="mr-2 h-4 w-4" />
-              Submit to Customer
-            </Button>
-          )}
-          {status === 'submitted' && (
-            <Button 
-              onClick={onMarkApproved}
-              className="bg-amber-500 hover:bg-amber-600 text-white"
-            >
-              <Check className="mr-2 h-4 w-4" />
-              Mark as Approved
-            </Button>
-          )}
-          {status !== 'drafting' && (
-            <Button 
-              onClick={onRevise}
+        <div className="flex justify-between">
+          {onDelete && (
+            <DeleteConfirmDialog
+              title="Delete Estimate"
+              description="Are you sure you want to delete this estimate? This action cannot be undone and will remove all related data."
+              onDelete={onDelete}
+              isDeleting={isDeleting}
+              buttonLabel="Delete Estimate"
               variant="outline"
-              className="bg-white hover:bg-gray-50"
-            >
-              <Pencil className="mr-2 h-4 w-4" />
-              Revise Estimate
-            </Button>
+            />
           )}
+
+          <div className="flex space-x-4 ml-auto">
+            {status === 'drafting' && (
+              <Button className="bg-amber-500 hover:bg-amber-600 text-white">
+                <Send className="mr-2 h-4 w-4" />
+                Submit to Customer
+              </Button>
+            )}
+            {status === 'submitted' && (
+              <Button 
+                onClick={onMarkApproved}
+                className="bg-amber-500 hover:bg-amber-600 text-white"
+              >
+                <Check className="mr-2 h-4 w-4" />
+                Mark as Approved
+              </Button>
+            )}
+            {status !== 'drafting' && (
+              <Button 
+                onClick={onRevise}
+                variant="outline"
+                className="bg-white hover:bg-gray-50"
+              >
+                <Pencil className="mr-2 h-4 w-4" />
+                Revise Estimate
+              </Button>
+            )}
+          </div>
         </div>
       ) : (
         <div className="flex justify-end space-x-4">

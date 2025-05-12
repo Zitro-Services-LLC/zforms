@@ -1,7 +1,8 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Loader2 } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import AppLayout from '../components/layouts/AppLayout';
 import { Button } from '../components/ui/button';
 import {
@@ -14,11 +15,15 @@ import {
 } from '../components/ui/table';
 import StatusBadge from '../components/shared/StatusBadge';
 import DownloadPdfButton from '../components/shared/DownloadPdfButton';
-import { getContracts } from '@/services/contractService';
+import DeleteConfirmDialog from '@/components/shared/DeleteConfirmDialog';
+import { getContracts, deleteContract } from '@/services/contractService';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
+import { useToast } from '@/hooks/use-toast';
 
 const ContractsList = () => {
   const { user } = useSupabaseAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   
   console.log('Current user:', user?.id);
   
@@ -26,6 +31,24 @@ const ContractsList = () => {
     queryKey: ['contracts', user?.id],
     queryFn: () => getContracts(user?.id),
     enabled: !!user?.id,
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: deleteContract,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['contracts', user?.id] });
+      toast({
+        title: "Contract deleted",
+        description: "The contract has been successfully deleted.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error deleting contract",
+        description: error instanceof Error ? error.message : "An unknown error occurred",
+        variant: "destructive"
+      });
+    }
   });
 
   console.log('Contracts from query:', contracts);
@@ -94,6 +117,15 @@ const ContractsList = () => {
                           <Link to={`/contracts/${contract.id}`}>View</Link>
                         </Button>
                         <DownloadPdfButton documentType="contract" documentId={contract.id} />
+                        <DeleteConfirmDialog
+                          title="Delete Contract"
+                          description={`Are you sure you want to delete this contract for ${contract.customer ? `${contract.customer.first_name} ${contract.customer.last_name}` : 'unknown customer'}?`}
+                          onDelete={() => deleteMutation.mutate(contract.id)}
+                          isDeleting={deleteMutation.isPending && deleteMutation.variables === contract.id}
+                          variant="outline"
+                          size="sm"
+                          buttonLabel=""
+                        />
                       </div>
                     </TableCell>
                   </TableRow>

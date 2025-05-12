@@ -122,3 +122,27 @@ export async function updateContractStatus(
     throw error;
   }
 }
+
+export async function deleteContract(contractId: string): Promise<void> {
+  // Delete contract revisions
+  const { error: revisionsError } = await supabase
+    .from('contract_revisions')
+    .delete()
+    .eq('contract_id', contractId);
+    
+  if (revisionsError) {
+    console.error('Error deleting contract revisions:', revisionsError);
+    throw revisionsError;
+  }
+  
+  // Delete the contract itself
+  const { error } = await supabase
+    .from('contracts')
+    .delete()
+    .eq('id', contractId);
+    
+  if (error) {
+    console.error('Error deleting contract:', error);
+    throw error;
+  }
+}
