@@ -1,4 +1,6 @@
 
+import { Status } from '@/components/shared/StatusBadge';
+
 export interface LineItem {
   id: string;
   description: string;
@@ -17,7 +19,7 @@ export interface EstimateParty {
 export interface EstimateData {
   id: string;
   jobId?: string;
-  status: string;
+  status: Status;
   date: string;
   contractor: EstimateParty;
   customer: EstimateParty;

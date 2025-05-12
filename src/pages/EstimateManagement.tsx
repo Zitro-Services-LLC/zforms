@@ -14,6 +14,7 @@ import { useEstimateData } from '@/hooks/estimate/useEstimateData';
 import { useEstimateActivities } from '@/hooks/estimate/useEstimateActivities';
 import { useEstimateActions } from '@/hooks/estimate/useEstimateActions';
 import { useCustomerSelection } from '@/hooks/estimate/useCustomerSelection';
+import { Status } from '@/components/shared/StatusBadge';
 
 interface EstimateManagementProps {
   userType?: 'contractor' | 'customer';
@@ -45,7 +46,11 @@ const EstimateManagement: React.FC<EstimateManagementProps> = ({ userType = 'con
     handleRequestChanges,
     handleMarkApproved,
     handleReviseEstimate
-  } = useEstimateActions(id, user?.id, estimate?.status || 'submitted');
+  } = useEstimateActions(
+    id, 
+    user?.id, 
+    (estimate?.status as Status) || 'submitted' as Status
+  );
 
   // Loading state
   if (loading) {

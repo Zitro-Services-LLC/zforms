@@ -2,10 +2,12 @@
 import { useState } from 'react';
 import { useToast } from "@/components/ui/use-toast";
 import { useEstimateActivities } from './useEstimateActivities';
+import { EstimateActionType } from '@/services/estimate/types';
+import { Status } from '@/components/shared/StatusBadge';
 
-export function useEstimateActions(id: string | undefined, userId: string | undefined, initialStatus: string) {
+export function useEstimateActions(id: string | undefined, userId: string | undefined, initialStatus: Status) {
   const { toast } = useToast();
-  const [status, setStatus] = useState(initialStatus);
+  const [status, setStatus] = useState<Status>(initialStatus);
   const [showCommentBox, setShowCommentBox] = useState(false);
   const [commentText, setCommentText] = useState('');
   const [showChangeRequestModal, setShowChangeRequestModal] = useState(false);
@@ -14,7 +16,7 @@ export function useEstimateActions(id: string | undefined, userId: string | unde
 
   const handleApproveEstimate = () => {
     setStatus('approved');
-    trackActivity('status_changed', {
+    trackActivity(EstimateActionType.STATUS_CHANGED, {
       status: 'approved',
       previous_status: status
     });
@@ -29,7 +31,7 @@ export function useEstimateActions(id: string | undefined, userId: string | unde
     setCommentText(comments);
     setShowChangeRequestModal(false);
     
-    trackActivity('requested_changes', {
+    trackActivity(EstimateActionType.REQUESTED_CHANGES, {
       comment: comments
     });
     
@@ -42,7 +44,7 @@ export function useEstimateActions(id: string | undefined, userId: string | unde
   const handleMarkApproved = () => {
     setStatus('approved');
     
-    trackActivity('status_changed', {
+    trackActivity(EstimateActionType.STATUS_CHANGED, {
       status: 'approved',
       previous_status: status,
       manually_set: true
@@ -57,7 +59,7 @@ export function useEstimateActions(id: string | undefined, userId: string | unde
   const handleReviseEstimate = () => {
     setStatus('drafting');
     
-    trackActivity('status_changed', {
+    trackActivity(EstimateActionType.STATUS_CHANGED, {
       status: 'drafting',
       previous_status: status
     });

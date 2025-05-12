@@ -10,6 +10,8 @@ import {
 } from '@/services/estimateService';
 import { EstimateData } from '@/types/estimate';
 import { EstimateImage } from '@/types/database.d';
+import { Status } from '@/components/shared/StatusBadge';
+import { EstimateActionType } from '@/services/estimate/types';
 
 export function useEstimateData(id: string | undefined) {
   const { toast } = useToast();
@@ -42,7 +44,7 @@ export function useEstimateData(id: string | undefined) {
         const viewModel: EstimateData = {
           id: estimateData.id,
           jobId: estimateData.job_number || undefined,
-          status: estimateData.status,
+          status: estimateData.status as Status,
           date: estimateData.date,
           contractor: {
             name: estimateData.contractor?.company_name || 'Unknown Company',

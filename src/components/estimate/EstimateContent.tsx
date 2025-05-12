@@ -12,7 +12,7 @@ import { EstimateData } from '@/types/estimate';
 interface EstimateContentProps {
   estimate: EstimateData;
   customer: any;
-  status: string;
+  status: Status;
   activities: any[];
   loadingActivities: boolean;
 }

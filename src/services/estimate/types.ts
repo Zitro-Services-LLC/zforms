@@ -3,6 +3,21 @@ import type { Database } from '@/integrations/supabase/types'
 import type { LineItem } from '@/types/estimate'
 import type { EstimateActivity, EstimateImage } from '@/types/database.d'
 
+// Define strongly-typed action constants
+export const EstimateActionType = {
+  CREATED: 'created',
+  UPDATED: 'updated',
+  STATUS_CHANGED: 'status_changed',
+  VIEWED: 'viewed',
+  COMMENTED: 'commented',
+  REQUESTED_CHANGES: 'requested_changes',
+  SENT: 'sent',
+  EXPORTED: 'exported'
+} as const;
+
+// Create a union type from the values of EstimateActionType
+export type EstimateActionType = typeof EstimateActionType[keyof typeof EstimateActionType];
+
 // Strongly-typed joined estimate + customer row
 export type EstimateWithCustomer = Database['public']['Tables']['estimates']['Row'] & {
   customer: {

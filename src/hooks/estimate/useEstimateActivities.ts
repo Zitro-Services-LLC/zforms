@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useToast } from "@/components/ui/use-toast";
 import { getEstimateActivities, trackEstimateActivity } from '@/services/estimateService';
+import { EstimateActionType } from '@/services/estimate/types';
 
 export function useEstimateActivities(id: string | undefined, userId: string | undefined) {
   const { toast } = useToast();
@@ -32,7 +33,7 @@ export function useEstimateActivities(id: string | undefined, userId: string | u
   }, [id, userId, toast]);
 
   // Function to track a new activity
-  const trackActivity = (activityType: string, metadata?: any) => {
+  const trackActivity = (activityType: EstimateActionType, metadata?: any) => {
     if (id && userId) {
       return trackEstimateActivity(id, userId, activityType, metadata);
     }

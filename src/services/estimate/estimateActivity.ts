@@ -1,12 +1,13 @@
 
 import { supabase } from '@/integrations/supabase/client'
 import type { EstimateActivity } from '@/types/database.d'
+import type { EstimateActionType } from './types'
 
 // Track estimate activity
 export async function trackEstimateActivity(
   estimateId: string,
   userId: string,
-  actionType: EstimateActivity['action_type'],
+  actionType: EstimateActionType,
   details?: any
 ): Promise<void> {
   try {
