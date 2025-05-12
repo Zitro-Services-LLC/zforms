@@ -1,7 +1,7 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useToast } from "@/components/ui/use-toast";
-import type { PartyInfo, PaymentMethod } from '@/types';
+import type { PartyInfo, PaymentMethod, Status } from '@/types';
 import { useInvoice, useInvoices } from './useInvoices';
 import { mapInvoiceToUI } from '@/utils/invoiceUtils';
 import { useContractorData } from './useContractorData';
@@ -20,7 +20,7 @@ export function useInvoiceManagement(invoiceId?: string, initialUserType: 'contr
   const { contractorData } = useContractorData();
   
   // Update customer when invoice data changes
-  useState(() => {
+  useEffect(() => {
     if (!isLoading && !error && invoiceData) {
       // Update customer info if available
       if (invoiceData.customer) {
@@ -109,8 +109,8 @@ export function useInvoiceManagement(invoiceId?: string, initialUserType: 'contr
   // For now, return the mock data for UI rendering until all components are updated
   const uiInvoiceData = invoiceData ? mapInvoiceToUI(invoiceData, contractorData) : mockInvoiceData;
   
-  // Get status directly from invoiceData
-  const status = invoiceData?.status || mockInvoiceData.status;
+  // Get status directly from invoiceData and ensure it's cast to the Status type
+  const status = (invoiceData?.status as Status) || mockInvoiceData.status;
   
   return {
     invoiceData: uiInvoiceData,
