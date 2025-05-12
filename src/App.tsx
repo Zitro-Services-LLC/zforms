@@ -23,6 +23,7 @@ import CustomersList from "./pages/CustomersList";
 import NewCustomer from "./pages/NewCustomer";
 import EditCustomer from "./pages/EditCustomer";
 import AuthPage from "@/pages/AuthPage";
+import ResetPasswordPage from "@/pages/ResetPasswordPage";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +37,7 @@ const App = () => (
           {/* Public Routes */}
           <Route path="/" element={<Landing />} />
           <Route path="/auth" element={<AuthPage />} />
+          <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
           
           {/* Contractor Routes */}
           <Route path="/dashboard" element={<ContractorDashboard />} />

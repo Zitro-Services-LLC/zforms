@@ -7,6 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/components/ui/use-toast";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { Loader2, Github, Twitter, Mail, User as UserIcon } from "lucide-react";
+import ForgotPasswordForm from "@/components/auth/ForgotPasswordForm";
 
 const SOCIALS = [
   { name: "Google", key: "google", icon: <Mail className="w-4 h-4" /> },
@@ -20,7 +21,7 @@ const TABS = [
 ];
 
 export default function AuthPage() {
-  const [tab, setTab] = useState<"login" | "register">("login");
+  const [tab, setTab] = useState<"login" | "register" | "forgot-password">("login");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const { session, user } = useSupabaseAuth();
@@ -124,86 +125,104 @@ export default function AuthPage() {
           ))}
         </div>
 
-        {/* Email/password form */}
-        <form onSubmit={handleEmailAuth} className="space-y-4">
-          <div>
-            <Input
-              placeholder="Email"
-              type="email"
-              autoComplete="email"
-              value={email}
-              disabled={loading}
-              onChange={e => setEmail(e.target.value)}
-            />
-          </div>
-          <div>
-            <Input
-              placeholder="Password"
-              type="password"
-              autoComplete={tab === "login" ? "current-password" : "new-password"}
-              value={password}
-              disabled={loading}
-              onChange={e => setPassword(e.target.value)}
-            />
-          </div>
-          {tab === "register" && (
-            <div className="flex gap-2">
-              <label className="flex items-center cursor-pointer">
-                <input
-                  type="radio"
-                  checked={userType === "contractor"}
-                  name="user_type"
-                  value="contractor"
-                  onChange={() => setUserType("contractor")}
+        {tab === "forgot-password" ? (
+          <ForgotPasswordForm onCancel={() => setTab("login")} />
+        ) : (
+          <>
+            {/* Email/password form */}
+            <form onSubmit={handleEmailAuth} className="space-y-4">
+              <div>
+                <Input
+                  placeholder="Email"
+                  type="email"
+                  autoComplete="email"
+                  value={email}
                   disabled={loading}
-                  className="mr-1"
+                  onChange={e => setEmail(e.target.value)}
                 />
-                Contractor
-              </label>
-              <label className="flex items-center cursor-pointer">
-                <input
-                  type="radio"
-                  checked={userType === "customer"}
-                  name="user_type"
-                  value="customer"
-                  onChange={() => setUserType("customer")}
+              </div>
+              <div>
+                <Input
+                  placeholder="Password"
+                  type="password"
+                  autoComplete={tab === "login" ? "current-password" : "new-password"}
+                  value={password}
                   disabled={loading}
-                  className="mr-1"
+                  onChange={e => setPassword(e.target.value)}
                 />
-                Customer
-              </label>
+              </div>
+              {tab === "register" && (
+                <div className="flex gap-2">
+                  <label className="flex items-center cursor-pointer">
+                    <input
+                      type="radio"
+                      checked={userType === "contractor"}
+                      name="user_type"
+                      value="contractor"
+                      onChange={() => setUserType("contractor")}
+                      disabled={loading}
+                      className="mr-1"
+                    />
+                    Contractor
+                  </label>
+                  <label className="flex items-center cursor-pointer">
+                    <input
+                      type="radio"
+                      checked={userType === "customer"}
+                      name="user_type"
+                      value="customer"
+                      onChange={() => setUserType("customer")}
+                      disabled={loading}
+                      className="mr-1"
+                    />
+                    Customer
+                  </label>
+                </div>
+              )}
+              {error && <div className="text-sm text-red-600">{error}</div>}
+              <Button
+                type="submit"
+                className="w-full bg-amber-500 hover:bg-amber-600"
+                disabled={loading}
+              >
+                {loading ? <Loader2 className="animate-spin w-4 h-4" /> : tab === "login" ? "Sign In" : "Sign Up"}
+              </Button>
+              
+              {tab === "login" && (
+                <div className="text-center">
+                  <button 
+                    type="button" 
+                    onClick={() => setTab("forgot-password")}
+                    className="text-sm text-amber-600 hover:text-amber-700"
+                  >
+                    Forgot your password?
+                  </button>
+                </div>
+              )}
+            </form>
+
+            <div className="text-center text-xs text-gray-400 mt-2">
+              {tab === "login" ? "or sign in with" : "or sign up with"}
             </div>
-          )}
-          {error && <div className="text-sm text-red-600">{error}</div>}
-          <Button
-            type="submit"
-            className="w-full bg-amber-500 hover:bg-amber-600"
-            disabled={loading}
-          >
-            {loading ? <Loader2 className="animate-spin w-4 h-4" /> : tab === "login" ? "Sign In" : "Sign Up"}
-          </Button>
-        </form>
 
-        <div className="text-center text-xs text-gray-400 mt-2">
-          {tab === "login" ? "or sign in with" : "or sign up with"}
-        </div>
-
-        {/* Social Login */}
-        <div className="flex flex-col gap-2">
-          {SOCIALS.map(({ name, key, icon }) => (
-            <Button
-              key={key}
-              variant="outline"
-              onClick={() => handleSocialAuth(key as any)}
-              disabled={loading}
-              className="w-full flex items-center justify-center gap-2"
-              type="button"
-            >
-              {icon}
-              <span>{name}</span>
-            </Button>
-          ))}
-        </div>
+            {/* Social Login */}
+            <div className="flex flex-col gap-2">
+              {SOCIALS.map(({ name, key, icon }) => (
+                <Button
+                  key={key}
+                  variant="outline"
+                  onClick={() => handleSocialAuth(key as any)}
+                  disabled={loading}
+                  className="w-full flex items-center justify-center gap-2"
+                  type="button"
+                >
+                  {icon}
+                  <span>{name}</span>
+                </Button>
+              ))}
+            </div>
+          </>
+        )}
 
         <Separator />
 
