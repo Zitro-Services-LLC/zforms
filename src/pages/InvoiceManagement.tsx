@@ -27,7 +27,9 @@ const InvoiceManagement: React.FC<InvoiceManagementProps> = ({ userType = 'contr
     handleRequestChanges,
     handleSelectCustomer,
     handleAddNewCustomer,
-    setShowChangeRequestModal
+    setShowChangeRequestModal,
+    isLoading,
+    error
   } = useInvoiceManagement(id, userType);
 
   return (
@@ -47,6 +49,8 @@ const InvoiceManagement: React.FC<InvoiceManagementProps> = ({ userType = 'contr
           onRequestChanges={() => setShowChangeRequestModal(true)}
           onSelectCustomer={userType === 'contractor' ? handleSelectCustomer : undefined}
           onAddNewCustomer={userType === 'contractor' ? handleAddNewCustomer : undefined}
+          isLoading={isLoading}
+          error={error}
         />
         
         <ChangeRequestModal

@@ -12,6 +12,7 @@ import InvoicePaymentOptions from './InvoicePaymentOptions';
 import InvoiceActions from './InvoiceActions';
 import type { InvoiceData, PartyInfo, PaymentMethod } from '@/types';
 import { useContractorData } from '@/hooks/useContractorData';
+import { Loader2 } from 'lucide-react';
 
 interface InvoiceDocumentProps {
   invoiceData: InvoiceData;
@@ -27,6 +28,8 @@ interface InvoiceDocumentProps {
   onRequestChanges: () => void;
   onSelectCustomer?: (customer: any) => void;
   onAddNewCustomer?: (customerData: any) => void;
+  isLoading?: boolean;
+  error?: any;
 }
 
 const InvoiceDocument: React.FC<InvoiceDocumentProps> = ({
@@ -42,9 +45,29 @@ const InvoiceDocument: React.FC<InvoiceDocumentProps> = ({
   onPaymentSubmit,
   onRequestChanges,
   onSelectCustomer,
-  onAddNewCustomer
+  onAddNewCustomer,
+  isLoading,
+  error
 }) => {
   const { contractorData } = useContractorData();
+
+  if (isLoading) {
+    return (
+      <div className="bg-white shadow-lg rounded-lg overflow-hidden p-10 flex flex-col items-center justify-center min-h-[300px]">
+        <Loader2 className="animate-spin h-8 w-8 text-amber-500 mb-4" />
+        <p className="text-gray-500">Loading invoice data...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-white shadow-lg rounded-lg overflow-hidden p-10 text-center">
+        <h3 className="text-red-500 text-lg font-medium mb-2">Error Loading Invoice</h3>
+        <p className="text-gray-500">{error.message || "Could not load invoice data. Please try again."}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white shadow-lg rounded-lg overflow-hidden">

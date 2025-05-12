@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Plus } from 'lucide-react';
+import { Plus, Loader2 } from 'lucide-react';
 import AppLayout from '../components/layouts/AppLayout';
 import { Button } from '../components/ui/button';
 import {
@@ -14,32 +14,13 @@ import {
 } from '../components/ui/table';
 import StatusBadge from '../components/shared/StatusBadge';
 import DownloadPdfButton from '../components/shared/DownloadPdfButton';
-
-const mockInvoices = [
-  {
-    id: 'INV-001',
-    customer: 'John Smith',
-    date: '2025-04-15',
-    amount: 2500.00,
-    status: 'submitted' as const,
-  },
-  {
-    id: 'INV-002',
-    customer: 'Sarah Johnson',
-    date: '2025-04-14',
-    amount: 1800.00,
-    status: 'paid' as const,
-  },
-  {
-    id: 'INV-003',
-    customer: 'Mike Brown',
-    date: '2025-04-13',
-    amount: 3200.00,
-    status: 'drafting' as const,
-  },
-];
+import { useInvoices } from '@/hooks/useInvoices';
+import { format } from 'date-fns';
 
 const InvoicesList = () => {
+  const { invoicesQuery } = useInvoices();
+  const { data: invoices, isLoading, error } = invoicesQuery;
+
   return (
     <AppLayout userType="contractor">
       <div className="container mx-auto p-6">
@@ -54,39 +35,61 @@ const InvoicesList = () => {
         </div>
 
         <div className="bg-white shadow-sm rounded-lg">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>ID</TableHead>
-                <TableHead>Customer</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {mockInvoices.map((invoice) => (
-                <TableRow key={invoice.id}>
-                  <TableCell>{invoice.id}</TableCell>
-                  <TableCell>{invoice.customer}</TableCell>
-                  <TableCell>{invoice.date}</TableCell>
-                  <TableCell>${invoice.amount.toFixed(2)}</TableCell>
-                  <TableCell>
-                    <StatusBadge status={invoice.status} />
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Button variant="outline" size="sm" asChild>
-                        <Link to={`/invoices/${invoice.id}`}>View</Link>
-                      </Button>
-                      <DownloadPdfButton documentType="invoice" documentId={invoice.id} />
-                    </div>
-                  </TableCell>
+          {isLoading ? (
+            <div className="p-8 flex justify-center items-center">
+              <Loader2 className="animate-spin h-6 w-6 text-amber-500 mr-2" />
+              <span>Loading invoices...</span>
+            </div>
+          ) : error ? (
+            <div className="p-8 text-center text-red-500">
+              Error loading invoices: {error instanceof Error ? error.message : 'Unknown error'}
+            </div>
+          ) : invoices?.length ? (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Invoice #</TableHead>
+                  <TableHead>Customer</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Amount</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {invoices.map((invoice) => (
+                  <TableRow key={invoice.id}>
+                    <TableCell>{invoice.invoice_number}</TableCell>
+                    <TableCell>
+                      {invoice.customer ? 
+                        `${invoice.customer.first_name} ${invoice.customer.last_name}` : 
+                        'No customer'
+                      }
+                    </TableCell>
+                    <TableCell>
+                      {invoice.issue_date ? format(new Date(invoice.issue_date), 'yyyy-MM-dd') : '-'}
+                    </TableCell>
+                    <TableCell>${Number(invoice.total).toFixed(2)}</TableCell>
+                    <TableCell>
+                      <StatusBadge status={invoice.status as any} />
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" asChild>
+                          <Link to={`/invoices/${invoice.id}`}>View</Link>
+                        </Button>
+                        <DownloadPdfButton documentType="invoice" documentId={invoice.id} />
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <div className="p-8 text-center text-gray-500">
+              No invoices found. Click "New Invoice" to create one.
+            </div>
+          )}
         </div>
       </div>
     </AppLayout>

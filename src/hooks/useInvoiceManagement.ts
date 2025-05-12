@@ -2,23 +2,67 @@
 import { useState } from 'react';
 import { useToast } from "@/components/ui/use-toast";
 import { Status } from '@/components/shared/StatusBadge';
-import type { PartyInfo, PaymentMethod, InvoiceData } from '@/types';
+import type { PartyInfo, PaymentMethod } from '@/types';
+import { useInvoice, useInvoices } from './useInvoices';
+import { mapInvoiceToUI } from '@/utils/invoiceUtils';
+import { useContractorData } from './useContractorData';
 import { mockInvoiceData, mockCustomerPaymentMethods } from '@/mock/invoiceData';
 
 export function useInvoiceManagement(invoiceId?: string, initialUserType: 'contractor' | 'customer' = 'contractor') {
   const { toast } = useToast();
-  const [status, setStatus] = useState<Status>(mockInvoiceData.status);
+  const [status, setStatus] = useState<Status>('loading');
   const [showPaymentOptions, setShowPaymentOptions] = useState(false);
   const [showChangeRequestModal, setShowChangeRequestModal] = useState(false);
   const [customer, setCustomer] = useState<PartyInfo>(mockInvoiceData.customer);
   const [customerPaymentMethods, setCustomerPaymentMethods] = useState<PaymentMethod[]>(mockCustomerPaymentMethods);
   
+  // Fetch invoice data from Supabase
+  const { data: invoiceData, isLoading, error } = useInvoice(invoiceId);
+  const { markPaidMutation, recordPaymentMutation } = useInvoices();
+  const { contractorData } = useContractorData();
+  
+  // Update status when invoice data changes
+  useState(() => {
+    if (isLoading) {
+      setStatus('loading');
+    } else if (error) {
+      setStatus('error');
+      toast({
+        title: "Error loading invoice",
+        description: "Could not load invoice details.",
+        variant: "destructive"
+      });
+    } else if (invoiceData) {
+      setStatus(invoiceData.status as Status);
+      
+      // Update customer info if available
+      if (invoiceData.customer) {
+        setCustomer({
+          name: `${invoiceData.customer.first_name} ${invoiceData.customer.last_name}`,
+          address: invoiceData.customer.billing_address || '',
+          phone: invoiceData.customer.phone || '',
+          email: invoiceData.customer.email,
+          id: invoiceData.customer.id
+        });
+      }
+    } else {
+      // Fallback to mock data for now
+      setStatus(mockInvoiceData.status);
+    }
+  }, [invoiceData, isLoading, error, toast]);
+
   const handleMarkPaid = () => {
-    setStatus('paid');
-    toast({
-      title: "Invoice Marked as Paid",
-      description: `Invoice #${invoiceId} has been marked as paid.`
-    });
+    if (invoiceId) {
+      markPaidMutation.mutate(invoiceId, {
+        onSuccess: () => {
+          setStatus('paid');
+          toast({
+            title: "Invoice Marked as Paid",
+            description: `Invoice #${invoiceId} has been marked as paid.`
+          });
+        }
+      });
+    }
   };
 
   const handleMakePayment = () => {
@@ -26,12 +70,24 @@ export function useInvoiceManagement(invoiceId?: string, initialUserType: 'contr
   };
 
   const handlePaymentSubmit = (method: string) => {
-    setStatus('paid');
-    toast({
-      title: "Payment Successful",
-      description: `Your payment for invoice #${invoiceId} via ${method} has been processed.`
+    if (!invoiceId) return;
+    
+    recordPaymentMutation.mutate({
+      invoice_id: invoiceId,
+      payment_method: method,
+      amount: invoiceData?.balance_due || 0,
+      payment_date: new Date().toISOString().split('T')[0],
+      notes: `Payment made via ${method}`
+    }, {
+      onSuccess: () => {
+        setStatus('paid');
+        toast({
+          title: "Payment Successful",
+          description: `Your payment for invoice #${invoiceId} via ${method} has been processed.`
+        });
+        setShowPaymentOptions(false);
+      }
     });
-    setShowPaymentOptions(false);
   };
   
   const handleRequestChanges = (comments: string) => {
@@ -65,10 +121,15 @@ export function useInvoiceManagement(invoiceId?: string, initialUserType: 'contr
   };
   
   // Calculate total amount paid
-  const totalAmountPaid = mockInvoiceData.paymentHistory.reduce((sum, item) => sum + item.amount, 0);
+  const totalAmountPaid = invoiceData?.payments?.reduce(
+    (sum, payment) => sum + payment.amount, 0
+  ) || 0;
+
+  // For now, return the mock data for UI rendering until all components are updated
+  const uiInvoiceData = invoiceData ? mapInvoiceToUI(invoiceData, contractorData) : mockInvoiceData;
   
   return {
-    invoiceData: mockInvoiceData,
+    invoiceData: uiInvoiceData,
     status,
     showPaymentOptions,
     showChangeRequestModal,
@@ -81,6 +142,8 @@ export function useInvoiceManagement(invoiceId?: string, initialUserType: 'contr
     handleRequestChanges,
     handleSelectCustomer,
     handleAddNewCustomer,
-    setShowChangeRequestModal
+    setShowChangeRequestModal,
+    isLoading,
+    error
   };
 }
