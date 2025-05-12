@@ -23,7 +23,7 @@ export type {
   getLicenseStatus
 } from './license';
 
-// Status export from shared component
+// Status is a fundamental type used throughout the application
 export { type Status } from '@/components/shared/StatusBadge';
 
 // Export database types without conflicts

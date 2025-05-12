@@ -5,7 +5,6 @@ import AppLayout from '../components/layouts/AppLayout';
 import InvoiceDocument from '../components/invoice/InvoiceDocument';
 import ChangeRequestModal from '../components/shared/ChangeRequestModal';
 import { useInvoiceManagement } from '@/hooks/useInvoiceManagement';
-import { Status } from '@/types';
 
 interface InvoiceManagementProps {
   userType?: 'contractor' | 'customer';
@@ -37,7 +36,6 @@ const InvoiceManagement: React.FC<InvoiceManagementProps> = ({ userType = 'contr
       <div className="container mx-auto max-w-4xl">
         <InvoiceDocument
           invoiceData={invoiceData}
-          status={invoiceData.status}
           userType={userType}
           customer={customer}
           totalAmountPaid={totalAmountPaid}

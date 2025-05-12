@@ -1,4 +1,3 @@
-
 import { Status } from "../components/shared/StatusBadge";
 import type { InvoiceData, InvoiceLineItem, PaymentMethod } from "@/types";
 
@@ -7,7 +6,7 @@ export const mockInvoiceData: InvoiceData = {
   jobId: 'JOB-00123',
   estimateId: 'E-101',
   contractId: 'C-101',
-  status: 'submitted' as Status,
+  status: 'submitted',
   date: '2023-04-20',
   dueDate: '2023-05-05',
   contractor: {

@@ -1,6 +1,8 @@
 
 import React from 'react';
 import { Status } from '../shared/StatusBadge';
+import { Button } from "@/components/ui/button";
+import { CheckCircle, Send, FileEdit, CreditCard } from "lucide-react";
 
 interface InvoiceActionsProps {
   userType: 'contractor' | 'customer';
@@ -24,22 +26,26 @@ const InvoiceActions: React.FC<InvoiceActionsProps> = ({
       {userType === 'contractor' ? (
         <div className="flex justify-end space-x-4">
           {status === 'drafting' && (
-            <button className="btn-amber">
+            <Button variant="default" className="bg-amber-500 hover:bg-amber-600">
+              <Send className="mr-2 h-4 w-4" />
               Submit to Customer
-            </button>
+            </Button>
           )}
           {status === 'submitted' && (
-            <button 
+            <Button 
               onClick={onMarkPaid}
-              className="btn-amber"
+              variant="default"
+              className="bg-amber-500 hover:bg-amber-600"
             >
+              <CheckCircle className="mr-2 h-4 w-4" />
               Mark as Paid
-            </button>
+            </Button>
           )}
           {status !== 'paid' && status !== 'drafting' && (
-            <button className="px-4 py-2 bg-white border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+            <Button variant="outline">
+              <FileEdit className="mr-2 h-4 w-4" />
               Revise Invoice
-            </button>
+            </Button>
           )}
         </div>
       ) : (
@@ -47,19 +53,21 @@ const InvoiceActions: React.FC<InvoiceActionsProps> = ({
           {status === 'submitted' && !showPaymentOptions && (
             <>
               {onRequestChanges && (
-                <button 
+                <Button 
                   onClick={onRequestChanges}
-                  className="px-4 py-2 bg-white border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                  variant="outline"
                 >
                   Request Changes
-                </button>
+                </Button>
               )}
-              <button 
+              <Button 
                 onClick={onMakePayment}
-                className="btn-amber"
+                variant="default"
+                className="bg-amber-500 hover:bg-amber-600"
               >
+                <CreditCard className="mr-2 h-4 w-4" />
                 Make Payment
-              </button>
+              </Button>
             </>
           )}
         </div>

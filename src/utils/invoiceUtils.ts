@@ -1,4 +1,3 @@
-
 import { InvoiceData, InvoiceWithDetails } from "@/services/invoice";
 import { PartyInfo, Status } from "@/types";
 
@@ -52,12 +51,13 @@ export function mapInvoiceToUI(
     creditCard: "Visa, Mastercard, American Express",
   };
 
-  // Map invoice status
-  let status: Status = 'drafting';
+  // Map invoice status with proper typing
+  let status: Status;
   if (invoiceData.status === 'submitted') status = 'submitted';
   else if (invoiceData.status === 'paid') status = 'paid';
   else if (invoiceData.status === 'draft') status = 'drafting';
   else if (invoiceData.status === 'needs-update') status = 'needs-update';
+  else status = 'drafting';
 
   return {
     id: invoiceData.id,

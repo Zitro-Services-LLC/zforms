@@ -16,7 +16,6 @@ import { Loader2 } from 'lucide-react';
 
 interface InvoiceDocumentProps {
   invoiceData: InvoiceData;
-  status: Status;
   userType: 'contractor' | 'customer';
   customer: PartyInfo;
   totalAmountPaid: number;
@@ -34,7 +33,6 @@ interface InvoiceDocumentProps {
 
 const InvoiceDocument: React.FC<InvoiceDocumentProps> = ({
   invoiceData,
-  status,
   userType,
   customer,
   totalAmountPaid,
@@ -76,7 +74,7 @@ const InvoiceDocument: React.FC<InvoiceDocumentProps> = ({
         jobId={invoiceData.jobId}
         date={invoiceData.date}
         dueDate={invoiceData.dueDate}
-        status={status}
+        status={invoiceData.status}
         companyLogo={contractorData?.logo_url}
       />
       
@@ -101,7 +99,7 @@ const InvoiceDocument: React.FC<InvoiceDocumentProps> = ({
       
       <InvoicePaymentHistory
         payments={invoiceData.paymentHistory}
-        status={status}
+        status={invoiceData.status}
         balanceDue={invoiceData.balanceDue}
       />
       
@@ -109,12 +107,12 @@ const InvoiceDocument: React.FC<InvoiceDocumentProps> = ({
         subtotal={invoiceData.subtotal}
         tax={invoiceData.tax}
         total={invoiceData.total}
-        status={status}
+        status={invoiceData.status}
         amountPaid={totalAmountPaid}
         balanceDue={invoiceData.balanceDue}
       />
 
-      {userType === 'customer' && status !== 'paid' && showPaymentOptions && (
+      {userType === 'customer' && invoiceData.status !== 'paid' && showPaymentOptions && (
         <InvoicePaymentOptions
           balanceDue={invoiceData.balanceDue}
           bankTransfer={invoiceData.paymentInstructions.bankTransfer}
@@ -125,7 +123,7 @@ const InvoiceDocument: React.FC<InvoiceDocumentProps> = ({
 
       <InvoiceActions
         userType={userType}
-        status={status}
+        status={invoiceData.status}
         onMarkPaid={onMarkPaid}
         onMakePayment={onMakePayment}
         onRequestChanges={onRequestChanges}
