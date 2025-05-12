@@ -2,6 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { NotificationBell } from '../notifications/NotificationBell';
+import LogoutButton from '../auth/LogoutButton';
 
 interface AppHeaderProps {
   sidebarCollapsed?: boolean;
@@ -39,9 +40,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({ sidebarCollapsed = false }) => {
             {/* User dropdown menu would be here */}
           </div>
           
-          <Link to="/logout" className="text-sm text-gray-500 hover:text-amber-600">
-            Logout
-          </Link>
+          <LogoutButton />
         </div>
       </div>
     </header>
