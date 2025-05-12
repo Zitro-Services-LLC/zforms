@@ -23,5 +23,8 @@ export type {
   getLicenseStatus
 } from './license';
 
+// Status export from shared component
+export { type Status } from '@/components/shared/StatusBadge';
+
 // Export database types without conflicts
 export * from './database.d';

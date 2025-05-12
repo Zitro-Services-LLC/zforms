@@ -1,7 +1,6 @@
 
 import { useState } from 'react';
 import { useToast } from "@/components/ui/use-toast";
-import { Status } from '@/components/shared/StatusBadge';
 import type { PartyInfo, PaymentMethod } from '@/types';
 import { useInvoice, useInvoices } from './useInvoices';
 import { mapInvoiceToUI } from '@/utils/invoiceUtils';
@@ -10,31 +9,19 @@ import { mockInvoiceData, mockCustomerPaymentMethods } from '@/mock/invoiceData'
 
 export function useInvoiceManagement(invoiceId?: string, initialUserType: 'contractor' | 'customer' = 'contractor') {
   const { toast } = useToast();
-  const [status, setStatus] = useState<Status>('loading');
   const [showPaymentOptions, setShowPaymentOptions] = useState(false);
   const [showChangeRequestModal, setShowChangeRequestModal] = useState(false);
   const [customer, setCustomer] = useState<PartyInfo>(mockInvoiceData.customer);
   const [customerPaymentMethods, setCustomerPaymentMethods] = useState<PaymentMethod[]>(mockCustomerPaymentMethods);
   
-  // Fetch invoice data from Supabase
+  // Fetch invoice data from Supabase using React Query
   const { data: invoiceData, isLoading, error } = useInvoice(invoiceId);
   const { markPaidMutation, recordPaymentMutation } = useInvoices();
   const { contractorData } = useContractorData();
   
-  // Update status when invoice data changes
+  // Update customer when invoice data changes
   useState(() => {
-    if (isLoading) {
-      setStatus('loading');
-    } else if (error) {
-      setStatus('error');
-      toast({
-        title: "Error loading invoice",
-        description: "Could not load invoice details.",
-        variant: "destructive"
-      });
-    } else if (invoiceData) {
-      setStatus(invoiceData.status as Status);
-      
+    if (!isLoading && !error && invoiceData) {
       // Update customer info if available
       if (invoiceData.customer) {
         setCustomer({
@@ -45,17 +32,13 @@ export function useInvoiceManagement(invoiceId?: string, initialUserType: 'contr
           id: invoiceData.customer.id
         });
       }
-    } else {
-      // Fallback to mock data for now
-      setStatus(mockInvoiceData.status);
     }
-  }, [invoiceData, isLoading, error, toast]);
+  }, [invoiceData, isLoading, error]);
 
   const handleMarkPaid = () => {
     if (invoiceId) {
       markPaidMutation.mutate(invoiceId, {
         onSuccess: () => {
-          setStatus('paid');
           toast({
             title: "Invoice Marked as Paid",
             description: `Invoice #${invoiceId} has been marked as paid.`
@@ -80,7 +63,6 @@ export function useInvoiceManagement(invoiceId?: string, initialUserType: 'contr
       notes: `Payment made via ${method}`
     }, {
       onSuccess: () => {
-        setStatus('paid');
         toast({
           title: "Payment Successful",
           description: `Your payment for invoice #${invoiceId} via ${method} has been processed.`
@@ -91,7 +73,6 @@ export function useInvoiceManagement(invoiceId?: string, initialUserType: 'contr
   };
   
   const handleRequestChanges = (comments: string) => {
-    setStatus('needs-update');
     setShowChangeRequestModal(false);
     toast({
       title: "Changes Requested",
@@ -127,6 +108,9 @@ export function useInvoiceManagement(invoiceId?: string, initialUserType: 'contr
 
   // For now, return the mock data for UI rendering until all components are updated
   const uiInvoiceData = invoiceData ? mapInvoiceToUI(invoiceData, contractorData) : mockInvoiceData;
+  
+  // Get status directly from invoiceData
+  const status = invoiceData?.status || mockInvoiceData.status;
   
   return {
     invoiceData: uiInvoiceData,
