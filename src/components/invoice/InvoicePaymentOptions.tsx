@@ -16,7 +16,7 @@ interface BankTransfer {
 interface InvoicePaymentOptionsProps {
   balanceDue: number;
   bankTransfer: BankTransfer;
-  onPaymentSubmit: (method: string) => void;
+  onPaymentSubmit: (amount: number, method: string, date: string) => void;
   customerPaymentMethods?: PaymentMethod[];
 }
 
@@ -33,7 +33,8 @@ const InvoicePaymentOptions: React.FC<InvoicePaymentOptionsProps> = ({
   
   const handleSubmit = () => {
     if (!selectedPaymentMethod) return;
-    onPaymentSubmit(selectedPaymentMethod);
+    const currentDate = new Date().toISOString().split('T')[0];
+    onPaymentSubmit(balanceDue, selectedPaymentMethod, currentDate);
   };
   
   return (

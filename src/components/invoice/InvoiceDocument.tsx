@@ -82,12 +82,12 @@ const InvoiceDocument: React.FC<InvoiceDocumentProps> = ({
         jobId={invoiceData.jobId}
         status={invoiceData.status}
         date={invoiceData.date}
+        dueDate={invoiceData.dueDate}
       />
       
       <InvoiceReference 
-        invoiceNumber={invoiceData.id} 
-        estimateNumber={invoiceData.estimateId} 
-        contractNumber={invoiceData.contractId}
+        estimateId={invoiceData.estimateId} 
+        contractId={invoiceData.contractId}
       />
       
       {userType === 'contractor' && !customer && onSelectCustomer && onAddNewCustomer && (
@@ -102,18 +102,21 @@ const InvoiceDocument: React.FC<InvoiceDocumentProps> = ({
         customer={customer || invoiceData.customer}
       />
       
-      <InvoiceLineItems items={invoiceData.lineItems} />
+      <InvoiceLineItems lineItems={invoiceData.lineItems} />
       
       <InvoiceTotals
         subtotal={invoiceData.subtotal}
         tax={invoiceData.tax}
         total={invoiceData.total}
+        status={invoiceData.status}
+        amountPaid={totalAmountPaid}
+        balanceDue={invoiceData.balanceDue}
       />
       
       {invoiceData.paymentHistory && invoiceData.paymentHistory.length > 0 && (
         <InvoicePaymentHistory 
           payments={invoiceData.paymentHistory} 
-          total={invoiceData.total}
+          status={invoiceData.status}
           balanceDue={invoiceData.balanceDue}
         />
       )}
@@ -121,9 +124,9 @@ const InvoiceDocument: React.FC<InvoiceDocumentProps> = ({
       {showPaymentOptions && onPaymentSubmit && (
         <InvoicePaymentOptions
           balanceDue={invoiceData.balanceDue}
-          paymentInstructions={invoiceData.paymentInstructions}
-          paymentMethods={customerPaymentMethods}
-          onSubmit={onPaymentSubmit}
+          bankTransfer={invoiceData.paymentInstructions.bankTransfer}
+          onPaymentSubmit={onPaymentSubmit}
+          customerPaymentMethods={customerPaymentMethods}
         />
       )}
       

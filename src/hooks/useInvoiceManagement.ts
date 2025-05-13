@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import type { PartyInfo, PaymentMethod } from '@/types';
 import { useInvoice, useInvoices } from './useInvoices';
 import { mapInvoiceToUI } from '@/utils/invoiceUtils';
@@ -52,14 +52,14 @@ export function useInvoiceManagement(invoiceId?: string, initialUserType: 'contr
     setShowPaymentOptions(true);
   };
 
-  const handlePaymentSubmit = (method: string) => {
+  const handlePaymentSubmit = (amount: number, method: string, date: string) => {
     if (!invoiceId) return;
     
     recordPaymentMutation.mutate({
       invoice_id: invoiceId,
       payment_method: method,
-      amount: invoiceData?.balance_due || 0,
-      payment_date: new Date().toISOString().split('T')[0],
+      amount: amount,
+      payment_date: date,
       notes: `Payment made via ${method}`
     }, {
       onSuccess: () => {

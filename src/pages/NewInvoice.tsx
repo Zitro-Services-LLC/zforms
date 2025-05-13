@@ -103,7 +103,7 @@ const NewInvoice = () => {
       items: lineItems,
       tax_rate: taxRate
     }, {
-      onSuccess: (data) => {
+      onSuccess: (data: { id: string }) => {
         navigate(`/invoices/${data.id}`);
       }
     });
