@@ -5,14 +5,13 @@ import type { PartyInfo, PaymentMethod } from '@/types';
 import { useInvoice, useInvoices } from './useInvoices';
 import { mapInvoiceToUI } from '@/utils/invoiceUtils';
 import { useContractorData } from './useContractorData';
-import { mockInvoiceData, mockCustomerPaymentMethods } from '@/mock/invoiceData';
 
 export function useInvoiceManagement(invoiceId?: string, initialUserType: 'contractor' | 'customer' = 'contractor') {
   const { toast } = useToast();
   const [showPaymentOptions, setShowPaymentOptions] = useState(false);
   const [showChangeRequestModal, setShowChangeRequestModal] = useState(false);
-  const [customer, setCustomer] = useState<PartyInfo>(mockInvoiceData.customer);
-  const [customerPaymentMethods, setCustomerPaymentMethods] = useState<PaymentMethod[]>(mockCustomerPaymentMethods);
+  const [customer, setCustomer] = useState<PartyInfo | null>(null);
+  const [customerPaymentMethods, setCustomerPaymentMethods] = useState<PaymentMethod[]>([]);
   
   // Fetch invoice data from Supabase using React Query
   const { data: invoiceData, isLoading, error } = useInvoice(invoiceId);
@@ -106,8 +105,8 @@ export function useInvoiceManagement(invoiceId?: string, initialUserType: 'contr
     (sum, payment) => sum + payment.amount, 0
   ) || 0;
 
-  // For now, return the mock data for UI rendering until all components are updated
-  const uiInvoiceData = invoiceData ? mapInvoiceToUI(invoiceData, contractorData) : mockInvoiceData;
+  // Map the data for UI rendering
+  const uiInvoiceData = invoiceData ? mapInvoiceToUI(invoiceData, contractorData) : null;
   
   return {
     invoiceData: uiInvoiceData,
