@@ -28,7 +28,7 @@ export function useInvoices() {
   const createMutation = useMutation({
     mutationFn: (data: InvoiceFormData) => {
       if (!userId) throw new Error('User not authenticated');
-      return createInvoice({ ...data, user_id: userId });
+      return createInvoice(data, userId);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['invoices'] });

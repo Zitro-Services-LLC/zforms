@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client'
 import { InvoiceFormData, PaymentFormData } from './types';
 
@@ -39,7 +38,7 @@ export async function deleteInvoice(invoiceId: string): Promise<void> {
 }
 
 // Create new invoice
-export async function createInvoice(data: InvoiceFormData): Promise<any> {
+export async function createInvoice(data: InvoiceFormData, userId: string): Promise<any> {
   // Calculate tax amount from rate
   const subtotal = data.items.reduce((sum, item) => sum + Number(item.amount), 0);
   const taxAmount = data.tax_rate ? subtotal * (Number(data.tax_rate) / 100) : 0;
@@ -49,7 +48,7 @@ export async function createInvoice(data: InvoiceFormData): Promise<any> {
   const { data: invoice, error } = await supabase
     .from('invoices')
     .insert({
-      user_id: data.user_id,
+      user_id: userId,
       customer_id: data.customer_id,
       contract_id: data.contract_id,
       invoice_number: `INV-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`,
