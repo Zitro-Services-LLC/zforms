@@ -18,12 +18,15 @@ export async function getInvoices(userId: string | undefined): Promise<Invoice[]
     .select(`
       *,
       customer:customers(
+        id,
         first_name,
         last_name,
         email,
         phone,
         billing_address
-      )
+      ),
+      items:invoice_items(*),
+      payments:invoice_payments(*)
     `)
     .eq('user_id', userId)
     .order('created_at', { ascending: false });
@@ -35,7 +38,7 @@ export async function getInvoices(userId: string | undefined): Promise<Invoice[]
 
   console.log('Fetched invoices:', data);
   
-  return data;
+  return data as Invoice[];
 }
 
 /**
@@ -61,7 +64,9 @@ export async function getInvoiceById(invoiceId: string, userId: string | undefin
         phone,
         billing_address,
         property_address
-      )
+      ),
+      items:invoice_items(*),
+      payments:invoice_payments(*)
     `)
     .eq('id', invoiceId)
     .eq('user_id', userId)
@@ -79,11 +84,12 @@ export async function getInvoiceById(invoiceId: string, userId: string | undefin
 
   console.log('Fetched invoice details:', data);
   
-  return data;
+  return data as Invoice;
 }
 
 /**
  * Get all invoice items for an invoice
+ * (Keeping this for cases where we need to fetch items separately)
  */
 export async function getInvoiceItems(invoiceId: string) {
   const { data, error } = await supabase
@@ -98,6 +104,7 @@ export async function getInvoiceItems(invoiceId: string) {
 
 /**
  * Get all invoice payments for an invoice
+ * (Keeping this for cases where we need to fetch payments separately)
  */
 export async function getInvoicePayments(invoiceId: string) {
   const { data, error } = await supabase
