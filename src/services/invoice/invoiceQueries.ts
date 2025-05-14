@@ -1,43 +1,84 @@
-
 import { supabase } from '@/integrations/supabase/client';
-import { InvoiceWithDetails } from './types';
+import { Invoice } from './types';
 
 /**
  * Get all invoices for a user with related customer, items, and payments
  */
-export async function getInvoices(userId: string) {
+export async function getInvoices(userId: string | undefined): Promise<Invoice[]> {
+  if (!userId) {
+    console.log('No user ID provided to getInvoices');
+    return [];
+  }
+  
+  console.log('Fetching invoices for user:', userId);
+  
   const { data, error } = await supabase
     .from('invoices')
     .select(`
       *,
-      customer:customers(id, first_name, last_name, email, phone, billing_address),
-      items:invoice_items(*),
-      payments:invoice_payments(*)
+      customer:customers(
+        first_name,
+        last_name,
+        email,
+        phone,
+        billing_address
+      )
     `)
     .eq('user_id', userId)
     .order('created_at', { ascending: false });
 
-  if (error) throw error;
-  return data as InvoiceWithDetails[];
+  if (error) {
+    console.error('Error fetching invoices:', error);
+    throw error;
+  }
+
+  console.log('Fetched invoices:', data);
+  
+  return data;
 }
 
 /**
  * Get a single invoice by ID with related customer, items, and payments
  */
-export async function getInvoiceById(id: string) {
+export async function getInvoiceById(invoiceId: string, userId: string | undefined): Promise<Invoice | null> {
+  if (!invoiceId || !userId) {
+    console.log('No invoice ID or user ID provided to getInvoiceById');
+    return null;
+  }
+  
+  console.log(`Fetching invoice ID ${invoiceId} for user ${userId}`);
+  
   const { data, error } = await supabase
     .from('invoices')
     .select(`
       *,
-      customer:customers(id, first_name, last_name, email, phone, billing_address),
-      items:invoice_items(*),
-      payments:invoice_payments(*)
+      customer:customers(
+        id,
+        first_name,
+        last_name,
+        email,
+        phone,
+        billing_address,
+        property_address
+      )
     `)
-    .eq('id', id)
-    .single();
+    .eq('id', invoiceId)
+    .eq('user_id', userId)
+    .maybeSingle();
 
-  if (error) throw error;
-  return data as InvoiceWithDetails;
+  if (error) {
+    console.error('Error fetching invoice details:', error);
+    throw error;
+  }
+
+  if (!data) {
+    console.log(`No invoice found with ID ${invoiceId}`);
+    return null;
+  }
+
+  console.log('Fetched invoice details:', data);
+  
+  return data;
 }
 
 /**

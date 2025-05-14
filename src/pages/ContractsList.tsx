@@ -16,9 +16,9 @@ import {
 import StatusBadge from '../components/shared/StatusBadge';
 import DownloadPdfButton from '../components/shared/DownloadPdfButton';
 import DeleteConfirmDialog from '@/components/shared/DeleteConfirmDialog';
-import { getContracts, deleteContract } from '@/services/contractService';
+import { getContracts, deleteContract } from '@/services/contract';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 
 const ContractsList = () => {
   const { user } = useSupabaseAuth();
