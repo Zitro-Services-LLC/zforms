@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AppLayout from '../components/layouts/AppLayout';
 import CustomerSelection from '../components/shared/CustomerSelection';
-import InvoiceLineItems from '../components/invoice/InvoiceLineItems';
 import { Button } from '../components/ui/button';
 import { Textarea } from '../components/ui/textarea';
 import { Label } from '../components/ui/label';
@@ -12,6 +11,7 @@ import { useInvoices } from '@/hooks/useInvoices';
 import { calculateInvoiceTotal } from '@/utils/invoiceUtils';
 import { format } from 'date-fns';
 import { toast } from '@/hooks/use-toast';
+import type { Customer } from '@/types/customer';
 
 const NewInvoice = () => {
   const navigate = useNavigate();
@@ -31,8 +31,8 @@ const NewInvoice = () => {
   const tax = subtotal * (taxRate / 100);
   const total = subtotal + tax;
 
-  const handleCustomerSelect = (customerData: any) => {
-    setCustomer(customerData.id);
+  const handleCustomerSelect = (customerData: Customer | null) => {
+    setCustomer(customerData?.id || null);
   };
 
   const handleAddNewCustomer = (customerData: any) => {
