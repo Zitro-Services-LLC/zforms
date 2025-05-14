@@ -1,5 +1,6 @@
+
 import { supabase } from '@/integrations/supabase/client';
-import { Invoice } from './types';
+import { InvoiceWithDetails as Invoice } from './types';
 
 /**
  * Get all invoices for a user with related customer, items, and payments

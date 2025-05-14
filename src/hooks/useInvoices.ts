@@ -131,9 +131,12 @@ export function useInvoices() {
 }
 
 export function useInvoice(id?: string) {
+  const { user } = useSupabaseAuth();
+  const userId = user?.id;
+  
   return useQuery({
-    queryKey: ['invoice', id],
-    queryFn: () => id ? getInvoiceById(id) : null,
-    enabled: !!id,
+    queryKey: ['invoice', id, userId],
+    queryFn: () => id ? getInvoiceById(id, userId) : null,
+    enabled: !!id && !!userId,
   });
 }
