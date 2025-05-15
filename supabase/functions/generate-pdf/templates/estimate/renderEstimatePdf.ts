@@ -10,6 +10,7 @@ import {
   addFooter,
   DOCUMENT_COLORS
 } from "../../pdfHelpers.ts";
+import { addJobDescriptionSection } from "./sections/jobDescriptionSection.ts";
 import { EstimateData } from "./fetchEstimateData.ts";
 
 /**
@@ -61,27 +62,15 @@ export async function renderEstimatePdf(estimateData: EstimateData): Promise<Uin
     estimateData.customer
   );
   
-  // Job Description if available
-  if (estimateData.job_description) {
-    currentY -= 20;
-    page.drawText("JOB DESCRIPTION", {
-      x: 50,
-      y: currentY,
-      size: 12,
-      font: boldFont,
-    });
-    
-    currentY -= 20;
-    page.drawText(estimateData.job_description, {
-      x: 50,
-      y: currentY,
-      size: 10,
-      font: font,
-      maxWidth: width - 100,
-    });
-    
-    currentY -= 40;
-  }
+  // Add job description section if available
+  currentY = addJobDescriptionSection(
+    page,
+    currentY,
+    width,
+    boldFont,
+    font,
+    estimateData.job_description
+  );
   
   // Line items
   addLineItemsHeader(page, currentY, width, boldFont);
