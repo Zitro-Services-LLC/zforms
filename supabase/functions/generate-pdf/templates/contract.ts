@@ -1,5 +1,12 @@
 
 import { PDFDocument, rgb, StandardFonts } from "https://esm.sh/pdf-lib@1.17.1";
+import { 
+  addDocumentHeader, 
+  addCompanyInfo, 
+  addCustomerInfo,
+  addFooter,
+  DOCUMENT_COLORS
+} from "../pdfHelpers.ts";
 
 export async function generateContractPDF(supabase, contractId, userId) {
   console.log(`Generating PDF for contract ${contractId}`);
@@ -43,126 +50,59 @@ export async function generateContractPDF(supabase, contractId, userId) {
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
   
-  // Header
-  page.drawText('CONTRACT', {
-    x: width - 150,
-    y: height - 50,
-    size: 24,
-    font: boldFont,
-    color: rgb(0.2, 0.3, 0.7),
-  });
-  
-  // Contract number and date
-  page.drawText(`Contract #: ${contract.display_id || contractId.substring(0, 8)}`, {
-    x: width - 200,
-    y: height - 80,
-    size: 10,
-    font: font,
-  });
-  
+  // Generate dates array
+  let dates = [];
   if (contract.start_date) {
-    page.drawText(`Start Date: ${new Date(contract.start_date).toLocaleDateString()}`, {
-      x: width - 200,
-      y: height - 95,
-      size: 10,
-      font: font,
+    dates.push({ 
+      label: 'Start Date', 
+      value: new Date(contract.start_date).toLocaleDateString() 
     });
   }
   
   if (contract.end_date) {
-    page.drawText(`End Date: ${new Date(contract.end_date).toLocaleDateString()}`, {
-      x: width - 200,
-      y: height - 110,
-      size: 10,
-      font: font,
+    dates.push({ 
+      label: 'End Date', 
+      value: new Date(contract.end_date).toLocaleDateString() 
     });
   }
   
-  // Company information
-  const companyName = contractor?.company_name || "Company Name";
-  page.drawText(companyName, {
-    x: 50,
-    y: height - 50,
-    size: 14,
-    font: boldFont,
-  });
+  // Add contract header
+  await addDocumentHeader(
+    page,
+    width,
+    height,
+    boldFont,
+    font,
+    'CONTRACT',
+    contract.display_id || contractId.substring(0, 8),
+    dates,
+    DOCUMENT_COLORS.contract
+  );
   
-  if (contractor?.company_address) {
-    page.drawText(contractor.company_address, {
-      x: 50,
-      y: height - 70,
-      size: 10,
-      font: font,
-    });
-  }
+  // Add company information
+  addCompanyInfo(
+    page,
+    height,
+    boldFont,
+    font,
+    {
+      name: contractor?.company_name || "Company Name",
+      address: contractor?.company_address,
+      phone: contractor?.company_phone,
+      email: contractor?.company_email
+    }
+  );
   
-  if (contractor?.company_phone) {
-    page.drawText(`Tel: ${contractor.company_phone}`, {
-      x: 50,
-      y: height - 85,
-      size: 10,
-      font: font,
-    });
-  }
-  
-  if (contractor?.company_email) {
-    page.drawText(`Email: ${contractor.company_email}`, {
-      x: 50,
-      y: height - 100,
-      size: 10,
-      font: font,
-    });
-  }
-  
-  // Customer information
-  page.drawText("CUSTOMER", {
-    x: 50,
-    y: height - 140,
-    size: 12,
-    font: boldFont,
-  });
-  
+  // Add customer information
   if (contract.customer) {
-    page.drawText(`${contract.customer.first_name} ${contract.customer.last_name}`, {
-      x: 50,
-      y: height - 160,
-      size: 10,
-      font: font,
-    });
-    
-    if (contract.customer.property_address) {
-      page.drawText("Property Address:", {
-        x: 50,
-        y: height - 175,
-        size: 10,
-        font: boldFont,
-      });
-      
-      page.drawText(contract.customer.property_address, {
-        x: 50,
-        y: height - 190,
-        size: 10,
-        font: font,
-      });
-    }
-    
-    if (contract.customer.email) {
-      page.drawText(`Email: ${contract.customer.email}`, {
-        x: 50,
-        y: height - 210,
-        size: 10,
-        font: font,
-      });
-    }
-    
-    if (contract.customer.phone) {
-      page.drawText(`Phone: ${contract.customer.phone}`, {
-        x: 50,
-        y: height - 225,
-        size: 10,
-        font: font,
-      });
-    }
+    addCustomerInfo(
+      page,
+      height,
+      boldFont,
+      font,
+      "CUSTOMER",
+      contract.customer
+    );
   }
   
   // Contract title
@@ -301,14 +241,8 @@ export async function generateContractPDF(supabase, contractId, userId) {
     color: rgb(0, 0, 0),
   });
   
-  // Footer
-  page.drawText(`Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}`, {
-    x: 50,
-    y: 30,
-    size: 8,
-    font: font,
-    color: rgb(0.5, 0.5, 0.5),
-  });
+  // Add footer
+  addFooter(page, font);
   
   return pdfDoc.save();
 }
