@@ -2,7 +2,6 @@
 import { PDFDocument, rgb, StandardFonts } from "https://esm.sh/pdf-lib@1.17.1";
 import { 
   addDocumentHeader, 
-  addCompanyInfo, 
   addCustomerInfo, 
   addLineItemsHeader,
   addLineItems,
@@ -62,9 +61,10 @@ export async function generateEstimatePDF(supabase, estimateId, userId) {
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
   
-  // Add estimate header
-  const estimateNumber = `EST-${estimateId.substring(0, 8)}`;
+  // Format estimate reference number
+  const estimateNumber = estimate.title || `EST-${estimateId.substring(0, 8)}`;
   
+  // Prepare dates array
   let dates = [
     { label: 'Date', value: new Date(estimate.date).toLocaleDateString() }
   ];
@@ -76,7 +76,17 @@ export async function generateEstimatePDF(supabase, estimateId, userId) {
     });
   }
   
-  await addDocumentHeader(
+  // Prepare company info for header
+  const companyInfo = {
+    name: contractor?.company_name || "Company Name",
+    address: contractor?.company_address,
+    phone: contractor?.company_phone,
+    email: contractor?.company_email,
+    logo_url: contractor?.logo_url
+  };
+  
+  // Add professional estimate header with logo and company info
+  const contentStartY = await addDocumentHeader(
     page,
     width,
     height,
@@ -85,28 +95,16 @@ export async function generateEstimatePDF(supabase, estimateId, userId) {
     'ESTIMATE',
     estimateNumber,
     dates,
-    DOCUMENT_COLORS.estimate
+    DOCUMENT_COLORS.estimate,
+    companyInfo
   );
   
-  // Add company information
-  addCompanyInfo(
-    page,
-    height,
-    boldFont,
-    font,
-    {
-      name: contractor?.company_name || "Company Name",
-      address: contractor?.company_address,
-      phone: contractor?.company_phone,
-      email: contractor?.company_email
-    }
-  );
-  
-  // Add customer information
+  // Add customer information (full width)
+  let currentY = contentStartY;
   if (estimate.customer) {
-    addCustomerInfo(
+    currentY = addCustomerInfo(
       page,
-      height,
+      currentY,
       boldFont,
       font,
       "CUSTOMER",
@@ -115,34 +113,35 @@ export async function generateEstimatePDF(supabase, estimateId, userId) {
   }
   
   // Job Description if available
-  let tableTopY = height - 300;
-  
   if (estimate.job_description) {
-    const jobDescY = height - 240;
+    currentY -= 20;
     page.drawText("JOB DESCRIPTION", {
       x: 50,
-      y: jobDescY,
+      y: currentY,
       size: 12,
       font: boldFont,
     });
     
+    currentY -= 20;
     page.drawText(estimate.job_description, {
       x: 50,
-      y: jobDescY - 20,
+      y: currentY,
       size: 10,
       font: font,
       maxWidth: width - 100,
     });
+    
+    currentY -= 40;
   }
   
   // Line items
-  addLineItemsHeader(page, tableTopY, width, boldFont);
+  addLineItemsHeader(page, currentY, width, boldFont);
   
   // Add line items
   const { currentPage, y } = addLineItems(
     page,
     items,
-    tableTopY,
+    currentY,
     width,
     height,
     font,

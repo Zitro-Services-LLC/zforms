@@ -2,7 +2,6 @@
 import { PDFDocument, rgb, StandardFonts } from "https://esm.sh/pdf-lib@1.17.1";
 import { 
   addDocumentHeader, 
-  addCompanyInfo, 
   addCustomerInfo, 
   addLineItemsHeader,
   addLineItems,
@@ -59,8 +58,17 @@ export async function generateInvoicePDF(supabase, invoiceId, userId) {
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
   
-  // Add invoice header
-  await addDocumentHeader(
+  // Prepare company info for header
+  const companyInfo = {
+    name: contractor?.company_name || "Company Name",
+    address: contractor?.company_address,
+    phone: contractor?.company_phone,
+    email: contractor?.company_email,
+    logo_url: contractor?.logo_url
+  };
+  
+  // Add professional invoice header with logo and company info
+  const contentStartY = await addDocumentHeader(
     page,
     width,
     height,
@@ -72,28 +80,16 @@ export async function generateInvoicePDF(supabase, invoiceId, userId) {
       { label: 'Date', value: new Date(invoice.issue_date).toLocaleDateString() },
       { label: 'Due Date', value: new Date(invoice.due_date).toLocaleDateString() }
     ],
-    DOCUMENT_COLORS.invoice
+    DOCUMENT_COLORS.invoice,
+    companyInfo
   );
   
-  // Add company information
-  addCompanyInfo(
-    page,
-    height,
-    boldFont,
-    font,
-    {
-      name: contractor?.company_name || "Company Name",
-      address: contractor?.company_address,
-      phone: contractor?.company_phone,
-      email: contractor?.company_email
-    }
-  );
-  
-  // Add customer information
+  // Add customer information (full width)
+  let currentY = contentStartY;
   if (invoice.customer) {
-    addCustomerInfo(
+    currentY = addCustomerInfo(
       page,
-      height,
+      currentY,
       boldFont,
       font,
       "BILL TO",
@@ -102,14 +98,14 @@ export async function generateInvoicePDF(supabase, invoiceId, userId) {
   }
   
   // Line items
-  const tableTop = height - 250;
-  addLineItemsHeader(page, tableTop, width, boldFont);
+  currentY -= 20;
+  addLineItemsHeader(page, currentY, width, boldFont);
   
   // Add line items
   const { currentPage, y } = addLineItems(
     page,
     invoice.items,
-    tableTop,
+    currentY,
     width,
     height,
     font,

@@ -2,7 +2,6 @@
 import { PDFDocument, rgb, StandardFonts } from "https://esm.sh/pdf-lib@1.17.1";
 import { 
   addDocumentHeader, 
-  addCompanyInfo, 
   addCustomerInfo,
   addNotes,
   addFooter,
@@ -67,8 +66,17 @@ export async function generateContractPDF(supabase, contractId, userId) {
     });
   }
   
-  // Add contract header
-  await addDocumentHeader(
+  // Prepare company info for header
+  const companyInfo = {
+    name: contractor?.company_name || "Company Name",
+    address: contractor?.company_address,
+    phone: contractor?.company_phone,
+    email: contractor?.company_email,
+    logo_url: contractor?.logo_url
+  };
+  
+  // Add professional contract header with logo and company info
+  const contentStartY = await addDocumentHeader(
     page,
     width,
     height,
@@ -77,28 +85,16 @@ export async function generateContractPDF(supabase, contractId, userId) {
     'CONTRACT',
     contract.display_id || contractId.substring(0, 8),
     dates,
-    DOCUMENT_COLORS.contract
+    DOCUMENT_COLORS.contract,
+    companyInfo
   );
   
-  // Add company information
-  addCompanyInfo(
-    page,
-    height,
-    boldFont,
-    font,
-    {
-      name: contractor?.company_name || "Company Name",
-      address: contractor?.company_address,
-      phone: contractor?.company_phone,
-      email: contractor?.company_email
-    }
-  );
-  
-  // Add customer information
+  // Add customer information (full width)
+  let currentY = contentStartY;
   if (contract.customer) {
-    addCustomerInfo(
+    currentY = addCustomerInfo(
       page,
-      height,
+      currentY,
       boldFont,
       font,
       "CUSTOMER",
@@ -107,15 +103,15 @@ export async function generateContractPDF(supabase, contractId, userId) {
   }
   
   // Contract title
-  const titleY = height - 260;
+  currentY -= 20;
   page.drawText(contract.title || "Contract Agreement", {
     x: width / 2 - 100,
-    y: titleY,
+    y: currentY,
     size: 14,
     font: boldFont,
   });
   
-  let currentY = titleY - 40;
+  currentY -= 40;
   
   // Scope of work
   if (contract.scope_of_work) {

@@ -14,31 +14,17 @@ interface InvoicePartyInfoProps {
 }
 
 const InvoicePartyInfo: React.FC<InvoicePartyInfoProps> = ({
-  contractor,
   customer
 }) => {
   return (
     <div className="p-6 document-header">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Company Info */}
-        <div>
-          <h2 className="text-lg font-semibold text-gray-900">{contractor.name}</h2>
-          <div className="text-sm text-gray-500 mt-1">
-            <p>{contractor.address}</p>
-            <p>{contractor.phone}</p>
-            <p>{contractor.email}</p>
-          </div>
-        </div>
-
-        {/* Customer Info */}
-        <div>
-          <h2 className="text-sm font-semibold text-gray-500">BILL TO</h2>
-          <p className="text-base font-medium text-gray-900">{customer.name}</p>
-          <div className="text-sm text-gray-500 mt-1">
-            <p>{customer.address}</p>
-            <p>{customer.phone}</p>
-            <p>{customer.email}</p>
-          </div>
+      <div className="w-full">
+        <h2 className="text-sm font-semibold text-gray-500">BILL TO</h2>
+        <p className="text-base font-medium text-gray-900">{customer.name}</p>
+        <div className="text-sm text-gray-500 mt-1">
+          <p>{customer.address}</p>
+          <p>{customer.phone}</p>
+          <p>{customer.email}</p>
         </div>
       </div>
     </div>

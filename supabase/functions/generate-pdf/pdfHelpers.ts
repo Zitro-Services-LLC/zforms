@@ -14,6 +14,7 @@ export interface CompanyInfo {
   address?: string;
   phone?: string;
   email?: string;
+  logo_url?: string;
 }
 
 export interface CustomerInfo {
@@ -25,7 +26,58 @@ export interface CustomerInfo {
   property_address?: string;
 }
 
-// Add document header (title, number, dates)
+// Helper function to embed a logo image in the PDF
+export async function embedLogoIfExists(
+  pdfDoc: any,
+  logoUrl: string | null | undefined
+): Promise<{
+  logo: any,
+  logoWidth: number,
+  logoHeight: number
+} | null> {
+  if (!logoUrl) return null;
+
+  try {
+    // Fetch the logo image
+    const response = await fetch(logoUrl);
+    if (!response.ok) {
+      console.warn(`Failed to fetch logo: ${response.status} ${response.statusText}`);
+      return null;
+    }
+
+    // Convert the response to an ArrayBuffer
+    const imageBytes = new Uint8Array(await response.arrayBuffer());
+
+    // Determine image type from URL (simplified)
+    let logo;
+    if (logoUrl.toLowerCase().endsWith('.jpg') || logoUrl.toLowerCase().endsWith('.jpeg')) {
+      logo = await pdfDoc.embedJpg(imageBytes);
+    } else if (logoUrl.toLowerCase().endsWith('.png')) {
+      logo = await pdfDoc.embedPng(imageBytes);
+    } else {
+      // Default to PNG
+      try {
+        logo = await pdfDoc.embedPng(imageBytes);
+      } catch (err) {
+        try {
+          logo = await pdfDoc.embedJpg(imageBytes);
+        } catch (err) {
+          console.warn('Unable to embed logo, unsupported format');
+          return null;
+        }
+      }
+    }
+
+    // Return the embedded logo with dimensions
+    const { width, height } = logo.scale(0.5); // Scale down a bit for the header
+    return { logo, logoWidth: width, logoHeight: height };
+  } catch (error) {
+    console.warn('Error embedding logo:', error);
+    return null;
+  }
+}
+
+// Add professional document header (logo, company info, document title/number/dates)
 export async function addDocumentHeader(
   page: any, 
   width: number, 
@@ -35,89 +87,129 @@ export async function addDocumentHeader(
   title: string, 
   docNumber: string, 
   dates: { label: string, value: string }[],
-  color: any
+  color: any,
+  company?: CompanyInfo
 ) {
-  // Title
+  // Constants for layout
+  const headerTop = height - 50;
+  const logoLeftMargin = 50;
+  const companyInfoX = width / 2 - 100;
+  const documentInfoX = width - 200;
+  
+  // 1. Left column: Logo (if available)
+  let currentLogoY = headerTop;
+  let logoHeight = 0;
+  
+  if (company?.logo_url) {
+    const logoResult = await embedLogoIfExists(page.doc, company.logo_url);
+    
+    if (logoResult) {
+      const { logo, logoWidth, logoHeight: height } = logoResult;
+      logoHeight = height;
+      
+      // Position logo in the top left
+      page.drawImage(logo, {
+        x: logoLeftMargin,
+        y: headerTop - height,
+        width: logoWidth,
+        height: height
+      });
+    }
+  }
+  
+  // 2. Middle column: Company information
+  if (company) {
+    let companyInfoY = headerTop;
+    
+    // Company name
+    page.drawText(company.name, {
+      x: companyInfoX,
+      y: companyInfoY,
+      size: 14,
+      font: boldFont,
+    });
+    companyInfoY -= 15;
+    
+    // Company address
+    if (company.address) {
+      page.drawText(company.address, {
+        x: companyInfoX,
+        y: companyInfoY,
+        size: 10,
+        font: font,
+      });
+      companyInfoY -= 15;
+    }
+    
+    // Company phone
+    if (company.phone) {
+      page.drawText(`Tel: ${company.phone}`, {
+        x: companyInfoX,
+        y: companyInfoY,
+        size: 10,
+        font: font,
+      });
+      companyInfoY -= 15;
+    }
+    
+    // Company email
+    if (company.email) {
+      page.drawText(`Email: ${company.email}`, {
+        x: companyInfoX,
+        y: companyInfoY,
+        size: 10,
+        font: font,
+      });
+    }
+  }
+  
+  // 3. Right column: Document title, number and dates
+  // Document title
   page.drawText(title.toUpperCase(), {
-    x: width - 150,
-    y: height - 50,
+    x: documentInfoX,
+    y: headerTop,
     size: 24,
     font: boldFont,
     color: color,
   });
   
   // Document number
-  page.drawText(`${title} #: ${docNumber}`, {
-    x: width - 200,
-    y: height - 80,
+  page.drawText(`#: ${docNumber}`, {
+    x: documentInfoX,
+    y: headerTop - 30,
     size: 10,
     font: font,
   });
   
   // Dates
-  let y = height - 95;
+  let dateY = headerTop - 45;
   for (const date of dates) {
     page.drawText(`${date.label}: ${date.value}`, {
-      x: width - 200,
-      y,
+      x: documentInfoX,
+      y: dateY,
       size: 10,
       font: font,
     });
-    y -= 15;
+    dateY -= 15;
   }
-}
-
-// Add company information
-export function addCompanyInfo(
-  page: any, 
-  height: number, 
-  boldFont: any, 
-  font: any, 
-  company: CompanyInfo
-) {
-  page.drawText(company.name, {
-    x: 50,
-    y: height - 50,
-    size: 14,
-    font: boldFont,
+  
+  // Draw a separator line below the header
+  const headerHeight = Math.max(120, logoHeight + 20);
+  page.drawLine({
+    start: { x: 50, y: height - headerHeight },
+    end: { x: width - 50, y: height - headerHeight },
+    thickness: 1,
+    color: rgb(0.8, 0.8, 0.8),
   });
   
-  let y = height - 70;
-  
-  if (company.address) {
-    page.drawText(company.address, {
-      x: 50,
-      y,
-      size: 10,
-      font: font,
-    });
-    y -= 15;
-  }
-  
-  if (company.phone) {
-    page.drawText(`Tel: ${company.phone}`, {
-      x: 50,
-      y,
-      size: 10,
-      font: font,
-    });
-    y -= 15;
-  }
-  
-  if (company.email) {
-    page.drawText(`Email: ${company.email}`, {
-      x: 50,
-      y,
-      size: 10,
-      font: font,
-    });
-  }
+  // Return the Y position where content can start
+  return height - headerHeight - 20;
 }
 
-// Add customer information
+// Add customer information only (expanded to full width)
 export function addCustomerInfo(
   page: any, 
-  height: number, 
+  contentStartY: number, 
   boldFont: any, 
   font: any, 
   headerText: string,
@@ -125,19 +217,19 @@ export function addCustomerInfo(
 ) {
   page.drawText(headerText, {
     x: 50,
-    y: height - 140,
+    y: contentStartY,
     size: 12,
     font: boldFont,
   });
   
   page.drawText(`${customer.first_name} ${customer.last_name}`, {
     x: 50,
-    y: height - 160,
+    y: contentStartY - 20,
     size: 10,
     font: font,
   });
   
-  let y = height - 175;
+  let y = contentStartY - 35;
   
   const addressType = headerText.toLowerCase().includes('bill') 
     ? customer.billing_address 
@@ -171,6 +263,8 @@ export function addCustomerInfo(
       font: font,
     });
   }
+  
+  return y - 30; // Return position for next content
 }
 
 // Add line items table header
