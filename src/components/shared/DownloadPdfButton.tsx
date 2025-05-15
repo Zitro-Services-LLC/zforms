@@ -36,28 +36,43 @@ const DownloadPdfButton: React.FC<DownloadPdfButtonProps> = ({
       
       console.log(`Requesting PDF for ${documentType} ${documentId}`);
       
-      const { data, error } = await supabase.functions.invoke('generate-pdf', {
-        body: { documentType, documentId }
+      // Get auth token for the request
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      
+      if (!token) {
+        throw new Error("Authentication token not available");
+      }
+      
+      // Call the edge function using query parameters instead of JSON body
+      const functionUrl = `${supabase.supabaseUrl}/functions/v1/generate-pdf?type=${documentType}&id=${documentId}`;
+      
+      const response = await fetch(functionUrl, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'apikey': supabase.supabaseKey
+        }
       });
       
-      if (error) {
-        console.error(`Error generating PDF: ${error.message}`);
-        throw new Error(error.message);
+      if (!response.ok) {
+        const errorData = await response.text();
+        console.error(`PDF generation error (${response.status}):`, errorData);
+        throw new Error(`Error generating PDF: ${response.statusText}`);
       }
       
-      if (!data || !data.fileUrl) {
-        throw new Error("No file URL returned");
-      }
-      
-      console.log(`PDF generated, downloading from: ${data.fileUrl}`);
+      // Get the PDF as a blob
+      const pdfBlob = await response.blob();
       
       // Create download link
+      const url = URL.createObjectURL(pdfBlob);
       const link = document.createElement('a');
-      link.href = data.fileUrl;
+      link.href = url;
       link.setAttribute('download', `${documentType}-${documentId}.pdf`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      URL.revokeObjectURL(url);
       
       toast({
         title: "Download started",
