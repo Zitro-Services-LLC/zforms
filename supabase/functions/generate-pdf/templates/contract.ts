@@ -4,6 +4,7 @@ import {
   addDocumentHeader, 
   addCompanyInfo, 
   addCustomerInfo,
+  addNotes,
   addFooter,
   DOCUMENT_COLORS
 } from "../pdfHelpers.ts";
@@ -114,85 +115,88 @@ export async function generateContractPDF(supabase, contractId, userId) {
     font: boldFont,
   });
   
+  let currentY = titleY - 40;
+  
   // Scope of work
   if (contract.scope_of_work) {
-    let y = titleY - 40;
     page.drawText("SCOPE OF WORK", {
       x: 50,
-      y,
+      y: currentY,
       size: 12,
       font: boldFont,
     });
     
-    y -= 20;
+    currentY -= 20;
     page.drawText(contract.scope_of_work, {
       x: 50,
-      y,
+      y: currentY,
       size: 10,
       font: font,
       maxWidth: width - 100,
     });
     
-    // If the scope of work is long, it might need to be paginated
-    // This is simplified for now
-    y -= 120; // Approximate space for scope of work
+    // Approximate space for scope of work
+    currentY -= 120;
+  }
+  
+  // Terms and conditions
+  if (contract.terms_and_conditions) {
+    page.drawText("TERMS AND CONDITIONS", {
+      x: 50,
+      y: currentY,
+      size: 12,
+      font: boldFont,
+    });
     
-    // Terms and conditions
-    if (contract.terms_and_conditions) {
-      page.drawText("TERMS AND CONDITIONS", {
-        x: 50,
-        y,
-        size: 12,
-        font: boldFont,
-      });
-      
-      y -= 20;
-      page.drawText(contract.terms_and_conditions, {
-        x: 50,
-        y,
-        size: 10,
-        font: font,
-        maxWidth: width - 100,
-      });
-    }
+    currentY -= 20;
+    page.drawText(contract.terms_and_conditions, {
+      x: 50,
+      y: currentY,
+      size: 10,
+      font: font,
+      maxWidth: width - 100,
+    });
+    
+    currentY -= 120;
   }
   
   // Contract amount
-  const amountY = 150;
   page.drawText("CONTRACT AMOUNT", {
     x: 50,
-    y: amountY,
+    y: currentY,
     size: 12,
     font: boldFont,
   });
   
+  currentY -= 20;
   page.drawText(`Total: $${Number(contract.total_amount || 0).toFixed(2)}`, {
     x: 50,
-    y: amountY - 20,
+    y: currentY,
     size: 12,
     font: font,
   });
   
   // Signatures
-  const signatureY = 80;
+  currentY -= 40;
   page.drawText("SIGNATURES", {
     x: 50,
-    y: signatureY,
+    y: currentY,
     size: 12,
     font: boldFont,
   });
   
   // Contractor signature
+  currentY -= 20;
   page.drawText("Contractor:", {
     x: 50,
-    y: signatureY - 20,
+    y: currentY,
     size: 10,
     font: font,
   });
   
   page.drawLine({
-    start: { x: 120, y: signatureY - 20 },
-    end: { x: 300, y: signatureY - 20 },
+    start: { x: 120, y: currentY },
+    end: { x: 300, y: currentY },
     thickness: 1,
     color: rgb(0, 0, 0),
   });
@@ -200,43 +204,44 @@ export async function generateContractPDF(supabase, contractId, userId) {
   // Customer signature
   page.drawText("Customer:", {
     x: 320,
-    y: signatureY - 20,
+    y: currentY,
     size: 10,
     font: font,
   });
   
   page.drawLine({
-    start: { x: 380, y: signatureY - 20 },
-    end: { x: 560, y: signatureY - 20 },
+    start: { x: 380, y: currentY },
+    end: { x: 560, y: currentY },
     thickness: 1,
     color: rgb(0, 0, 0),
   });
   
   // Date signature
+  currentY -= 20;
   page.drawText("Date:", {
     x: 50,
-    y: signatureY - 40,
+    y: currentY,
     size: 10,
     font: font,
   });
   
   page.drawLine({
-    start: { x: 90, y: signatureY - 40 },
-    end: { x: 200, y: signatureY - 40 },
+    start: { x: 90, y: currentY },
+    end: { x: 200, y: currentY },
     thickness: 1,
     color: rgb(0, 0, 0),
   });
   
   page.drawText("Date:", {
     x: 320,
-    y: signatureY - 40,
+    y: currentY,
     size: 10,
     font: font,
   });
   
   page.drawLine({
-    start: { x: 360, y: signatureY - 40 },
-    end: { x: 470, y: signatureY - 40 },
+    start: { x: 360, y: currentY },
+    end: { x: 470, y: currentY },
     thickness: 1,
     color: rgb(0, 0, 0),
   });
