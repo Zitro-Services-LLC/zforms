@@ -1,12 +1,16 @@
 
-import { PDFDocument, rgb, StandardFonts } from "https://esm.sh/pdf-lib@1.17.1";
+import { PDFDocument, StandardFonts } from "https://esm.sh/pdf-lib@1.17.1";
 import { 
-  addDocumentHeader, 
-  addCustomerInfo,
   addFooter,
   DOCUMENT_COLORS
 } from "../../pdfHelpers.ts";
 import { ContractData } from "./fetchContractData.ts";
+import { addContractHeaderSection } from "./sections/headerSection.ts";
+import { addContractCustomerSection } from "./sections/customerSection.ts";
+import { addContractTitleSection } from "./sections/titleSection.ts";
+import { addContractContentSection } from "./sections/contentSection.ts";
+import { addContractAmountSection } from "./sections/amountSection.ts";
+import { addContractSignatureSection } from "./sections/signatureSection.ts";
 
 /**
  * Generates a PDF from contract data
@@ -36,172 +40,66 @@ export async function renderContractPdf(contractData: ContractData): Promise<Uin
     });
   }
   
-  // Add professional contract header with logo and company info
-  const contentStartY = await addDocumentHeader(
+  // 1. Add document header
+  let currentY = await addContractHeaderSection(
     page,
     width,
     height,
     boldFont,
     font,
-    'CONTRACT',
     contractData.display_id,
     dates,
     DOCUMENT_COLORS.contract,
     contractData.company
   );
   
-  // Add customer information (full width)
-  let currentY = contentStartY;
-  currentY = addCustomerInfo(
+  // 2. Add customer information
+  currentY = addContractCustomerSection(
     page,
     currentY,
     boldFont,
     font,
-    "CUSTOMER",
     contractData.customer
   );
   
-  // Contract title
-  currentY -= 20;
-  page.drawText(contractData.title, {
-    x: width / 2 - 100,
-    y: currentY,
-    size: 14,
-    font: boldFont,
-  });
+  // 3. Add contract title
+  currentY = addContractTitleSection(
+    page, 
+    width, 
+    currentY - 20, 
+    boldFont, 
+    contractData.title
+  );
   
-  currentY -= 40;
+  // 4. Add contract content (scope of work and terms)
+  currentY = addContractContentSection(
+    page,
+    currentY,
+    boldFont,
+    font,
+    contractData.scope_of_work,
+    contractData.terms_and_conditions,
+    width
+  );
   
-  // Scope of work
-  if (contractData.scope_of_work) {
-    page.drawText("SCOPE OF WORK", {
-      x: 50,
-      y: currentY,
-      size: 12,
-      font: boldFont,
-    });
-    
-    currentY -= 20;
-    page.drawText(contractData.scope_of_work, {
-      x: 50,
-      y: currentY,
-      size: 10,
-      font: font,
-      maxWidth: width - 100,
-    });
-    
-    // Approximate space for scope of work
-    currentY -= 120;
-  }
+  // 5. Add contract amount section
+  currentY = addContractAmountSection(
+    page,
+    currentY,
+    boldFont,
+    font,
+    contractData.total_amount
+  );
   
-  // Terms and conditions
-  if (contractData.terms_and_conditions) {
-    page.drawText("TERMS AND CONDITIONS", {
-      x: 50,
-      y: currentY,
-      size: 12,
-      font: boldFont,
-    });
-    
-    currentY -= 20;
-    page.drawText(contractData.terms_and_conditions, {
-      x: 50,
-      y: currentY,
-      size: 10,
-      font: font,
-      maxWidth: width - 100,
-    });
-    
-    currentY -= 120;
-  }
+  // 6. Add signature section
+  currentY = addContractSignatureSection(
+    page,
+    currentY,
+    boldFont,
+    font
+  );
   
-  // Contract amount
-  page.drawText("CONTRACT AMOUNT", {
-    x: 50,
-    y: currentY,
-    size: 12,
-    font: boldFont,
-  });
-  
-  currentY -= 20;
-  page.drawText(`Total: $${Number(contractData.total_amount || 0).toFixed(2)}`, {
-    x: 50,
-    y: currentY,
-    size: 12,
-    font: font,
-  });
-  
-  // Signatures
-  currentY -= 40;
-  page.drawText("SIGNATURES", {
-    x: 50,
-    y: currentY,
-    size: 12,
-    font: boldFont,
-  });
-  
-  // Contractor signature
-  currentY -= 20;
-  page.drawText("Contractor:", {
-    x: 50,
-    y: currentY,
-    size: 10,
-    font: font,
-  });
-  
-  page.drawLine({
-    start: { x: 120, y: currentY },
-    end: { x: 300, y: currentY },
-    thickness: 1,
-    color: rgb(0, 0, 0),
-  });
-  
-  // Customer signature
-  page.drawText("Customer:", {
-    x: 320,
-    y: currentY,
-    size: 10,
-    font: font,
-  });
-  
-  page.drawLine({
-    start: { x: 380, y: currentY },
-    end: { x: 560, y: currentY },
-    thickness: 1,
-    color: rgb(0, 0, 0),
-  });
-  
-  // Date signature
-  currentY -= 20;
-  page.drawText("Date:", {
-    x: 50,
-    y: currentY,
-    size: 10,
-    font: font,
-  });
-  
-  page.drawLine({
-    start: { x: 90, y: currentY },
-    end: { x: 200, y: currentY },
-    thickness: 1,
-    color: rgb(0, 0, 0),
-  });
-  
-  page.drawText("Date:", {
-    x: 320,
-    y: currentY,
-    size: 10,
-    font: font,
-  });
-  
-  page.drawLine({
-    start: { x: 360, y: currentY },
-    end: { x: 470, y: currentY },
-    thickness: 1,
-    color: rgb(0, 0, 0),
-  });
-  
-  // Add footer
+  // 7. Add footer
   addFooter(page, font);
   
   return pdfDoc.save();
