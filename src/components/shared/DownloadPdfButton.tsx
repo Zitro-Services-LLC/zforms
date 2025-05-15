@@ -1,10 +1,9 @@
-
 import React, { useState } from 'react';
 import { Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, SUPABASE_FUNCTIONS_PATH, SUPABASE_PUBLISHABLE_KEY } from '@/integrations/supabase/client';
 
 interface DownloadPdfButtonProps {
   documentType: 'estimate' | 'contract' | 'invoice';
@@ -45,13 +44,13 @@ const DownloadPdfButton: React.FC<DownloadPdfButtonProps> = ({
       }
       
       // Call the edge function using query parameters instead of JSON body
-      const functionUrl = `${supabase.supabaseUrl}/functions/v1/generate-pdf?type=${documentType}&id=${documentId}`;
+      const functionUrl = `${SUPABASE_FUNCTIONS_PATH}/generate-pdf?type=${documentType}&id=${documentId}`;
       
       const response = await fetch(functionUrl, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
-          'apikey': supabase.supabaseKey
+          'apikey': SUPABASE_PUBLISHABLE_KEY
         }
       });
       
