@@ -280,6 +280,39 @@ export type Database = {
         }
         Relationships: []
       }
+      document_downloads: {
+        Row: {
+          created_at: string
+          document_id: string
+          document_type: string
+          file_path: string
+          file_size: number | null
+          id: string
+          user_id: string
+          version: string | null
+        }
+        Insert: {
+          created_at?: string
+          document_id: string
+          document_type: string
+          file_path: string
+          file_size?: number | null
+          id?: string
+          user_id: string
+          version?: string | null
+        }
+        Update: {
+          created_at?: string
+          document_id?: string
+          document_type?: string
+          file_path?: string
+          file_size?: number | null
+          id?: string
+          user_id?: string
+          version?: string | null
+        }
+        Relationships: []
+      }
       estimate_activities: {
         Row: {
           action_details: Json | null
