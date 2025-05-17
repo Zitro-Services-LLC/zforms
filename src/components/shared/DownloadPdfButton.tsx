@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -68,6 +69,8 @@ const DownloadPdfButton: React.FC<DownloadPdfButtonProps> = ({
       const link = document.createElement('a');
       link.href = url;
       link.setAttribute('download', `${documentType}-${documentId}.pdf`);
+      link.target = '_blank'; // Open PDF in a new tab
+      link.rel = 'noopener noreferrer'; // Security best practice
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

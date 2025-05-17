@@ -101,22 +101,18 @@ const NewEstimate = () => {
           />
 
           <Tabs defaultValue="items">
-            <TabsList className="grid grid-cols-2 mb-4 w-full max-w-md">
+            <TabsList className="grid grid-cols-3 mb-4 w-full max-w-md">
               <TabsTrigger value="items">Line Items</TabsTrigger>
               <TabsTrigger value="attachments">Images</TabsTrigger>
+              <TabsTrigger value="notes">Notes</TabsTrigger>
             </TabsList>
             
-            <TabsContent value="items" className="space-y-6">
+            <TabsContent value="items">
               <EstimateItemsSection
                 items={items}
                 onUpdateItem={handleUpdateLineItem}
                 onDeleteItem={handleDeleteLineItem}
                 onAddItem={handleAddLineItem}
-              />
-
-              <EstimateNotesSection
-                notes={notes}
-                onNotesChange={setNotes}
               />
 
               <EstimateTotals 
@@ -141,6 +137,20 @@ const NewEstimate = () => {
                     files={estimateImages}
                     onAddFiles={handleAddEstimateImage}
                     onRemoveFile={handleRemoveEstimateImage}
+                  />
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="notes">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Notes & Terms</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <EstimateNotesSection
+                    notes={notes}
+                    onNotesChange={setNotes}
                   />
                 </CardContent>
               </Card>
