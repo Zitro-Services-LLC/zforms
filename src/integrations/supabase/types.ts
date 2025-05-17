@@ -9,6 +9,130 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      admin_activities: {
+        Row: {
+          action_details: Json | null
+          action_type: string
+          admin_id: string
+          created_at: string
+          entity_id: string | null
+          entity_type: string
+          id: string
+          ip_address: string | null
+        }
+        Insert: {
+          action_details?: Json | null
+          action_type: string
+          admin_id: string
+          created_at?: string
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+          ip_address?: string | null
+        }
+        Update: {
+          action_details?: Json | null
+          action_type?: string
+          admin_id?: string
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+          ip_address?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_activities_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "admins"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      admin_sessions: {
+        Row: {
+          admin_id: string
+          id: string
+          impersonated_user_id: string | null
+          impersonated_user_type: string | null
+          ip_address: string | null
+          is_impersonating: boolean | null
+          session_ended_at: string | null
+          session_started_at: string
+          user_agent: string | null
+        }
+        Insert: {
+          admin_id: string
+          id?: string
+          impersonated_user_id?: string | null
+          impersonated_user_type?: string | null
+          ip_address?: string | null
+          is_impersonating?: boolean | null
+          session_ended_at?: string | null
+          session_started_at?: string
+          user_agent?: string | null
+        }
+        Update: {
+          admin_id?: string
+          id?: string
+          impersonated_user_id?: string | null
+          impersonated_user_type?: string | null
+          ip_address?: string | null
+          is_impersonating?: boolean | null
+          session_ended_at?: string | null
+          session_started_at?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_sessions_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "admins"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      admins: {
+        Row: {
+          created_at: string
+          email: string
+          first_name: string | null
+          id: string
+          is_super_admin: boolean
+          last_login_at: string | null
+          last_name: string | null
+          permissions: Json | null
+          role: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          first_name?: string | null
+          id: string
+          is_super_admin?: boolean
+          last_login_at?: string | null
+          last_name?: string | null
+          permissions?: Json | null
+          role?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          first_name?: string | null
+          id?: string
+          is_super_admin?: boolean
+          last_login_at?: string | null
+          last_name?: string | null
+          permissions?: Json | null
+          role?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       contract_revisions: {
         Row: {
           comments: string | null
@@ -90,6 +214,63 @@ export type Database = {
             columns: ["contractor_id"]
             isOneToOne: false
             referencedRelation: "contractors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contractor_management: {
+        Row: {
+          contractor_id: string
+          created_at: string
+          id: string
+          notes: string | null
+          onboarding_completed: boolean
+          status: string
+          subscription_end_date: string | null
+          subscription_start_date: string | null
+          subscription_tier: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          contractor_id: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          onboarding_completed?: boolean
+          status?: string
+          subscription_end_date?: string | null
+          subscription_start_date?: string | null
+          subscription_tier?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          contractor_id?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          onboarding_completed?: boolean
+          status?: string
+          subscription_end_date?: string | null
+          subscription_start_date?: string | null
+          subscription_tier?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contractor_management_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: true
+            referencedRelation: "contractors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contractor_management_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "admins"
             referencedColumns: ["id"]
           },
         ]
@@ -797,6 +978,57 @@ export type Database = {
           user_type?: string
         }
         Relationships: []
+      }
+      system_settings: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          description: string | null
+          id: string
+          key: string
+          updated_at: string
+          updated_by: string | null
+          value: Json
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          description?: string | null
+          id?: string
+          key: string
+          updated_at?: string
+          updated_by?: string | null
+          value: Json
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          description?: string | null
+          id?: string
+          key?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "system_settings_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "admins"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "system_settings_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "admins"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

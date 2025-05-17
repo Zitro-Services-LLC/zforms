@@ -26,5 +26,5 @@ export type {
 // Status is a fundamental type used throughout the application
 export { type Status } from '@/components/shared/StatusBadge';
 
-// Export database types without conflicts
+// Export database types without conflicts - imported from our database.d.ts file
 export * from './database.d';
