@@ -14,6 +14,7 @@ serve(async (req) => {
     const requestUrl = new URL(req.url);
     const documentType = requestUrl.searchParams.get("type");
     const documentId = requestUrl.searchParams.get("id");
+    const mode = requestUrl.searchParams.get("mode") || "download"; // Default to download if not specified
     const apiToken = req.headers.get("Authorization")?.replace("Bearer ", "");
 
     if (!documentType || !documentId) {
@@ -70,12 +71,17 @@ serve(async (req) => {
         );
     }
 
-    // Return the PDF
+    // Determine Content-Disposition based on mode
+    const contentDisposition = mode === "preview" 
+      ? `inline; filename="${documentType}-${documentId}.pdf"` 
+      : `attachment; filename="${documentType}-${documentId}.pdf"`;
+
+    // Return the PDF with appropriate Content-Disposition
     return new Response(pdfBytes, {
       headers: {
         ...corsHeaders,
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="${documentType}-${documentId}.pdf"`,
+        "Content-Disposition": contentDisposition,
       },
     });
   } catch (error) {
