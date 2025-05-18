@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { AdminProfile } from '@/types/admin';
 import { UserPlus, Check, X } from 'lucide-react';
+import { User } from '@supabase/supabase-js';
 
 interface AdminAccountsManagerProps {
   adminAccounts: AdminProfile[];
@@ -58,7 +59,8 @@ const AdminAccountsManager: React.FC<AdminAccountsManagerProps> = ({
       
       if (usersError) throw usersError;
       
-      const foundUser = userList.users.find(u => u.email === newAdmin.email);
+      // Apply proper typing to the users array
+      const foundUser = (userList.users as User[]).find(u => u.email === newAdmin.email);
       
       if (!foundUser) {
         throw new Error('User was not created properly');
