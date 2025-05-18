@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '@/components/layouts/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,6 +5,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ChartContainer } from '@/components/ui/chart';
 import { supabase } from '@/integrations/supabase/client';
 import { Users, FileText, CreditCard, ArrowUp, ArrowDown } from 'lucide-react';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  Legend
+} from 'recharts';
 
 interface StatCardProps {
   title: string;
@@ -87,24 +95,15 @@ const AdminDashboardPage: React.FC = () => {
     fetchDashboardData();
   }, []);
 
-  // Sample chart data - would be replaced with real data in production
-  const chartData = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-    datasets: [
-      {
-        label: 'New Contractors',
-        data: [12, 15, 18, 14, 22, 26],
-        borderColor: '#f59e0b',
-        backgroundColor: 'rgba(245, 158, 11, 0.1)',
-      },
-      {
-        label: 'New Customers',
-        data: [65, 78, 90, 101, 95, 110],
-        borderColor: '#0ea5e9',
-        backgroundColor: 'rgba(14, 165, 233, 0.1)',
-      },
-    ],
-  };
+  // Transform the data for Recharts
+  const transformedData = [
+    { name: 'Jan', contractors: 12, customers: 65 },
+    { name: 'Feb', contractors: 15, customers: 78 },
+    { name: 'Mar', contractors: 18, customers: 90 },
+    { name: 'Apr', contractors: 14, customers: 101 },
+    { name: 'May', contractors: 22, customers: 95 },
+    { name: 'Jun', contractors: 26, customers: 110 },
+  ];
 
   // Chart config needed for the ChartContainer
   const chartConfig = {
@@ -180,20 +179,28 @@ const AdminDashboardPage: React.FC = () => {
                   config={chartConfig}
                   className="h-[350px]"
                 >
-                  {(props) => (
-                    <LineChart
-                      data={chartData}
-                      options={{
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                          y: {
-                            beginAtZero: true,
-                          },
-                        },
-                      }}
+                  <LineChart
+                    width={500}
+                    height={300}
+                    data={transformedData}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <RechartsTooltip />
+                    <Legend />
+                    <Line 
+                      type="monotone" 
+                      dataKey="contractors" 
+                      stroke="#f59e0b" 
+                      activeDot={{ r: 8 }}
                     />
-                  )}
+                    <Line 
+                      type="monotone" 
+                      dataKey="customers" 
+                      stroke="#0ea5e9" 
+                    />
+                  </LineChart>
                 </ChartContainer>
               </CardContent>
             </Card>
@@ -229,7 +236,5 @@ const AdminDashboardPage: React.FC = () => {
     </AdminLayout>
   );
 };
-
-import { LineChart } from "recharts";
 
 export default AdminDashboardPage;
