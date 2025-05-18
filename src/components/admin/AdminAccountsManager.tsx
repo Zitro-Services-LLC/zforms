@@ -54,11 +54,13 @@ const AdminAccountsManager: React.FC<AdminAccountsManagerProps> = ({
       if (authError) throw authError;
       
       // Find the user in the auth profiles
-      const { data: authUser, error: profileError } = await supabase.auth.admin.getUserByEmail(newAdmin.email);
+      const { data: userList, error: usersError } = await supabase.auth.admin.listUsers();
       
-      if (profileError) throw profileError;
+      if (usersError) throw usersError;
       
-      if (!authUser.user) {
+      const foundUser = userList.users.find(u => u.email === newAdmin.email);
+      
+      if (!foundUser) {
         throw new Error('User was not created properly');
       }
       
@@ -66,7 +68,7 @@ const AdminAccountsManager: React.FC<AdminAccountsManagerProps> = ({
       const { error: adminProfileError } = await supabase
         .from('admin_profiles')
         .insert({
-          id: authUser.user.id,
+          id: foundUser.id,
           email: newAdmin.email,
           first_name: newAdmin.firstName || null,
           last_name: newAdmin.lastName || null,
