@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '@/components/layouts/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -99,7 +100,6 @@ const AdminDashboardPage: React.FC = () => {
         });
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
-        setLoading(false);
       } finally {
         setLoading(false);
       }
@@ -112,7 +112,7 @@ const AdminDashboardPage: React.FC = () => {
   useEffect(() => {
     const fetchRecentActivities = async () => {
       try {
-        const { data: activities, error } = await supabase
+        const { data, error } = await supabase
           .from('admin_activities')
           .select('*')
           .order('created_at', { ascending: false })
@@ -120,7 +120,19 @@ const AdminDashboardPage: React.FC = () => {
         
         if (error) throw error;
         
-        setRecentActivities(activities || []);
+        // Convert the data to AdminActivity[] type
+        const typedActivities: AdminActivity[] = data.map((activity: any) => ({
+          id: activity.id,
+          admin_id: activity.admin_id,
+          action_type: activity.action_type,
+          entity_type: activity.entity_type,
+          entity_id: activity.entity_id,
+          ip_address: activity.ip_address,
+          action_details: activity.action_details,
+          created_at: activity.created_at
+        }));
+        
+        setRecentActivities(typedActivities);
       } catch (error) {
         console.error('Error fetching admin activities:', error);
         toast({

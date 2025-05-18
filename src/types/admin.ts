@@ -17,7 +17,7 @@ export interface AdminActivity {
   entity_type: string;
   entity_id: string | null;
   ip_address: string | null;
-  action_details: Record<string, any> | null;
+  action_details: any | null; // Changed from Record<string, any> to any to accommodate Json type
   created_at: string;
 }
 

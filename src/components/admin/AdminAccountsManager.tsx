@@ -53,19 +53,20 @@ const AdminAccountsManager: React.FC<AdminAccountsManagerProps> = ({
       
       if (authError) throw authError;
       
+      // Find the user in the auth profiles
+      const { data: authUser, error: profileError } = await supabase.auth.admin.getUserByEmail(newAdmin.email);
+      
+      if (profileError) throw profileError;
+      
+      if (!authUser.user) {
+        throw new Error('User was not created properly');
+      }
+      
       // Create admin profile
-      const { data: user, error: userError } = await supabase
-        .from('users')
-        .select('id')
-        .eq('email', newAdmin.email)
-        .single();
-      
-      if (userError) throw userError;
-      
-      const { error: profileError } = await supabase
+      const { error: adminProfileError } = await supabase
         .from('admin_profiles')
         .insert({
-          id: user.id,
+          id: authUser.user.id,
           email: newAdmin.email,
           first_name: newAdmin.firstName || null,
           last_name: newAdmin.lastName || null,
@@ -73,7 +74,7 @@ const AdminAccountsManager: React.FC<AdminAccountsManagerProps> = ({
           is_active: true
         });
       
-      if (profileError) throw profileError;
+      if (adminProfileError) throw adminProfileError;
       
       toast({
         title: 'Admin account created',
