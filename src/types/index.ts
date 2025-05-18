@@ -28,3 +28,6 @@ export { type Status } from '@/components/shared/StatusBadge';
 
 // Export database types without conflicts - imported from our database.d.ts file
 export * from './database.d';
+
+// Export admin types
+export * from './admin';

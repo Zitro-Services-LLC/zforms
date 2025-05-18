@@ -25,6 +25,13 @@ import EditCustomer from "./pages/EditCustomer";
 import AuthPage from "@/pages/AuthPage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
 
+// Import Admin Pages
+import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
+import ContractorsManagementPage from "./pages/admin/ContractorsManagementPage";
+import SystemSettingsPage from "./pages/admin/SystemSettingsPage";
+import ActivityLogsPage from "./pages/admin/ActivityLogsPage";
+import AdminProfilePage from "./pages/admin/AdminProfilePage";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -62,6 +69,13 @@ const App = () => (
           <Route path="/customer/estimates/:id" element={<EstimateManagement userType="customer" />} />
           <Route path="/customer/contracts/:id" element={<ContractManagement userType="customer" />} />
           <Route path="/customer/invoices/:id" element={<InvoiceManagement userType="customer" />} />
+          
+          {/* Admin Routes */}
+          <Route path="/admin" element={<AdminDashboardPage />} />
+          <Route path="/admin/contractors" element={<ContractorsManagementPage />} />
+          <Route path="/admin/settings" element={<SystemSettingsPage />} />
+          <Route path="/admin/activity" element={<ActivityLogsPage />} />
+          <Route path="/admin/profile" element={<AdminProfilePage />} />
           
           {/* Catch-all route for not found pages */}
           <Route path="*" element={<NotFound />} />
