@@ -8,6 +8,8 @@ import { AlertTriangle, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const AdminDevSetup: React.FC = () => {
+  // Remove any authentication checks or redirects that might be sending users to /auth
+  
   return (
     <AdminLayout>
       <div className="space-y-6">
