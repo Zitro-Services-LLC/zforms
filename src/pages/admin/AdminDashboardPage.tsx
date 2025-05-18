@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import AdminLayout from '@/components/layouts/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Chart } from '@/components/ui/chart';
+import { ChartContainer } from '@/components/ui/chart';
 import { supabase } from '@/integrations/supabase/client';
 import { Users, FileText, CreditCard, ArrowUp, ArrowDown } from 'lucide-react';
 
@@ -106,6 +106,24 @@ const AdminDashboardPage: React.FC = () => {
     ],
   };
 
+  // Chart config needed for the ChartContainer
+  const chartConfig = {
+    contractors: {
+      label: 'Contractors',
+      theme: {
+        light: '#f59e0b',
+        dark: '#f59e0b',
+      },
+    },
+    customers: {
+      label: 'Customers',
+      theme: {
+        light: '#0ea5e9',
+        dark: '#0ea5e9',
+      },
+    },
+  };
+
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -158,20 +176,25 @@ const AdminDashboardPage: React.FC = () => {
                 <CardTitle>Growth Metrics</CardTitle>
               </CardHeader>
               <CardContent className="pl-2">
-                <Chart
-                  type="line"
-                  data={chartData}
-                  options={{
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                      y: {
-                        beginAtZero: true,
-                      },
-                    },
-                  }}
+                <ChartContainer
+                  config={chartConfig}
                   className="h-[350px]"
-                />
+                >
+                  {(props) => (
+                    <LineChart
+                      data={chartData}
+                      options={{
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                          y: {
+                            beginAtZero: true,
+                          },
+                        },
+                      }}
+                    />
+                  )}
+                </ChartContainer>
               </CardContent>
             </Card>
           </TabsContent>
@@ -206,5 +229,7 @@ const AdminDashboardPage: React.FC = () => {
     </AdminLayout>
   );
 };
+
+import { LineChart } from "recharts";
 
 export default AdminDashboardPage;
