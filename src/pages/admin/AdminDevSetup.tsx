@@ -1,0 +1,63 @@
+
+import React from 'react';
+import AdminLayout from '@/components/layouts/AdminLayout';
+import AdminSetup from '@/components/admin/AdminSetup';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertTriangle, Info } from 'lucide-react';
+import { Link } from 'react-router-dom';
+
+const AdminDevSetup: React.FC = () => {
+  return (
+    <AdminLayout>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Admin Development Setup</h1>
+          <p className="text-muted-foreground">Configure development settings and create admin test accounts.</p>
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-2">
+          <AdminSetup />
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Development Settings</CardTitle>
+              <CardDescription>
+                Configuration for the development environment
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Alert className="bg-amber-50 border-amber-200">
+                <AlertTriangle className="h-5 w-5 text-amber-500" />
+                <AlertTitle className="text-amber-800">Development Mode</AlertTitle>
+                <AlertDescription className="text-amber-700">
+                  Email verification is disabled for development. Remember to enable it before deploying to production.
+                </AlertDescription>
+              </Alert>
+              
+              <Alert className="bg-blue-50 border-blue-200">
+                <Info className="h-5 w-5 text-blue-500" />
+                <AlertTitle className="text-blue-800">Supabase Configuration</AlertTitle>
+                <AlertDescription className="text-blue-700">
+                  <p>For development purposes, make sure to disable email verification in the Supabase Console:</p>
+                  <ol className="list-decimal pl-5 mt-2 space-y-1">
+                    <li>Go to Authentication &gt; Providers</li>
+                    <li>Under Email, toggle "Confirm email" to OFF</li>
+                  </ol>
+                </AlertDescription>
+              </Alert>
+              
+              <div className="pt-2">
+                <Link to="/admin" className="text-amber-600 hover:text-amber-700 text-sm font-medium">
+                  Back to Admin Dashboard &rarr;
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </AdminLayout>
+  );
+};
+
+export default AdminDevSetup;

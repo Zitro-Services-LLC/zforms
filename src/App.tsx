@@ -32,6 +32,7 @@ import ContractorsManagementPage from "./pages/admin/ContractorsManagementPage";
 import SystemSettingsPage from "./pages/admin/SystemSettingsPage";
 import ActivityLogsPage from "./pages/admin/ActivityLogsPage";
 import AdminProfilePage from "./pages/admin/AdminProfilePage";
+import AdminDevSetup from "./pages/admin/AdminDevSetup"; // New import for admin development setup
 
 const queryClient = new QueryClient();
 
@@ -78,6 +79,7 @@ const App = () => (
           <Route path="/admin/settings" element={<SystemSettingsPage />} />
           <Route path="/admin/activity" element={<ActivityLogsPage />} />
           <Route path="/admin/profile" element={<AdminProfilePage />} />
+          <Route path="/admin/dev-setup" element={<AdminDevSetup />} /> {/* New route for admin development setup */}
           
           {/* Catch-all route for not found pages */}
           <Route path="*" element={<NotFound />} />
