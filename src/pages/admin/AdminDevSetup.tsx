@@ -31,7 +31,7 @@ const AdminDevSetup: React.FC = () => {
                 <AlertTriangle className="h-5 w-5 text-amber-500" />
                 <AlertTitle className="text-amber-800">Development Mode</AlertTitle>
                 <AlertDescription className="text-amber-700">
-                  Email verification is disabled for development. Remember to enable it before deploying to production.
+                  <strong>Important:</strong> Email verification must be disabled in Supabase for the admin setup to work properly.
                 </AlertDescription>
               </Alert>
               
@@ -39,10 +39,11 @@ const AdminDevSetup: React.FC = () => {
                 <Info className="h-5 w-5 text-blue-500" />
                 <AlertTitle className="text-blue-800">Supabase Configuration</AlertTitle>
                 <AlertDescription className="text-blue-700">
-                  <p>For development purposes, make sure to disable email verification in the Supabase Console:</p>
+                  <p>Please follow these steps in the Supabase Console:</p>
                   <ol className="list-decimal pl-5 mt-2 space-y-1">
                     <li>Go to Authentication &gt; Providers</li>
                     <li>Under Email, toggle "Confirm email" to OFF</li>
+                    <li>If you already created an admin user, you may need to delete it and create it again</li>
                   </ol>
                 </AlertDescription>
               </Alert>

@@ -13,15 +13,17 @@ const AdminSetup: React.FC = () => {
   const createDevAdmin = async () => {
     setIsCreating(true);
     try {
-      // Create admin user in auth
-      const { error: authError } = await supabase.auth.admin.createUser({
+      // Create admin user using standard auth API instead of admin API
+      const { error: authError } = await supabase.auth.signUp({
         email: 'zitro.admin@example.com',
         password: 'admin790',
-        email_confirm: true,
-        user_metadata: {
-          user_type: 'admin',
-          first_name: 'Zitro',
-          last_name: 'Admin'
+        options: {
+          data: {
+            user_type: 'admin',
+            first_name: 'Zitro',
+            last_name: 'Admin'
+          },
+          emailRedirectTo: window.location.origin
         }
       });
       
@@ -29,7 +31,7 @@ const AdminSetup: React.FC = () => {
       
       toast({
         title: 'Admin created',
-        description: 'The admin user zitro.admin@example.com has been created with password admin790',
+        description: 'The admin user zitro.admin@example.com has been created with password admin790. Make sure email verification is disabled in the Supabase Dashboard for development.',
       });
 
       // Note: The user will be automatically added to admin_profiles 
@@ -66,6 +68,9 @@ const AdminSetup: React.FC = () => {
         </ul>
         <p className="text-sm text-amber-600">
           Note: Use this only for development purposes.
+        </p>
+        <p className="text-sm text-amber-600 mt-2">
+          Important: For development, disable email verification in the Supabase Console under Authentication &gt; Providers.
         </p>
       </CardContent>
       <CardFooter>
