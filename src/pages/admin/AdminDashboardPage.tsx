@@ -4,7 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ChartContainer } from '@/components/ui/chart';
 import { supabase } from '@/integrations/supabase/client';
-import { Users, FileText, CreditCard, ArrowUp, ArrowDown } from 'lucide-react';
+import { Users, FileText, CreditCard, ArrowUp, ArrowDown, AlertTriangle } from 'lucide-react';
+import SystemOverview from '@/components/admin/SystemOverview';
+import RecentActivityFeed from '@/components/admin/RecentActivityFeed';
+import { useToast } from '@/hooks/use-toast';
+import { AdminActivity, SystemSetting } from '@/types/admin';
+import { logAdminActivity } from '@/utils/adminUtils';
 import {
   LineChart,
   Line,
@@ -46,6 +51,8 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, description, icon, ch
 
 const AdminDashboardPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
+  const [activitiesLoading, setActivitiesLoading] = useState(true);
+  const [settingsLoading, setSettingsLoading] = useState(true);
   const [stats, setStats] = useState({
     totalContractors: 0,
     activeContractors: 0,
@@ -53,7 +60,12 @@ const AdminDashboardPage: React.FC = () => {
     totalDocuments: 0,
     totalRevenue: 0
   });
+  const [recentActivities, setRecentActivities] = useState<AdminActivity[]>([]);
+  const [systemSettings, setSystemSettings] = useState<SystemSetting[]>([]);
+  const [systemAlerts, setSystemAlerts] = useState<string[]>([]);
+  const { toast } = useToast();
 
+  // Fetch dashboard stats
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
@@ -87,6 +99,7 @@ const AdminDashboardPage: React.FC = () => {
         });
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
+        setLoading(false);
       } finally {
         setLoading(false);
       }
@@ -94,6 +107,96 @@ const AdminDashboardPage: React.FC = () => {
     
     fetchDashboardData();
   }, []);
+
+  // Fetch admin activities
+  useEffect(() => {
+    const fetchRecentActivities = async () => {
+      try {
+        const { data: activities, error } = await supabase
+          .from('admin_activities')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(5);
+        
+        if (error) throw error;
+        
+        setRecentActivities(activities || []);
+      } catch (error) {
+        console.error('Error fetching admin activities:', error);
+        toast({
+          title: "Failed to load activities",
+          description: "Could not retrieve admin activities",
+          variant: "destructive"
+        });
+      } finally {
+        setActivitiesLoading(false);
+      }
+    };
+    
+    fetchRecentActivities();
+  }, [toast]);
+
+  // Fetch system settings
+  useEffect(() => {
+    const fetchSystemSettings = async () => {
+      try {
+        const { data: settings, error } = await supabase
+          .from('system_settings')
+          .select('*');
+        
+        if (error) throw error;
+        
+        setSystemSettings(settings || []);
+        
+        // Set system alerts based on settings
+        const alerts: string[] = [];
+        
+        const maintenanceModeEnabled = settings?.find(
+          s => s.key === 'maintenance_mode' && s.value === true
+        );
+        if (maintenanceModeEnabled) {
+          alerts.push("System is in maintenance mode");
+        }
+        
+        const systemStatus = settings?.find(s => s.key === 'system_status')?.value;
+        if (systemStatus && systemStatus !== 'operational') {
+          alerts.push(`System status: ${systemStatus}`);
+        }
+        
+        setSystemAlerts(alerts);
+      } catch (error) {
+        console.error('Error fetching system settings:', error);
+      } finally {
+        setSettingsLoading(false);
+      }
+    };
+    
+    fetchSystemSettings();
+  }, []);
+
+  // Log admin dashboard view (once per session)
+  useEffect(() => {
+    const logDashboardView = async () => {
+      try {
+        if (!loading && supabase.auth.getUser()) {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            await logAdminActivity(
+              user.id,
+              'view',
+              'dashboard',
+              null,
+              { dashboard: 'admin_overview' }
+            );
+          }
+        }
+      } catch (error) {
+        console.error('Error logging admin activity:', error);
+      }
+    };
+    
+    logDashboardView();
+  }, [loading]);
 
   // Transform the data for Recharts
   const transformedData = [
@@ -131,6 +234,20 @@ const AdminDashboardPage: React.FC = () => {
           <p className="text-muted-foreground">Overview of the platform statistics and activities.</p>
         </div>
 
+        {systemAlerts.length > 0 && (
+          <div className="bg-amber-50 border border-amber-200 rounded-md p-4 flex items-start space-x-3">
+            <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5" />
+            <div>
+              <h3 className="font-medium text-amber-800">System Alerts</h3>
+              <ul className="mt-1 text-sm text-amber-700 list-disc pl-5">
+                {systemAlerts.map((alert, idx) => (
+                  <li key={idx}>{alert}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
+
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <StatCard
             title="Total Contractors"
@@ -160,6 +277,21 @@ const AdminDashboardPage: React.FC = () => {
             icon={<CreditCard className="h-4 w-4" />}
             change={-3}
           />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="md:col-span-2">
+            <SystemOverview 
+              settings={systemSettings}
+              isLoading={settingsLoading}
+            />
+          </div>
+          <div>
+            <RecentActivityFeed 
+              activities={recentActivities}
+              isLoading={activitiesLoading}
+            />
+          </div>
         </div>
 
         <Tabs defaultValue="overview">

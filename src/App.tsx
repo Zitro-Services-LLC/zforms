@@ -27,6 +27,7 @@ import ResetPasswordPage from "@/pages/ResetPasswordPage";
 
 // Import Admin Pages
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
+import AdminManagementPage from "./pages/admin/AdminManagementPage";
 import ContractorsManagementPage from "./pages/admin/ContractorsManagementPage";
 import SystemSettingsPage from "./pages/admin/SystemSettingsPage";
 import ActivityLogsPage from "./pages/admin/ActivityLogsPage";
@@ -72,6 +73,7 @@ const App = () => (
           
           {/* Admin Routes */}
           <Route path="/admin" element={<AdminDashboardPage />} />
+          <Route path="/admin/management" element={<AdminManagementPage />} />
           <Route path="/admin/contractors" element={<ContractorsManagementPage />} />
           <Route path="/admin/settings" element={<SystemSettingsPage />} />
           <Route path="/admin/activity" element={<ActivityLogsPage />} />
