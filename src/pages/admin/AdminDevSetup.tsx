@@ -8,14 +8,12 @@ import { AlertTriangle, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const AdminDevSetup: React.FC = () => {
-  // Remove any authentication checks or redirects that might be sending users to /auth
-  
   return (
     <AdminLayout>
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Admin Development Setup</h1>
-          <p className="text-muted-foreground">Configure development settings and create admin test accounts.</p>
+          <p className="text-muted-foreground">Configure development settings and manage admin test accounts.</p>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">
@@ -46,6 +44,20 @@ const AdminDevSetup: React.FC = () => {
                     <li>Go to Authentication &gt; Providers</li>
                     <li>Under Email, toggle "Confirm email" to OFF</li>
                     <li>If you already created an admin user, you may need to delete it and create it again</li>
+                  </ol>
+                </AlertDescription>
+              </Alert>
+              
+              <Alert className="bg-green-50 border-green-200 mt-4">
+                <Info className="h-5 w-5 text-green-500" />
+                <AlertTitle className="text-green-800">Login with Admin Account</AlertTitle>
+                <AlertDescription className="text-green-700">
+                  <p>To login with the admin account:</p>
+                  <ol className="list-decimal pl-5 mt-2 space-y-1">
+                    <li>Go to the <Link to="/auth" className="text-green-600 hover:underline">Auth Page</Link></li>
+                    <li>Use the email: zitro.admin@example.com</li>
+                    <li>Password: admin790</li>
+                    <li>If you forgot the password, use the Reset Password button above</li>
                   </ol>
                 </AlertDescription>
               </Alert>
