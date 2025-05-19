@@ -3,11 +3,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, RefreshCw } from 'lucide-react';
+import { Loader2, RefreshCw, Save, Key } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 
 const AdminSetup: React.FC = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
   const { toast } = useToast();
   
   const ADMIN_EMAIL = 'zitro.admin@example.com';
@@ -57,7 +60,7 @@ const AdminSetup: React.FC = () => {
         } else {
           toast({
             title: 'Admin already exists',
-            description: 'The admin user already exists, but the password may have been changed. Use the Reset Password button to send a reset link.',
+            description: 'The admin user already exists, but the password may have been changed. Use the Reset Password button to change the password.',
             variant: 'destructive'
           });
         }
@@ -108,7 +111,13 @@ const AdminSetup: React.FC = () => {
     }
   };
 
+  const togglePasswordReset = () => {
+    setShowPasswordReset(!showPasswordReset);
+    setNewPassword('');
+  };
+
   const resetAdminPassword = async () => {
+    // This is the email-based password reset that we'll keep for reference
     setIsResetting(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(ADMIN_EMAIL, {
@@ -134,6 +143,88 @@ const AdminSetup: React.FC = () => {
     }
   };
 
+  const directPasswordReset = async () => {
+    if (!newPassword || newPassword.length < 6) {
+      toast({
+        title: 'Invalid password',
+        description: 'Please enter a password with at least 6 characters',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setIsResetting(true);
+    try {
+      // First try to sign in as admin
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email: ADMIN_EMAIL,
+        password: ADMIN_PASSWORD
+      });
+      
+      // If default password doesn't work, try "assuming" the admin exists
+      if (signInError) {
+        // Try to sign in again with the new password
+        const { data: adminData, error: adminSignInError } = await supabase.auth.signInWithPassword({
+          email: ADMIN_EMAIL,
+          password: newPassword
+        });
+
+        if (adminSignInError && !adminSignInError.message.includes("Invalid login credentials")) {
+          throw adminSignInError;
+        }
+
+        if (adminData?.user) {
+          // If we successfully signed in with the new password, it's already set
+          await supabase.auth.signOut();
+          toast({
+            title: 'Password already set',
+            description: `The password for ${ADMIN_EMAIL} is already set to this value.`,
+          });
+          setShowPasswordReset(false);
+          setIsResetting(false);
+          return;
+        }
+
+        toast({
+          title: 'Unable to reset password directly',
+          description: 'The admin account may not exist yet or cannot be accessed. Please create the admin first.',
+          variant: 'destructive'
+        });
+        setIsResetting(false);
+        return;
+      }
+
+      // If we're here, we successfully signed in with the default password
+      // Now update the password
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+
+      if (updateError) throw updateError;
+
+      // Sign out
+      await supabase.auth.signOut();
+      
+      toast({
+        title: 'Password reset successful',
+        description: `The password for ${ADMIN_EMAIL} has been updated.`,
+      });
+      
+      setShowPasswordReset(false);
+      setNewPassword('');
+      
+    } catch (error: any) {
+      console.error('Error directly resetting password:', error);
+      toast({
+        title: 'Failed to reset password',
+        description: error.message || 'An error occurred',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsResetting(false);
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -148,7 +239,7 @@ const AdminSetup: React.FC = () => {
         </p>
         <ul className="list-disc pl-5 mb-4 text-sm">
           <li>Email: {ADMIN_EMAIL}</li>
-          <li>Password: {ADMIN_PASSWORD}</li>
+          <li>Password: {ADMIN_PASSWORD} (default)</li>
           <li>Role: admin</li>
         </ul>
         <p className="text-sm text-amber-600">
@@ -157,6 +248,43 @@ const AdminSetup: React.FC = () => {
         <p className="text-sm text-amber-600 mt-2">
           Important: For development, disable email verification in the Supabase Console under Authentication &gt; Providers.
         </p>
+
+        {showPasswordReset && (
+          <div className="mt-4 border rounded-md p-4 bg-gray-50">
+            <h4 className="font-medium text-sm mb-2">Direct Password Reset</h4>
+            <p className="text-xs text-gray-500 mb-3">
+              Set a new password for the admin account without email verification
+            </p>
+            <div className="flex flex-col space-y-3">
+              <Input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="New password"
+                className="mb-2"
+              />
+              <div className="flex space-x-2">
+                <Button 
+                  onClick={directPasswordReset}
+                  disabled={isResetting || !newPassword}
+                  size="sm"
+                  className="bg-green-600 hover:bg-green-700 text-white"
+                >
+                  {isResetting && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}
+                  {!isResetting && <Key className="mr-1 h-3 w-3" />}
+                  Set Password
+                </Button>
+                <Button 
+                  onClick={togglePasswordReset}
+                  variant="outline" 
+                  size="sm"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </CardContent>
       <CardFooter className="flex flex-col sm:flex-row gap-3">
         <Button 
@@ -167,16 +295,19 @@ const AdminSetup: React.FC = () => {
           {isCreating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Create Development Admin
         </Button>
-        <Button 
-          onClick={resetAdminPassword} 
-          disabled={isCreating || isResetting}
-          variant="outline"
-          className="border-amber-300 text-amber-700 hover:bg-amber-50 w-full sm:w-auto"
-        >
-          {isResetting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {!isResetting && <RefreshCw className="mr-2 h-4 w-4" />}
-          Reset Admin Password
-        </Button>
+        
+        {!showPasswordReset ? (
+          <Button 
+            onClick={togglePasswordReset}
+            disabled={isCreating || isResetting}
+            variant="outline"
+            className="border-amber-300 text-amber-700 hover:bg-amber-50 w-full sm:w-auto"
+          >
+            {isResetting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {!isResetting && <RefreshCw className="mr-2 h-4 w-4" />}
+            Reset Admin Password
+          </Button>
+        ) : null}
       </CardFooter>
     </Card>
   );
