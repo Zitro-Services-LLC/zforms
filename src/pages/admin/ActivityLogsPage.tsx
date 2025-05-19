@@ -43,7 +43,7 @@ const ActivityLogsPage: React.FC = () => {
   const [activities, setActivities] = useState<AdminActivity[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [actionType, setActionType] = useState<string | null>(null);
+  const [actionType, setActionType] = useState<string>('all');
 
   useEffect(() => {
     const fetchActivities = async () => {
@@ -83,7 +83,9 @@ const ActivityLogsPage: React.FC = () => {
       activity.entity_type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       activity.action_type?.toLowerCase().includes(searchTerm.toLowerCase());
       
-    const matchesActionType = !actionType || activity.action_type === actionType;
+    // Use the effective filter - treat "all" as no filter
+    const effectiveFilter = actionType === 'all' ? undefined : actionType;
+    const matchesActionType = !effectiveFilter || activity.action_type === effectiveFilter;
     
     return matchesSearch && matchesActionType;
   });
@@ -155,17 +157,19 @@ const ActivityLogsPage: React.FC = () => {
               </div>
               
               <div className="flex items-center w-full sm:w-auto gap-2">
-                <Select value={actionType || ''} onValueChange={setActionType}>
+                <Select value={actionType} onValueChange={setActionType}>
                   <SelectTrigger className="w-full sm:w-[180px]">
                     <SelectValue placeholder="Filter by action" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All actions</SelectItem>
-                    {actionTypes.map((type) => (
-                      <SelectItem key={type} value={type}>
-                        {type.charAt(0).toUpperCase() + type.slice(1)}
-                      </SelectItem>
-                    ))}
+                    <SelectItem value="all">All actions</SelectItem>
+                    {actionTypes
+                      .filter((type): type is string => Boolean(type))
+                      .map(type => (
+                        <SelectItem key={type} value={type}>
+                          {type.charAt(0).toUpperCase() + type.slice(1)}
+                        </SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
                 
