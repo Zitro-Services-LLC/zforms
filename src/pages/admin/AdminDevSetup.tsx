@@ -55,8 +55,8 @@ const AdminDevSetup: React.FC = () => {
                   <p>To login with the admin account:</p>
                   <ol className="list-decimal pl-5 mt-2 space-y-1">
                     <li>Go to the <Link to="/auth" className="text-green-600 hover:underline">Auth Page</Link></li>
-                    <li>Use the email: zitro.admin@example.com</li>
-                    <li>Password: admin790 (default) or your custom password if reset</li>
+                    <li>Use the email: reliantiot@gmail.com</li>
+                    <li>Password: tempAdminPass123 (default) or your custom password if reset</li>
                     <li>Use the "Reset Admin Password" button to change the password directly without email</li>
                   </ol>
                 </AlertDescription>

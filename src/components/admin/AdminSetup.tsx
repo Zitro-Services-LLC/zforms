@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -13,8 +14,8 @@ const AdminSetup: React.FC = () => {
   const [newPassword, setNewPassword] = useState('');
   const { toast } = useToast();
   
-  const ADMIN_EMAIL = 'zitro.admin@example.com';
-  const ADMIN_PASSWORD = 'admin790';
+  const ADMIN_EMAIL = 'reliantiot@gmail.com';
+  const ADMIN_PASSWORD = 'tempAdminPass123';
 
   const checkAdminExists = async () => {
     try {
@@ -75,8 +76,8 @@ const AdminSetup: React.FC = () => {
         options: {
           data: {
             user_type: 'admin',
-            first_name: 'Zitro',
-            last_name: 'Admin'
+            first_name: 'Admin',
+            last_name: 'User'
           },
           emailRedirectTo: window.location.origin
         }
