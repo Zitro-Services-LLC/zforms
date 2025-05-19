@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Bell, Search, Settings } from 'lucide-react';
+import { Bell, Search, Settings, Menu, X } from 'lucide-react';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { Button } from '../ui/button';
 import {
@@ -21,7 +21,8 @@ interface AdminHeaderProps {
 }
 
 const AdminHeader: React.FC<AdminHeaderProps> = ({ 
-  sidebarCollapsed 
+  sidebarCollapsed,
+  setCollapsed
 }) => {
   const { user } = useAdminAuth(false);
   const navigate = useNavigate();
@@ -29,6 +30,10 @@ const AdminHeader: React.FC<AdminHeaderProps> = ({
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate('/auth');
+  };
+
+  const toggleSidebar = () => {
+    setCollapsed(!sidebarCollapsed);
   };
   
   const initials = user?.email 
@@ -40,7 +45,21 @@ const AdminHeader: React.FC<AdminHeaderProps> = ({
       sidebarCollapsed ? 'left-20' : 'left-64'
     } transition-all duration-300 ease-in-out`}>
       <div className="h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-        <div className="flex-1">
+        <div className="flex-1 flex items-center">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={toggleSidebar} 
+            className="mr-4"
+            aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {sidebarCollapsed ? (
+              <Menu className="h-5 w-5" />
+            ) : (
+              <X className="h-5 w-5" />
+            )}
+          </Button>
+
           <div className="relative max-w-md">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
             <input
